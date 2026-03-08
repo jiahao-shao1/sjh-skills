@@ -48,7 +48,7 @@ description: "Notion LifeOS PARA 生活管理系统 — 创建和查询任务、
 | Note | title | 笔记标题 |
 | Note Type | select | 可选值：My Blog, Thoughts, Records, Notes, Documentation, Experiments |
 | Status (状态) | select | 可选值：进行中, 已完成 |
-| Tags | multi_select | 标签 |
+| Tags | multi_select | 可选值：optimizer, VLA, NLP, MLLM, 3DV, attention, tokenizer。不能随意填写新值，如需新标签须先更新数据库 schema |
 | folder | rich_text | 文件夹 |
 | Date | date | 日期 |
 | URL | url | 链接 |
