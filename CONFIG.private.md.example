@@ -1,0 +1,22 @@
+# Notion LifeOS - 数据库 ID 配置
+
+**使用方法：**
+1. 复制此文件为 `CONFIG.private.md`
+2. 填入你的真实数据库 ID
+3. `CONFIG.private.md` 已在 `.gitignore` 中，不会被提交
+
+## 数据库 ID 映射
+
+- **database_id**：REST API 使用（OpenClaw / Codex 等）
+- **data_source_id**：Notion MCP 使用（Claude Code / Claude.ai）
+
+| 数据库 | database_id | data_source_id |
+|--------|-------------|----------------|
+| Task | `YOUR_TASK_DATABASE_ID` | `YOUR_TASK_DATA_SOURCE_ID` |
+| Notes | `YOUR_NOTES_DATABASE_ID` | `YOUR_NOTES_DATA_SOURCE_ID` |
+| Areas | `YOUR_AREAS_DATABASE_ID` | `YOUR_AREAS_DATA_SOURCE_ID` |
+| Resources | `YOUR_RESOURCES_DATABASE_ID` | `YOUR_RESOURCES_DATA_SOURCE_ID` |
+| Projects | `YOUR_PROJECTS_DATABASE_ID` | `YOUR_PROJECTS_DATA_SOURCE_ID` |
+| Make Time | `YOUR_MAKETIME_DATABASE_ID` | `YOUR_MAKETIME_DATA_SOURCE_ID` |
+
+LifeOS 根页面：`YOUR_LIFEOS_ROOT_PAGE_ID`

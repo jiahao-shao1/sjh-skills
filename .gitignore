@@ -1,0 +1,7 @@
+.DS_Store
+*.key
+*.pem
+.env
+secrets*
+node_modules/
+CONFIG.private.md
