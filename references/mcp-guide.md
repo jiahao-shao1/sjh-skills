@@ -1,39 +1,41 @@
-# Notion MCP 工具操作指南
+# Notion MCP Tools Operation Guide
 
-适用于：Claude Code、Claude.ai 等具有 Notion MCP 集成的环境。
+English | [中文](./mcp-guide.zh.md)
 
-## 可用工具
+For: Claude Code, Claude.ai, and other environments with Notion MCP integration.
 
-- `notion-search` — 搜索工作区内容和数据库
-- `notion-fetch` — 获取页面/数据库详情和 schema
-- `notion-create-pages` — 创建页面
-- `notion-update-page` — 更新页面属性或内容
-- `notion-create-database` — 创建数据库
+## Available Tools
 
-## 获取数据库 ID
+- `notion-search` — Search workspace content and databases
+- `notion-fetch` — Get page/database details and schema
+- `notion-create-pages` — Create pages
+- `notion-update-page` — Update page properties or content
+- `notion-create-database` — Create databases
 
-1. 读取 skill 目录下的 `CONFIG.private.md`，从中获取各数据库的 `data_source_id`
-2. 如果文件不存在：用 `notion-search` 搜索「LifeOS」找到根页面，然后用 `notion-fetch` 获取该页面内容，从中提取各数据库的 `<data-source>` ID。只使用 LifeOS 根页面下的数据库。
+## Getting Database IDs
 
-## 创建条目
+1. Read `CONFIG.private.md` from the skill directory to get each database's `data_source_id`
+2. If the file doesn't exist: use `notion-search` to find "LifeOS" root page, then use `notion-fetch` to get the page content and extract each database's `<data-source>` ID. Only use databases under the LifeOS root page.
 
-使用 `notion-create-pages`，以 `data_source_id` 作为 parent。
+## Creating Entries
 
-**属性格式要求（MCP 特有）：**
-- 属性值使用扁平字符串，不要用 REST API 的嵌套对象格式
-- Date：拆分为 `date:属性名:start`、`date:属性名:end`、`date:属性名:is_datetime`
-- Checkbox：使用 `__YES__` / `__NO__`（不是 true/false）
-- multi_select：逗号分隔的字符串
-- URL 属性：属性名加 `userDefined:` 前缀（如 `userDefined:URL`）
+Use `notion-create-pages` with `data_source_id` as parent.
 
-### 创建任务示例
+**Property format requirements (MCP-specific):**
+- Property values use flat strings, not the nested object format of REST API
+- Date: split into `date:PropertyName:start`, `date:PropertyName:end`, `date:PropertyName:is_datetime`
+- Checkbox: use `__YES__` / `__NO__` (not true/false)
+- multi_select: comma-separated string
+- URL property: prefix property name with `userDefined:` (e.g., `userDefined:URL`)
+
+### Create Task Example
 
 ```json
 {
-  "parent": {"data_source_id": "<从 CONFIG.private.md 读取的 Task data_source_id>"},
+  "parent": {"data_source_id": "<Task data_source_id from CONFIG.private.md>"},
   "pages": [{
     "properties": {
-      "Name": "完成季度报告",
+      "Name": "Finish quarterly report",
       "date:Due Date:start": "2026-03-15",
       "date:Due Date:is_datetime": 0,
       "Done": "__NO__"
@@ -42,25 +44,25 @@
 }
 ```
 
-### 创建笔记示例
+### Create Note Example
 
 ```json
 {
   "parent": {"data_source_id": "<Notes data_source_id>"},
   "pages": [{
     "properties": {
-      "Note": "产品团队 Q2 OKR 讨论记录",
+      "Note": "Product team Q2 OKR discussion notes",
       "Note Type": "Records",
-      "Tags": "产品, Q2",
+      "Tags": "product, Q2",
       "date:Date:start": "2026-03-08",
       "date:Date:is_datetime": 0
     },
-    "content": "## 讨论要点\n\n- 重点提升用户留存率到 85%"
+    "content": "## Key Points\n\n- Focus on improving user retention to 85%"
   }]
 }
 ```
 
-### 创建 Make Time 日记示例
+### Create Make Time Journal Example
 
 ```json
 {
@@ -70,28 +72,28 @@
       "Name": "2026-03-08",
       "date:Date:start": "2026-03-08",
       "date:Date:is_datetime": 0,
-      "Highlight": "项目终于上线了",
-      "Grateful": "团队的付出",
-      "Let Go": "对延期的焦虑"
+      "Highlight": "Project finally launched",
+      "Grateful": "The team's dedication",
+      "Let Go": "Anxiety about the delay"
     }
   }]
 }
 ```
 
-## 查询数据
+## Querying Data
 
-使用 `notion-search` 搜索工作区内容：
+Use `notion-search` to search workspace content:
 
-- 全局搜索：`{"query": "季度报告"}`
-- 在特定数据库中搜索：`{"query": "未完成", "data_source_url": "collection://<Task data_source_id>"}`
+- Global search: `{"query": "quarterly report"}`
+- Search within a specific database: `{"query": "unfinished", "data_source_url": "collection://<Task data_source_id>"}`
 
-获取完整页面内容：先 `notion-search` 找到页面 ID，再用 `notion-fetch` 获取详情。
+To get full page content: first use `notion-search` to find the page ID, then use `notion-fetch` for details.
 
-## 更新条目
+## Updating Entries
 
-使用 `notion-update-page`：
+Use `notion-update-page`:
 
-**完成任务：**
+**Complete a task:**
 ```json
 {
   "page_id": "<page_id>",
@@ -100,11 +102,11 @@
 }
 ```
 
-**更新页面正文：**
+**Update page body:**
 ```json
 {
   "page_id": "<page_id>",
   "command": "update_content",
-  "content_updates": [{"old_str": "旧内容", "new_str": "新内容"}]
+  "content_updates": [{"old_str": "old content", "new_str": "new content"}]
 }
 ```

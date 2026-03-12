@@ -1,151 +1,153 @@
 ---
 name: notion-lifeos
-description: "Notion LifeOS PARA 生活管理系统 — 创建和查询任务、笔记、项目、领域、资源，以及 Make Time 日记条目。当用户提到 Notion、笔记、任务、项目、待办、日记，或使用日常用语如「帮我记一下」「今天要做什么」「记个想法」「加个任务」「查一下我的笔记」「最近有什么任务没做完」时，都应该激活此 skill。任何涉及个人知识管理、PARA 方法、生活系统、每日回顾的请求也应触发。"
+description: "Notion LifeOS PARA Life Management System — Create and query tasks, notes, projects, areas, resources, and Make Time journal entries. Activate when users mention Notion, notes, tasks, projects, todos, journals, or use everyday phrases like 'take a note', 'what do I need to do today', 'jot down an idea', 'add a task', 'search my notes', 'any unfinished tasks'. Also triggers for personal knowledge management, PARA method, life systems, or daily reviews. | Notion LifeOS PARA 生活管理系统 — 创建和查询任务、笔记、项目、领域、资源，以及 Make Time 日记条目。当用户提到 Notion、笔记、任务、项目、待办、日记，或使用日常用语如「帮我记一下」「今天要做什么」「记个想法」「加个任务」「查一下我的笔记」「最近有什么任务没做完」时，都应该激活此 skill。任何涉及个人知识管理、PARA 方法、生活系统、每日回顾的请求也应触发。"
 ---
 
 # Notion LifeOS Skill
 
-基于 PARA 方法和 Make Time 框架的 Notion 生活管理系统。
+English | [中文](./SKILL.zh.md)
 
-## 核心理念
+A Notion life management system based on the PARA method and Make Time framework.
 
-- **先捕获，后整理** — 永不让处理阻塞输入
-- **信息主动呈现** — 通过 Relations 让信息自动浮现到需要它的地方
-- **可扩展的自我觉察** — 每条记录都是未来 AI 理解你的数据点
+## Core Principles
 
-详细设计理念见 [JEFF_SU_SUMMARY.md](./JEFF_SU_SUMMARY.md)。
+- **Capture first, organize later** — Never let processing block input
+- **Proactive information surfacing** — Use Relations to automatically surface information where it's needed
+- **Scalable self-awareness** — Every record is a data point for your future AI self
 
-## 数据库定位
+See [JEFF_SU_SUMMARY.md](./JEFF_SU_SUMMARY.md) for detailed design philosophy.
 
-**必须从 `CONFIG.private.md` 读取数据库 ID。** 这个文件位于 skill 目录下，包含用户的真实数据库 ID 映射表。
+## Database Location
 
-读取顺序：
-1. 读取 skill 目录下的 `CONFIG.private.md`
-2. 如果文件不存在，使用以下方法定位数据库：
-   - 先用 `notion-fetch` 获取 LifeOS 根页面（页面名称为「LifeOS」，不是「LifeOS Template」）
-   - 从根页面内容中找到各数据库的 ID
-   - 只使用 LifeOS 根页面下的数据库，忽略其他同名数据库
-3. 如果仍找不到，提醒用户按 [references/setup.md](./references/setup.md) 配置
+**Database IDs must be read from `CONFIG.private.md`.** This file is located in the skill directory and contains the user's actual database ID mappings.
 
-**注意：工作区中可能存在多个同名数据库（如 LifeOS 和 LifeOS Template 下各有一套）。必须确认使用的是 LifeOS 根页面下的那一套。**
+Reading order:
+1. Read `CONFIG.private.md` from the skill directory
+2. If the file doesn't exist, locate databases using:
+   - Use `notion-fetch` to get the LifeOS root page (page named "LifeOS", not "LifeOS Template")
+   - Extract each database's ID from the root page content
+   - Only use databases under the LifeOS root page; ignore other databases with the same name
+3. If still not found, remind the user to configure per [references/setup.md](./references/setup.md)
 
-## PARA 数据库结构
+**Note: The workspace may contain multiple databases with the same name (e.g., one set under LifeOS and another under LifeOS Template). Always confirm you're using the set under the LifeOS root page.**
 
-系统包含 6 个核心数据库，通过 Notion Relations 互相关联：
+## PARA Database Schema
 
-### Task（任务）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Name | title | 任务名称 |
-| Done | checkbox | 是否完成 |
-| Due Date | date | 截止日期 |
-| Related to Projects | relation | 关联项目 |
-| Related to Notes | relation | 关联笔记 |
+The system contains 6 core databases interconnected via Notion Relations:
 
-### Notes（笔记）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Note | title | 笔记标题 |
-| Note Type | select | 可选值：My Blog, Thoughts, Records, Notes, Documentation, Experiments |
-| Status (状态) | select | 可选值：进行中, 已完成 |
-| Tags | multi_select | 可选值：optimizer, VLA, NLP, MLLM, 3DV, attention, tokenizer。不能随意填写新值，如需新标签须先更新数据库 schema |
-| folder | rich_text | 文件夹 |
-| Date | date | 日期 |
-| URL | url | 链接 |
-| Files & media | files | 附件 |
-| Related to Projects | relation | 关联项目 |
-| Related to Areas | relation | 关联领域 |
-| Related Resources | relation | 关联资源 |
+### Task
+| Property | Type | Description |
+|----------|------|-------------|
+| Name | title | Task name |
+| Done | checkbox | Completed |
+| Due Date | date | Due date |
+| Related to Projects | relation | Related projects |
+| Related to Notes | relation | Related notes |
 
-### Projects（项目）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Log name | title | 项目名称 |
-| Status (状态) | select | 状态 |
-| End Date | date | 结束日期 |
-| Project Folder | rich_text | 项目文件夹 |
-| Related Areas | relation | 关联领域 |
-| Related Resources | relation | 关联资源 |
-| Related Notes | relation | 关联笔记 |
+### Notes
+| Property | Type | Description |
+|----------|------|-------------|
+| Note | title | Note title |
+| Note Type | select | Options: My Blog, Thoughts, Records, Notes, Documentation, Experiments |
+| Status | select | Options: 进行中, 已完成 |
+| Tags | multi_select | Options: optimizer, VLA, NLP, MLLM, 3DV, attention, tokenizer. Do not add new values arbitrarily; update the database schema first |
+| folder | rich_text | Folder |
+| Date | date | Date |
+| URL | url | Link |
+| Files & media | files | Attachments |
+| Related to Projects | relation | Related projects |
+| Related to Areas | relation | Related areas |
+| Related Resources | relation | Related resources |
 
-### Areas（领域）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Blog name | title | 领域名称 |
-| type | multi_select | 类型标签 |
-| Related Notes | relation | 关联笔记 |
-| Related Resources | relation | 关联资源 |
+### Projects
+| Property | Type | Description |
+|----------|------|-------------|
+| Log name | title | Project name |
+| Status | select | Status |
+| End Date | date | End date |
+| Project Folder | rich_text | Project folder |
+| Related Areas | relation | Related areas |
+| Related Resources | relation | Related resources |
+| Related Notes | relation | Related notes |
 
-### Resources（资源）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Note | title | 资源名称 |
-| Resources Type | select | 资源类型 |
-| URL | url | 链接 |
-| Date | date | 日期 |
-| Files & media | files | 附件 |
-| Related to Areas | relation | 关联领域 |
-| Related to Projects | relation | 关联项目 |
-| Related Notes | relation | 关联笔记 |
+### Areas
+| Property | Type | Description |
+|----------|------|-------------|
+| Blog name | title | Area name |
+| type | multi_select | Type tags |
+| Related Notes | relation | Related notes |
+| Related Resources | relation | Related resources |
 
-### Make Time（日记）
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| Name | title | 日期名称（如 "2026-03-08"） |
-| Date | date | 日期 |
-| Highlight | rich_text | 今日亮点 |
-| Grateful | rich_text | 感恩的事 |
-| Let Go | rich_text | 放下的事 |
+### Resources
+| Property | Type | Description |
+|----------|------|-------------|
+| Note | title | Resource name |
+| Resources Type | select | Resource type |
+| URL | url | Link |
+| Date | date | Date |
+| Files & media | files | Attachments |
+| Related to Areas | relation | Related areas |
+| Related to Projects | relation | Related projects |
+| Related Notes | relation | Related notes |
 
-## 操作指南
+### Make Time (Journal)
+| Property | Type | Description |
+|----------|------|-------------|
+| Name | title | Date name, e.g. "2026-03-08" |
+| Date | date | Date |
+| Highlight | rich_text | Today's highlight |
+| Grateful | rich_text | Things to be grateful for |
+| Let Go | rich_text | Things to let go of |
 
-根据你的 Agent 环境，选择对应的执行方式：
+## Operation Guide
 
-- **有 Notion MCP 工具**（如 Claude Code / Claude.ai）→ 见 [references/mcp-guide.md](./references/mcp-guide.md)
-- **有 Notion API 访问**（如 OpenClaw / Codex / 其他 Agent）→ 见 [references/api-guide.md](./references/api-guide.md)
+Choose the execution method based on your Agent environment:
 
-判断方法：检查是否有 `notion-search`、`notion-create-pages` 等 MCP 工具可用。如果有，使用 MCP 方式；否则使用 API 方式。
+- **With Notion MCP tools** (e.g., Claude Code / Claude.ai) → See [references/mcp-guide.md](./references/mcp-guide.md)
+- **With Notion API access** (e.g., OpenClaw / Codex / other agents) → See [references/api-guide.md](./references/api-guide.md)
 
-## 意图识别与数据库映射
+How to determine: Check if MCP tools like `notion-search`, `notion-create-pages` are available. If yes, use MCP; otherwise use API.
 
-用户说的话 → 应操作的数据库：
+## Intent Recognition & Database Mapping
 
-| 用户意图 | 目标数据库 | 操作 |
-|----------|-----------|------|
-| 「帮我记一下 XXX」「记个笔记」 | Notes | 创建笔记 |
-| 「加个任务 XXX」「待办：XXX」 | Task | 创建任务 |
-| 「今天最开心的事是…」「记录今天」 | Make Time | 创建/更新日记 |
-| 「创建项目 XXX」 | Projects | 创建项目 |
-| 「最近有什么任务没做完」 | Task | 查询未完成任务 |
-| 「查一下关于 XX 的笔记」 | Notes | 搜索笔记 |
-| 「添加资源/参考资料」 | Resources | 创建资源 |
+User input → Target database:
 
-### Note Type 选择逻辑
+| User Intent | Target DB | Action |
+|-------------|-----------|--------|
+| "Take a note about XXX" | Notes | Create note |
+| "Add a task: XXX" | Task | Create task |
+| "The best thing today was..." | Make Time | Create/update journal |
+| "Create project XXX" | Projects | Create project |
+| "Any unfinished tasks?" | Task | Query incomplete tasks |
+| "Search notes about XX" | Notes | Search notes |
+| "Add a resource/reference" | Resources | Create resource |
 
-根据笔记内容自动选择合适的 Note Type：
+### Note Type Selection Logic
 
-| 内容特征 | Note Type |
-|---------|-----------|
-| 个人想法、灵感、反思 | Thoughts |
-| 会议记录、事件记录、日志 | Records |
-| 学习笔记、读书笔记 | Notes |
-| 技术文档、教程、指南 | Documentation |
-| 实验记录、测试结果 | Experiments |
-| 博客文章草稿 | My Blog |
+Automatically select the appropriate Note Type based on content:
 
-### Make Time 日记提取逻辑
+| Content Characteristics | Note Type |
+|------------------------|-----------|
+| Personal thoughts, inspiration, reflections | Thoughts |
+| Meeting records, event logs | Records |
+| Study notes, reading notes | Notes |
+| Technical docs, tutorials, guides | Documentation |
+| Experiment records, test results | Experiments |
+| Blog post drafts | My Blog |
 
-从用户的自然语言中提取三个要素：
+### Make Time Journal Extraction Logic
 
-- **Highlight**：今日最重要的事 / 最开心的事 / 成就
-- **Grateful**：感恩、感谢相关的内容
-- **Let Go**：想放下的、不再纠结的事
+Extract three elements from the user's natural language:
 
-创建 Make Time 条目前，先查询今日是否已有条目。如果已有，更新而非重复创建。
+- **Highlight**: The most important/happiest thing today / achievement
+- **Grateful**: Things related to gratitude and appreciation
+- **Let Go**: Things to release and stop worrying about
 
-## 注意事项
+Before creating a Make Time entry, check if today's entry already exists. If it does, update rather than create a duplicate.
 
-- Date 属性的值应为 ISO-8601 格式（如 `2026-03-08`）
-- Relation 字段需要目标页面的 ID
-- 创建条目后向用户确认操作结果
-- 首次操作某个数据库时，建议先获取 schema 确认属性名称
+## Notes
+
+- Date property values should be in ISO-8601 format (e.g., `2026-03-08`)
+- Relation fields require the target page's ID
+- Confirm the operation result to the user after creating an entry
+- When operating on a database for the first time, it's recommended to fetch the schema first to confirm property names

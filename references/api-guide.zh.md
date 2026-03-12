@@ -1,12 +1,12 @@
-# Notion REST API Operation Guide
+# Notion REST API 操作指南
 
-English | [中文](./api-guide.zh.md)
+[English](./api-guide.md) | 中文
 
-For: OpenClaw, Codex, and other Agent environments that call Notion API via HTTP.
+适用于：OpenClaw、Codex、及其他通过 HTTP 调用 Notion API 的 Agent 环境。
 
-## Prerequisites
+## 前置条件
 
-Requires a Notion API Key, stored at `~/.config/notion/api_key`:
+需要 Notion API Key，存储在 `~/.config/notion/api_key`：
 
 ```bash
 mkdir -p ~/.config/notion
@@ -14,18 +14,18 @@ echo "your_notion_api_key_here" > ~/.config/notion/api_key
 chmod 600 ~/.config/notion/api_key
 ```
 
-How to get it: Visit https://www.notion.so/my-integrations to create an Integration.
+获取方式：访问 https://www.notion.so/my-integrations 创建 Integration。
 
-## API Basics
+## API 基础信息
 
 - Base URL: `https://api.notion.com/v1`
-- Auth: `Authorization: Bearer $NOTION_KEY`
-- Version: `Notion-Version: 2022-06-28`
+- 认证: `Authorization: Bearer $NOTION_KEY`
+- 版本: `Notion-Version: 2022-06-28`
 - Rate limit: ~3 req/s
 
-## Getting Database IDs
+## 获取数据库 ID
 
-First read `CONFIG.private.md` for the database_id mapping. Or search via API:
+先读取 `CONFIG.private.md` 获取 database_id 映射。或通过 API 搜索：
 
 ```bash
 NOTION_KEY=$(cat ~/.config/notion/api_key)
@@ -36,9 +36,9 @@ curl -X POST "https://api.notion.com/v1/search" \
   -d '{"query": "Task Database", "filter": {"property": "object", "value": "database"}}'
 ```
 
-## Creating Entries
+## 创建条目
 
-### Create Task
+### 创建任务
 
 ```bash
 curl -X POST "https://api.notion.com/v1/pages" \
@@ -48,14 +48,14 @@ curl -X POST "https://api.notion.com/v1/pages" \
   -d '{
     "parent": {"database_id": "<task_database_id>"},
     "properties": {
-      "Name": {"title": [{"text": {"content": "Finish quarterly report"}}]},
+      "Name": {"title": [{"text": {"content": "完成季度报告"}}]},
       "Due Date": {"date": {"start": "2026-03-15"}},
       "Done": {"checkbox": false}
     }
   }'
 ```
 
-### Create Note
+### 创建笔记
 
 ```bash
 curl -X POST "https://api.notion.com/v1/pages" \
@@ -65,27 +65,27 @@ curl -X POST "https://api.notion.com/v1/pages" \
   -d '{
     "parent": {"database_id": "<notes_database_id>"},
     "properties": {
-      "Note": {"title": [{"text": {"content": "Product team Q2 OKR discussion notes"}}]},
+      "Note": {"title": [{"text": {"content": "产品团队 Q2 OKR 讨论记录"}}]},
       "Note Type": {"select": {"name": "Records"}},
-      "Tags": {"multi_select": [{"name": "product"}, {"name": "Q2"}]},
+      "Tags": {"multi_select": [{"name": "产品"}, {"name": "Q2"}]},
       "Date": {"date": {"start": "2026-03-08"}}
     },
     "children": [
       {
         "object": "block",
         "type": "heading_2",
-        "heading_2": {"rich_text": [{"text": {"content": "Key Points"}}]}
+        "heading_2": {"rich_text": [{"text": {"content": "讨论要点"}}]}
       },
       {
         "object": "block",
         "type": "bulleted_list_item",
-        "bulleted_list_item": {"rich_text": [{"text": {"content": "Focus on improving user retention to 85%"}}]}
+        "bulleted_list_item": {"rich_text": [{"text": {"content": "重点提升用户留存率到 85%"}}]}
       }
     ]
   }'
 ```
 
-### Create Make Time Journal
+### 创建 Make Time 日记
 
 ```bash
 curl -X POST "https://api.notion.com/v1/pages" \
@@ -97,16 +97,16 @@ curl -X POST "https://api.notion.com/v1/pages" \
     "properties": {
       "Name": {"title": [{"text": {"content": "2026-03-08"}}]},
       "Date": {"date": {"start": "2026-03-08"}},
-      "Highlight": {"rich_text": [{"text": {"content": "Project finally launched"}}]},
-      "Grateful": {"rich_text": [{"text": {"content": "The team's dedication"}}]},
-      "Let Go": {"rich_text": [{"text": {"content": "Anxiety about the delay"}}]}
+      "Highlight": {"rich_text": [{"text": {"content": "项目终于上线了"}}]},
+      "Grateful": {"rich_text": [{"text": {"content": "团队的付出"}}]},
+      "Let Go": {"rich_text": [{"text": {"content": "对延期的焦虑"}}]}
     }
   }'
 ```
 
-## Querying Data
+## 查询数据
 
-### Query Incomplete Tasks
+### 查询未完成任务
 
 ```bash
 curl -X POST "https://api.notion.com/v1/databases/<task_database_id>/query" \
@@ -119,7 +119,7 @@ curl -X POST "https://api.notion.com/v1/databases/<task_database_id>/query" \
   }'
 ```
 
-### Query Recent Notes
+### 查询最近笔记
 
 ```bash
 curl -X POST "https://api.notion.com/v1/databases/<notes_database_id>/query" \
@@ -132,9 +132,9 @@ curl -X POST "https://api.notion.com/v1/databases/<notes_database_id>/query" \
   }'
 ```
 
-## Updating Entries
+## 更新条目
 
-### Complete a Task
+### 完成任务
 
 ```bash
 curl -X PATCH "https://api.notion.com/v1/pages/<page_id>" \
@@ -146,7 +146,7 @@ curl -X PATCH "https://api.notion.com/v1/pages/<page_id>" \
   }'
 ```
 
-### Add Page Content
+### 添加页面内容
 
 ```bash
 curl -X PATCH "https://api.notion.com/v1/blocks/<page_id>/children" \
@@ -156,13 +156,13 @@ curl -X PATCH "https://api.notion.com/v1/blocks/<page_id>/children" \
   -d '{
     "children": [
       {"object": "block", "type": "paragraph",
-       "paragraph": {"rich_text": [{"text": {"content": "New content"}}]}}
+       "paragraph": {"rich_text": [{"text": {"content": "新内容"}}]}}
     ]
   }'
 ```
 
-## Notes
+## 注意事项
 
-- Use `database_id` for creating pages, `databases/<id>/query` for querying
-- Relation fields require the target page's page_id
-- Button block automations may be lost when created via API
+- 创建页面用 `database_id`，查询用 `databases/<id>/query`
+- Relation 字段需要目标页面的 page_id
+- button 块的自动化配置通过 API 创建时可能会丢失

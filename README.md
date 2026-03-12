@@ -1,8 +1,52 @@
 # Notion LifeOS Skill
 
+English | [中文](README.zh.md)
+
 > **Memory System for Human** — A scalable self-awareness system that captures your thoughts, decisions, and growth over decades.
 
 An **agent-agnostic** Notion LifeOS skill based on the PARA method and Make Time framework. Works with **Claude Code, OpenClaw, Codex**, and any AI agent that can interact with Notion.
+
+## Vision
+
+This is not just a productivity tool — it's a **long-term memory architecture** designed to:
+
+1. **Capture your thinking in real-time** — Zero-latency idea capture ensures no thought is lost
+2. **Scale across decades** — Build a comprehensive record of your cognitive evolution
+3. **Enable AI reconstruction** — In 10 years, an AI agent can rebuild "you" from this data
+
+### Core Design Principles
+
+**1. Frontend-Backend Separation**
+- **Frontend:** Notion (user interface for capture and review)
+- **Backend:** AI agents (automation, processing, insights)
+- This separation allows you to switch tools without losing your data structure
+
+**2. Database Separation (DP Principle)**
+- **Write:** Instant, frictionless capture — no processing overhead
+- **Process:** Deferred, AI-powered organization and insight extraction
+- **Philosophy:** Capture first, organize later. Never let processing block input.
+
+**3. Scalable Self-Awareness**
+- Every note, task, and decision becomes a data point
+- Over time, patterns emerge: how you think, what you value, how you grow
+- AI agents can analyze decades of data to understand your cognitive fingerprint
+- **Ultimate goal:** An AI that thinks like you, trained on your actual thought process
+
+### Why This Matters
+
+Most productivity systems optimize for *doing*. LifeOS optimizes for *becoming*.
+
+- **Short-term:** Manage tasks and projects efficiently
+- **Mid-term:** Understand your patterns and improve decision-making
+- **Long-term:** Create a digital cognitive twin that preserves your thinking style
+
+**In 10 years, an AI agent trained on your LifeOS data could:**
+- Make decisions the way you would
+- Predict what you'd find interesting
+- Explain your reasoning to others
+- Continue your work after you're gone
+
+This is **memory as infrastructure** — not just for recall, but for reconstruction.
 
 ## Features
 
@@ -43,36 +87,36 @@ See [references/setup.md](./references/setup.md) for detailed setup instructions
 Once configured, use natural language:
 
 ```
-"帮我记一下，刚才开会讨论了 Q2 OKR"
-"加个任务：周五前完成竞品分析报告"
-"今天最开心的事是项目上线了，感恩团队的支持"
-"最近有什么任务没做完？"
-"查一下关于 AI 的笔记"
+"Take a note: we discussed Q2 OKR in the meeting"
+"Add a task: finish competitor analysis report by Friday"
+"The highlight today was the project launch, grateful for the team's support"
+"Any unfinished tasks?"
+"Search notes about AI"
 ```
 
 ## Architecture
 
 ```
-SKILL.md                    ← 核心：PARA 数据库结构 + 意图识别（agent-agnostic）
+SKILL.md                    ← Core: PARA database schema + intent recognition (agent-agnostic)
 references/
-├── mcp-guide.md            ← Claude Code / Claude.ai（Notion MCP）
-├── api-guide.md            ← OpenClaw / Codex / 其他（REST API）
-└── setup.md                ← 多平台配置指南
-JEFF_SU_SUMMARY.md          ← 设计理念参考
-CONFIG.private.md.example   ← 数据库 ID 配置模板
+├── mcp-guide.md            ← Claude Code / Claude.ai (Notion MCP)
+├── api-guide.md            ← OpenClaw / Codex / others (REST API)
+└── setup.md                ← Multi-platform setup guide
+JEFF_SU_SUMMARY.md          ← Design philosophy reference
+CONFIG.private.md.example   ← Database ID config template
 ```
 
-**知识层与执行层分离：** SKILL.md 只描述数据模型和工作流逻辑，不绑定特定工具。Agent 根据自身环境读取对应的执行指南。
+**Knowledge layer separated from execution layer:** SKILL.md only describes the data model and workflow logic, without binding to specific tools. Agents read the corresponding execution guide based on their environment.
 
 ## Supported Agents
 
-| Agent | 执行方式 | 参考文档 |
-|-------|---------|---------|
-| Claude Code | Notion MCP 工具 | [mcp-guide.md](./references/mcp-guide.md) |
-| Claude.ai | Notion MCP 工具 | [mcp-guide.md](./references/mcp-guide.md) |
+| Agent | Execution Method | Reference |
+|-------|-----------------|-----------|
+| Claude Code | Notion MCP tools | [mcp-guide.md](./references/mcp-guide.md) |
+| Claude.ai | Notion MCP tools | [mcp-guide.md](./references/mcp-guide.md) |
 | OpenClaw | Notion REST API | [api-guide.md](./references/api-guide.md) |
 | Codex | Notion REST API | [api-guide.md](./references/api-guide.md) |
-| 其他 Agent | Notion REST API | [api-guide.md](./references/api-guide.md) |
+| Other Agents | Notion REST API | [api-guide.md](./references/api-guide.md) |
 
 ## Database Schema
 
@@ -106,7 +150,7 @@ Created by [Jiahao Shao](https://github.com/jiahao-shao1)
 
 ## Acknowledgments
 
-- Inspired by [Jeff Su's Notion Command Center](https://www.youtube.com/@JeffSu)
+- Core Notion implementation logic from [Jeff Su's Notion Command Center](https://www.youtube.com/@JeffSu)
 - Based on the **PARA method** by Tiago Forte
 - Incorporates **Make Time framework** by Jake Knapp and John Zeratsky
 
