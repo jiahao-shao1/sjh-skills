@@ -21,212 +21,71 @@ A Notion life management system based on the PARA method and Make Time framework
 - **Generic productivity advice** — "how should I organize my life" without intent to store/retrieve data
 - **Other note-taking apps** — unless user wants to migrate data INTO Notion LifeOS
 - **Database schema modification** — creating new databases, adding/removing properties
-- **Notion page design** — layout, icons, covers, templates not related to PARA data
 
 ## Core Principles
 
 - **Capture first, organize later** — Never let processing block input
 - **Proactive information surfacing** — Use Relations to automatically surface information where it's needed
-- **Scalable self-awareness** — Every record is a data point for your future AI self
 
 See [JEFF_SU_SUMMARY.md](./JEFF_SU_SUMMARY.md) for detailed design philosophy.
 
-## Database Schema
+## Reference Files
 
-The system contains 6 core databases (Task, Notes, Projects, Areas, Resources, Make Time) interconnected via Notion Relations. See [references/schema.md](./references/schema.md) for full field definitions.
+Read these as needed — do NOT load them all upfront:
 
-**Critical rule for select/multi_select fields:** Always fetch the database schema dynamically before writing. Never assume hardcoded option values — they may have changed since this skill was written.
+| File | When to read |
+|------|-------------|
+| [references/schema.md](./references/schema.md) | Before creating/updating any entry (get field names & types) |
+| [references/mcp-guide.md](./references/mcp-guide.md) | When using MCP tools (Claude Code / Claude.ai) |
+| [references/api-guide.md](./references/api-guide.md) | When using REST API (OpenClaw / Codex / other agents) |
+| [references/query-guide.md](./references/query-guide.md) | When querying/filtering data (tasks by date, done status, etc.) |
+| [references/advanced.md](./references/advanced.md) | For composite intents or error handling |
 
 ## Operation Guide
 
-Choose the execution method based on your Agent environment:
-
-- **With Notion MCP tools** (e.g., Claude Code / Claude.ai) → See [references/mcp-guide.md](./references/mcp-guide.md)
-- **With Notion API access** (e.g., OpenClaw / Codex / other agents) → See [references/api-guide.md](./references/api-guide.md)
-
-How to determine: Check if MCP tools like `notion-search`, `notion-create-pages` are available. If yes, use MCP for creation/updates; otherwise use API.
-
-**Important:** For structured queries that filter by property values (e.g., "today's tasks", "incomplete tasks"), always use the REST API via curl, even in MCP environments. MCP `notion-search` is semantic search only and cannot reliably filter by date, checkbox, or select values. See "Structured Queries" in [references/mcp-guide.md](./references/mcp-guide.md).
+- **With Notion MCP tools** → See [references/mcp-guide.md](./references/mcp-guide.md)
+- **With Notion API access** → See [references/api-guide.md](./references/api-guide.md)
+- **For structured queries** (filter by date, checkbox, select) → Always use scripts or REST API. MCP `notion-search` is semantic only and CANNOT filter by property values.
 
 ## Intent Recognition & Database Mapping
 
-User input → Target database:
+| User Intent | Target DB | Method |
+|-------------|-----------|--------|
+| "Take a note about XXX" | Notes | MCP / API |
+| "Add a task: XXX" | Task | MCP / API |
+| "The best thing today was..." | Make Time | MCP / API (check dedup first) |
+| "Create project XXX" | Projects | MCP / API |
+| "Today's tasks" | Task | `scripts/query-tasks.sh --date today` |
+| "Any unfinished tasks?" | Task | `scripts/query-tasks.sh --undone` |
+| "Today's unfinished tasks" | Task | `scripts/query-tasks.sh --date today --undone` |
+| "Search notes about XX" | Notes | MCP `notion-search` |
+| "Add a resource/reference" | Resources | MCP / API |
 
-| User Intent | Target DB | Action | Method |
-|-------------|-----------|--------|--------|
-| "Take a note about XXX" | Notes | Create note | MCP / API |
-| "Add a task: XXX" | Task | Create task | MCP / API |
-| "The best thing today was..." | Make Time | Create/update journal | MCP / API |
-| "Create project XXX" | Projects | Create project | MCP / API |
-| "Today's tasks" / "What do I need to do today" | Task | Query by Due Date = today | **`scripts/query-tasks.sh --date today`** |
-| "Any unfinished tasks?" | Task | Query by Done = false | **`scripts/query-tasks.sh --undone`** |
-| "Today's unfinished tasks" | Task | Query by date + checkbox | **`scripts/query-tasks.sh --date today --undone`** |
-| "Search notes about XX" | Notes | Search by keyword | MCP search |
-| "Add a resource/reference" | Resources | Create resource | MCP / API |
-
-### Structured Query Workflow (REST API + Scripts)
-
-For queries that filter by property values, **prefer using the provided scripts** in `scripts/`. They handle API key loading, database ID resolution, and output formatting automatically.
-
-#### Task Queries — Use `scripts/query-tasks.sh`
-
-```bash
-# Today's tasks (both done and undone, showing status)
-./scripts/query-tasks.sh --date today
-
-# Today's incomplete tasks only
-./scripts/query-tasks.sh --date today --undone
-
-# All incomplete tasks (sorted by due date)
-./scripts/query-tasks.sh --undone
-
-# All completed tasks
-./scripts/query-tasks.sh --done
-
-# Tasks for a specific date
-./scripts/query-tasks.sh --date 2026-03-18
-
-# Yesterday's tasks
-./scripts/query-tasks.sh --date yesterday
-
-# Change result limit (default: 20)
-./scripts/query-tasks.sh --undone --limit 50
-```
-
-Output shows ✅/⬜ status, due date, task name, and page ID for each task.
-
-#### Make Time Dedup Check — Use `scripts/check_today_journal.sh`
-
-```bash
-# Check if today's journal exists (returns page ID if found)
-./scripts/check_today_journal.sh
-
-# Check for a specific date
-./scripts/check_today_journal.sh 2026-03-18
-```
-
-#### Other Databases — Use REST API Directly
-
-For querying Notes, Projects, Areas, or Resources by property values, use curl. Requires API key at `~/.config/notion/api_key`.
-
-```bash
-NOTION_KEY=$(cat ~/.config/notion/api_key)
-curl -s -X POST "https://api.notion.com/v1/databases/<database_id>/query" \
-  -H "Authorization: Bearer $NOTION_KEY" \
-  -H "Notion-Version: 2022-06-28" \
-  -H "Content-Type: application/json" \
-  -d '<filter_json>'
-```
-
-Common filter patterns:
-- **By date:** `{"filter": {"property": "Date", "date": {"equals": "2026-03-18"}}}`
-- **By select:** `{"filter": {"property": "Note Type", "select": {"equals": "Records"}}}`
-- **By checkbox:** `{"filter": {"property": "Done", "checkbox": {"equals": false}}}`
-- **Combined (AND):** `{"filter": {"and": [<filter1>, <filter2>]}}`
-
-Parse response: `results[].properties.Name.title[0].plain_text` for title, `.Done.checkbox` for status.
-
-### Note Type Selection Logic
-
-Automatically select the appropriate Note Type based on content:
-
-| Content Characteristics | Note Type |
-|------------------------|-----------|
-| Personal thoughts, inspiration, reflections | Thoughts |
-| Meeting records, event logs | Records |
-| Study notes, reading notes | Notes |
-| Technical docs, tutorials, guides | Documentation |
-| Experiment records, test results | Experiments |
-| Blog post drafts | My Blog |
-
-### Make Time Journal Extraction Logic
-
-Extract three elements from the user's natural language:
-
-- **Highlight**: The most important/happiest thing today / achievement
-- **Grateful**: Things related to gratitude and appreciation
-- **Let Go**: Things to release and stop worrying about
-
-## Composite Intent Handling
-
-Users often express multiple intents in a single message. Parse and execute them in dependency order.
-
-| User Input | Intents | Actions |
-|------------|---------|---------|
-| "Take a note about X and add a task to follow up" | Note + Task | 1. Create note 2. Create task with relation to note |
-| "Today's highlight was X, also jot down a thought about Y" | Make Time + Note | 1. Create/update Make Time 2. Create note |
-| "Add a task for project Z: do ABC by Friday" | Task + Project lookup | 1. Find project Z 2. Create task with project relation and due date |
-| "Search notes about X and create a summary task" | Query + Create | 1. Search notes 2. Create task referencing results |
-
-**Execution strategy:**
-1. Parse all intents from the message
-2. Resolve dependencies (e.g., need project ID before creating related task)
-3. Execute in dependency order
-4. If one operation fails, continue with remaining and report partial results
-5. Confirm all results at the end
+For Note Type selection and Make Time journal extraction logic, see [references/query-guide.md](./references/query-guide.md).
+For composite intents (multiple actions in one message), see [references/advanced.md](./references/advanced.md).
 
 ## Business Rules
 
-These rules apply regardless of execution method (MCP or API).
-
-### Database ID Resolution
-1. Read `CONFIG.private.md` from the skill directory for database IDs
-2. If not found: use the execution guide's search method to locate the LifeOS root page (named "LifeOS", NOT "LifeOS Template"), then extract each database's ID from it
-3. If still not found: direct user to [references/setup.md](./references/setup.md)
-4. **Warning:** The workspace may have duplicate database names. Always use databases under the LifeOS root page.
-
-### Make Time Deduplication
-Before creating a Make Time entry, query the Make Time database for today's date. If an entry already exists, UPDATE it instead of creating a duplicate.
-
-### Schema-First Approach
-When operating on a database for the first time in a session, fetch its schema to:
-- Confirm property names (they may have been renamed)
-- Get current allowed values for select/multi_select fields
-- Verify relation targets
-
-### Date Format
-All date values must be ISO-8601 format (e.g., `2026-03-08`).
-
-### Relation Fields
-Relation fields require the target page's ID. Search for the target page first if needed.
-
-### Post-Operation Confirmation
-Always confirm the operation result to the user after creating or updating an entry.
+1. **Database IDs**: Read `CONFIG.private.md` for IDs. If missing, search for "LifeOS" root page (NOT "LifeOS Template"). Last resort: guide user to [references/setup.md](./references/setup.md).
+2. **Schema-first**: Fetch database schema before first write in a session — confirm property names and allowed select values.
+3. **Make Time dedup**: Always check if today's entry exists before creating (`scripts/check_today_journal.sh`). Update if exists.
+4. **Date format**: ISO-8601 only (e.g., `2026-03-08`).
+5. **Relations**: Require target page ID — search for it first.
+6. **Post-op confirmation**: Always confirm results to the user.
 
 ## Gotchas (Common Pitfalls)
 
-These are mistakes Claude frequently makes when operating on Notion. Check this list before executing.
-
 ### MCP-Specific
-- **Checkbox values**: Must use `__YES__` / `__NO__`, NOT `true` / `false`
-- **URL property**: Must prefix property name with `userDefined:` (e.g., `userDefined:URL`), otherwise the property is silently ignored
-- **Date property**: Must split into 3 fields: `date:PropertyName:start`, `date:PropertyName:end`, `date:PropertyName:is_datetime` — NOT a single date object
-- **multi_select**: Use comma-separated string (`"tag1, tag2"`), NOT an array
-- **notion-search cannot filter by property values**: It is semantic/keyword search only. Never use it to find "today's tasks" or "incomplete tasks" — use REST API via scripts instead
+- **Checkbox**: `__YES__` / `__NO__`, NOT `true`/`false`
+- **URL property**: Prefix with `userDefined:` (e.g., `userDefined:URL`)
+- **Date property**: Split into `date:PropName:start`, `date:PropName:end`, `date:PropName:is_datetime`
+- **multi_select**: Comma-separated string, NOT array
+- **notion-search**: Cannot filter by property values — use scripts/REST API
 
 ### REST API-Specific
-- **database_id vs data_source_id**: REST API uses `database_id` (for creating pages and querying). MCP uses `data_source_id`. They are different IDs — check CONFIG.private.md for both
-- **Date filter format**: Must be ISO-8601 (`2026-03-18`), never natural language
-- **Relation fields**: Require the target page's `page_id`, not its title. Always search for the target page first
+- **database_id vs data_source_id**: REST API uses `database_id`, MCP uses `data_source_id` — they differ
+- **Date filter**: ISO-8601 only, never natural language
 
 ### General
-- **Select/multi_select values can change**: NEVER hardcode allowed values. Always fetch database schema first with `notion-fetch` or REST API `GET /databases/{id}` before writing
-- **Make Time deduplication**: Always check if today's entry exists before creating. Use `scripts/check_today_journal.sh` or query the database manually
-- **Duplicate database names**: The workspace may have template databases with the same name. Always use databases under the LifeOS root page
-
-## Error Handling
-
-| Error Scenario | Action |
-|---------------|--------|
-| Database ID not found | Fall back to LifeOS root page discovery; if that fails, guide user to setup |
-| Property name mismatch | Fetch fresh schema, retry with correct property name |
-| Select/multi_select value rejected | Fetch schema for allowed values, suggest closest match to user |
-| Rate limit (API: ~3 req/s) | Wait and retry; batch operations if possible |
-| Page not found (for update/relation) | Re-search using title; confirm with user if ambiguous |
-| Relation target ambiguous | Present options to user, ask for clarification |
-| Permission denied | Guide user to share LifeOS page with Integration |
-
-**General principles:**
-- Never silently fail — always inform the user what happened
-- On partial failure in composite operations, report what succeeded and what failed
-- Prefer graceful degradation: if a relation can't be set, create the entry without it and inform the user
+- **Select values change**: NEVER hardcode — always fetch schema first
+- **Duplicate DB names**: Always use databases under the LifeOS root page
