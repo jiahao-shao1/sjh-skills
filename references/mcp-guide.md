@@ -1,7 +1,5 @@
 # Notion MCP Tools Operation Guide
 
-English | [中文](./mcp-guide.zh.md)
-
 For: Claude Code, Claude.ai, and other environments with Notion MCP integration.
 
 ## Available Tools
@@ -14,8 +12,9 @@ For: Claude Code, Claude.ai, and other environments with Notion MCP integration.
 
 ## Getting Database IDs
 
-1. Read `CONFIG.private.md` from the skill directory to get each database's `data_source_id`
-2. If the file doesn't exist: use `notion-search` to find "LifeOS" root page, then use `notion-fetch` to get the page content and extract each database's `<data-source>` ID. Only use databases under the LifeOS root page.
+Follow "Business Rules > Database ID Resolution" in SKILL.md. Use `data_source_id` values from `CONFIG.private.md`.
+
+If discovering IDs dynamically: use `notion-search` to find the "LifeOS" root page, then `notion-fetch` to extract `<data-source>` IDs.
 
 ## Creating Entries
 
@@ -82,12 +81,59 @@ Use `notion-create-pages` with `data_source_id` as parent.
 
 ## Querying Data
 
-Use `notion-search` to search workspace content:
+### Semantic Search (MCP)
+
+Use `notion-search` for keyword/semantic queries:
 
 - Global search: `{"query": "quarterly report"}`
-- Search within a specific database: `{"query": "unfinished", "data_source_url": "collection://<Task data_source_id>"}`
+- Search within a database: `{"query": "meeting notes", "data_source_url": "collection://<data_source_id>"}`
 
 To get full page content: first use `notion-search` to find the page ID, then use `notion-fetch` for details.
+
+**Limitation:** `notion-search` is semantic search only. It cannot filter by property values (e.g., Due Date = today, Done = false). Results may be incomplete for structured queries.
+
+### Structured Queries (REST API fallback)
+
+For queries that require filtering by property values (dates, checkboxes, selects), use the Notion REST API via curl. This requires an API key at `~/.config/notion/api_key`.
+
+**Query today's tasks:**
+```bash
+NOTION_KEY=$(cat ~/.config/notion/api_key)
+curl -s -X POST "https://api.notion.com/v1/databases/<database_id>/query" \
+  -H "Authorization: Bearer $NOTION_KEY" \
+  -H "Notion-Version: 2022-06-28" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": {
+      "property": "Due Date",
+      "date": {"equals": "2026-03-18"}
+    },
+    "sorts": [{"property": "Due Date", "direction": "ascending"}]
+  }'
+```
+
+**Query incomplete tasks:**
+```bash
+curl -s -X POST "https://api.notion.com/v1/databases/<database_id>/query" \
+  -H "Authorization: Bearer $NOTION_KEY" \
+  -H "Notion-Version: 2022-06-28" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": {
+      "property": "Done",
+      "checkbox": {"equals": false}
+    },
+    "sorts": [{"property": "Due Date", "direction": "ascending"}]
+  }'
+```
+
+**When to use which:**
+| Query Type | Use |
+|------------|-----|
+| Find pages by keyword/content | MCP `notion-search` |
+| Get full page content | MCP `notion-fetch` |
+| Filter by date/checkbox/select | REST API via curl |
+| Create/update pages | MCP `notion-create-pages` / `notion-update-page` |
 
 ## Updating Entries
 

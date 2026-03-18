@@ -1,7 +1,5 @@
 # Notion REST API Operation Guide
 
-English | [中文](./api-guide.zh.md)
-
 For: OpenClaw, Codex, and other Agent environments that call Notion API via HTTP.
 
 ## Prerequisites
@@ -25,7 +23,7 @@ How to get it: Visit https://www.notion.so/my-integrations to create an Integrat
 
 ## Getting Database IDs
 
-First read `CONFIG.private.md` for the database_id mapping. Or search via API:
+Follow "Business Rules > Database ID Resolution" in SKILL.md. Use `database_id` values from `CONFIG.private.md`. If discovering IDs dynamically via API:
 
 ```bash
 NOTION_KEY=$(cat ~/.config/notion/api_key)
