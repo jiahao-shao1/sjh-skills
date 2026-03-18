@@ -58,14 +58,56 @@ User input → Target database:
 | "Add a task: XXX" | Task | Create task | MCP / API |
 | "The best thing today was..." | Make Time | Create/update journal | MCP / API |
 | "Create project XXX" | Projects | Create project | MCP / API |
-| "Today's tasks" / "What do I need to do today" | Task | Query by Due Date = today | **REST API** (filter by date) |
-| "Any unfinished tasks?" | Task | Query by Done = false | **REST API** (filter by checkbox) |
+| "Today's tasks" / "What do I need to do today" | Task | Query by Due Date = today | **`scripts/query-tasks.sh --date today`** |
+| "Any unfinished tasks?" | Task | Query by Done = false | **`scripts/query-tasks.sh --undone`** |
+| "Today's unfinished tasks" | Task | Query by date + checkbox | **`scripts/query-tasks.sh --date today --undone`** |
 | "Search notes about XX" | Notes | Search by keyword | MCP search |
 | "Add a resource/reference" | Resources | Create resource | MCP / API |
 
-### Structured Query Workflow (REST API)
+### Structured Query Workflow (REST API + Scripts)
 
-For queries that filter by property values, use the Notion REST API. Requires API key at `~/.config/notion/api_key`.
+For queries that filter by property values, **prefer using the provided scripts** in `scripts/`. They handle API key loading, database ID resolution, and output formatting automatically.
+
+#### Task Queries — Use `scripts/query-tasks.sh`
+
+```bash
+# Today's tasks (both done and undone, showing status)
+./scripts/query-tasks.sh --date today
+
+# Today's incomplete tasks only
+./scripts/query-tasks.sh --date today --undone
+
+# All incomplete tasks (sorted by due date)
+./scripts/query-tasks.sh --undone
+
+# All completed tasks
+./scripts/query-tasks.sh --done
+
+# Tasks for a specific date
+./scripts/query-tasks.sh --date 2026-03-18
+
+# Yesterday's tasks
+./scripts/query-tasks.sh --date yesterday
+
+# Change result limit (default: 20)
+./scripts/query-tasks.sh --undone --limit 50
+```
+
+Output shows ✅/⬜ status, due date, task name, and page ID for each task.
+
+#### Make Time Dedup Check — Use `scripts/check_today_journal.sh`
+
+```bash
+# Check if today's journal exists (returns page ID if found)
+./scripts/check_today_journal.sh
+
+# Check for a specific date
+./scripts/check_today_journal.sh 2026-03-18
+```
+
+#### Other Databases — Use REST API Directly
+
+For querying Notes, Projects, Areas, or Resources by property values, use curl. Requires API key at `~/.config/notion/api_key`.
 
 ```bash
 NOTION_KEY=$(cat ~/.config/notion/api_key)
@@ -76,12 +118,13 @@ curl -s -X POST "https://api.notion.com/v1/databases/<database_id>/query" \
   -d '<filter_json>'
 ```
 
-Common filters:
-- **Today's tasks:** `{"filter": {"property": "Due Date", "date": {"equals": "<today>"}}}`
-- **Incomplete tasks:** `{"filter": {"property": "Done", "checkbox": {"equals": false}}}`
-- **Today's incomplete tasks:** `{"filter": {"and": [{"property": "Due Date", "date": {"equals": "<today>"}}, {"property": "Done", "checkbox": {"equals": false}}]}}`
+Common filter patterns:
+- **By date:** `{"filter": {"property": "Date", "date": {"equals": "2026-03-18"}}}`
+- **By select:** `{"filter": {"property": "Note Type", "select": {"equals": "Records"}}}`
+- **By checkbox:** `{"filter": {"property": "Done", "checkbox": {"equals": false}}}`
+- **Combined (AND):** `{"filter": {"and": [<filter1>, <filter2>]}}`
 
-Parse the response to extract `properties.Name.title[0].plain_text` and `properties.Done.checkbox` for each result.
+Parse response: `results[].properties.Name.title[0].plain_text` for title, `.Done.checkbox` for status.
 
 ### Note Type Selection Logic
 
@@ -149,6 +192,27 @@ Relation fields require the target page's ID. Search for the target page first i
 
 ### Post-Operation Confirmation
 Always confirm the operation result to the user after creating or updating an entry.
+
+## Gotchas (Common Pitfalls)
+
+These are mistakes Claude frequently makes when operating on Notion. Check this list before executing.
+
+### MCP-Specific
+- **Checkbox values**: Must use `__YES__` / `__NO__`, NOT `true` / `false`
+- **URL property**: Must prefix property name with `userDefined:` (e.g., `userDefined:URL`), otherwise the property is silently ignored
+- **Date property**: Must split into 3 fields: `date:PropertyName:start`, `date:PropertyName:end`, `date:PropertyName:is_datetime` — NOT a single date object
+- **multi_select**: Use comma-separated string (`"tag1, tag2"`), NOT an array
+- **notion-search cannot filter by property values**: It is semantic/keyword search only. Never use it to find "today's tasks" or "incomplete tasks" — use REST API via scripts instead
+
+### REST API-Specific
+- **database_id vs data_source_id**: REST API uses `database_id` (for creating pages and querying). MCP uses `data_source_id`. They are different IDs — check CONFIG.private.md for both
+- **Date filter format**: Must be ISO-8601 (`2026-03-18`), never natural language
+- **Relation fields**: Require the target page's `page_id`, not its title. Always search for the target page first
+
+### General
+- **Select/multi_select values can change**: NEVER hardcode allowed values. Always fetch database schema first with `notion-fetch` or REST API `GET /databases/{id}` before writing
+- **Make Time deduplication**: Always check if today's entry exists before creating. Use `scripts/check_today_journal.sh` or query the database manually
+- **Duplicate database names**: The workspace may have template databases with the same name. Always use databases under the LifeOS root page
 
 ## Error Handling
 
