@@ -68,8 +68,13 @@
 ### 2. 安装 Skill
 
 ```bash
-# 克隆到 Agent 的 skill 目录
-git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git notion-lifeos
+npx skills add https://github.com/jiahao-shao1/notion-lifeos-skill
+```
+
+或手动克隆：
+
+```bash
+git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git ~/.claude/skills/notion-lifeos
 ```
 
 ### 3. 配置
@@ -97,12 +102,18 @@ cp CONFIG.private.md.example CONFIG.private.md
 ## 架构
 
 ```
-SKILL.md                    ← 核心：意图识别 + 业务规则 + 错误处理（agent-agnostic）
+SKILL.md                    ← 核心：意图识别 + 业务规则 + 常见踩坑点
 references/
 ├── schema.md               ← PARA 数据库字段定义
 ├── mcp-guide.md            ← Claude Code / Claude.ai（Notion MCP）
 ├── api-guide.md            ← OpenClaw / Codex / 其他（REST API）
+├── query-guide.md          ← 结构化查询模式 + Note Type / Make Time 逻辑
+├── advanced.md             ← 复合意图 + 错误处理
 └── setup.md                ← 多平台配置指南
+scripts/
+├── query-tasks.sh          ← 灵活的任务查询（按日期、完成状态、组合过滤）
+├── check_today_journal.sh  ← Make Time 去重检查
+└── list_undone_tasks.sh    ← 快速查看未完成任务
 JEFF_SU_SUMMARY.md          ← 设计理念参考
 CONFIG.private.md.example   ← 数据库 ID 配置模板
 ```

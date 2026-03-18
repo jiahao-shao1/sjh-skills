@@ -68,8 +68,13 @@ All databases and Relations are pre-configured — works out of the box.
 ### 2. Install the Skill
 
 ```bash
-# Clone to your agent's skill directory
-git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git notion-lifeos
+npx skills add https://github.com/jiahao-shao1/notion-lifeos-skill
+```
+
+Or manually clone:
+
+```bash
+git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git ~/.claude/skills/notion-lifeos
 ```
 
 ### 3. Configure
@@ -97,12 +102,18 @@ Once configured, use natural language:
 ## Architecture
 
 ```
-SKILL.md                    ← Core: intent recognition + business rules + error handling
+SKILL.md                    ← Core: intent recognition + business rules + gotchas
 references/
 ├── schema.md               ← PARA database field definitions
 ├── mcp-guide.md            ← Claude Code / Claude.ai (Notion MCP)
 ├── api-guide.md            ← OpenClaw / Codex / others (REST API)
+├── query-guide.md          ← Structured query patterns + Note Type / Make Time logic
+├── advanced.md             ← Composite intents + error handling
 └── setup.md                ← Multi-platform setup guide
+scripts/
+├── query-tasks.sh          ← Flexible task query (by date, done/undone, combined)
+├── check_today_journal.sh  ← Make Time deduplication check
+└── list_undone_tasks.sh    ← Quick incomplete tasks listing
 JEFF_SU_SUMMARY.md          ← Design philosophy reference
 CONFIG.private.md.example   ← Database ID config template
 ```
