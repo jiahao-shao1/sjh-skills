@@ -1,7 +1,5 @@
 # Notion LifeOS Setup Guide
 
-English | [中文](./setup.zh.md)
-
 ## 1. Get the Notion Template
 
 Duplicate the pre-configured template:
@@ -48,7 +46,7 @@ cp CONFIG.private.md.example CONFIG.private.md
 
 **Method B: Via URL**
 - Open the Notion database page; the ID in the URL is the database_id
-- Example: `https://notion.so/25b119f193ef804a96fec277cc6b45fa` → `25b119f1-93ef-804a-96fe-c277cc6b45fa`
+- Example: `https://notion.so/abcdef1234567890abcdef1234567890` → `abcdef12-3456-7890-abcd-ef1234567890`
 
 **Method C: Via API**
 ```bash
@@ -90,4 +88,4 @@ Your Notion workspace should contain the following databases:
 - **Resources Database** — Reference materials and knowledge base
 - **Make Time Database** — Daily highlights and reflection journal
 
-See the "PARA Database Schema" section in SKILL.md for detailed field structures.
+See [schema.md](./schema.md) for detailed field structures.

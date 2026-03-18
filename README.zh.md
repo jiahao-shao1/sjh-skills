@@ -80,7 +80,7 @@ cp CONFIG.private.md.example CONFIG.private.md
 # 编辑 CONFIG.private.md，填入你的数据库 ID
 ```
 
-详细配置请参考 [references/setup.zh.md](./references/setup.zh.md)。
+详细配置请参考 [references/setup.md](./references/setup.md)。
 
 ## 使用方式
 
@@ -97,8 +97,9 @@ cp CONFIG.private.md.example CONFIG.private.md
 ## 架构
 
 ```
-SKILL.md                    ← 核心：PARA 数据库结构 + 意图识别（agent-agnostic）
+SKILL.md                    ← 核心：意图识别 + 业务规则 + 错误处理（agent-agnostic）
 references/
+├── schema.md               ← PARA 数据库字段定义
 ├── mcp-guide.md            ← Claude Code / Claude.ai（Notion MCP）
 ├── api-guide.md            ← OpenClaw / Codex / 其他（REST API）
 └── setup.md                ← 多平台配置指南
@@ -112,11 +113,11 @@ CONFIG.private.md.example   ← 数据库 ID 配置模板
 
 | Agent | 执行方式 | 参考文档 |
 |-------|---------|---------|
-| Claude Code | Notion MCP 工具 | [mcp-guide.zh.md](./references/mcp-guide.zh.md) |
-| Claude.ai | Notion MCP 工具 | [mcp-guide.zh.md](./references/mcp-guide.zh.md) |
-| OpenClaw | Notion REST API | [api-guide.zh.md](./references/api-guide.zh.md) |
-| Codex | Notion REST API | [api-guide.zh.md](./references/api-guide.zh.md) |
-| 其他 Agent | Notion REST API | [api-guide.zh.md](./references/api-guide.zh.md) |
+| Claude Code | Notion MCP 工具 | [mcp-guide.md](./references/mcp-guide.md) |
+| Claude.ai | Notion MCP 工具 | [mcp-guide.md](./references/mcp-guide.md) |
+| OpenClaw | Notion REST API | [api-guide.md](./references/api-guide.md) |
+| Codex | Notion REST API | [api-guide.md](./references/api-guide.md) |
+| 其他 Agent | Notion REST API | [api-guide.md](./references/api-guide.md) |
 
 ## 数据库结构
 
@@ -131,7 +132,7 @@ CONFIG.private.md.example   ← 数据库 ID 配置模板
 | Resources | Note | Resources Type, URL, Related Areas/Projects/Notes |
 | Make Time | Name | Date, Highlight, Grateful, Let Go |
 
-完整字段定义见 [SKILL.zh.md](./SKILL.zh.md)。
+完整字段定义见 [references/schema.md](./references/schema.md)。
 
 ## Roadmap
 

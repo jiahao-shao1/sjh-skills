@@ -97,8 +97,9 @@ Once configured, use natural language:
 ## Architecture
 
 ```
-SKILL.md                    ← Core: PARA database schema + intent recognition (agent-agnostic)
+SKILL.md                    ← Core: intent recognition + business rules + error handling
 references/
+├── schema.md               ← PARA database field definitions
 ├── mcp-guide.md            ← Claude Code / Claude.ai (Notion MCP)
 ├── api-guide.md            ← OpenClaw / Codex / others (REST API)
 └── setup.md                ← Multi-platform setup guide
@@ -131,7 +132,7 @@ Six interconnected databases:
 | Resources | Note | Resources Type, URL, Related Areas/Projects/Notes |
 | Make Time | Name | Date, Highlight, Grateful, Let Go |
 
-See [SKILL.md](./SKILL.md) for complete field definitions.
+See [references/schema.md](./references/schema.md) for complete field definitions.
 
 ## Roadmap
 

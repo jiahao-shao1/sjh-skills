@@ -4,3 +4,4 @@
 .env
 secrets*
 node_modules/
+CONFIG.private.md
