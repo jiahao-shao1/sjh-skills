@@ -2,6 +2,35 @@
 
 For queries that filter by property values, **prefer using the provided scripts** in `scripts/`. They handle API key loading, database ID resolution, and output formatting automatically.
 
+## Create Task — `scripts/create-task.sh`
+
+```bash
+# Basic task
+./scripts/create-task.sh "Task name" "2026-03-20"
+
+# Completed task
+./scripts/create-task.sh "Task name" "2026-03-20" --done
+
+# With project relation (searches by name)
+./scripts/create-task.sh "Task name" "2026-03-20" --done --project "Thinking with Image"
+
+# With project relation (by ID, faster)
+./scripts/create-task.sh "Task name" "2026-03-20" --project-id "248119f1-..."
+
+# With note relation (searches by title)
+./scripts/create-task.sh "Task name" "2026-03-20" --note "Meeting notes"
+
+# With note relation (by ID, faster)
+./scripts/create-task.sh "Task name" "2026-03-20" --note-id "328119f1-..."
+
+# Combine project + note
+./scripts/create-task.sh "Task name" "2026-03-20" --done --project "X" --note "Y"
+```
+
+Typical workflow for backfilling tasks from git history:
+1. Claude Code analyzes `git log` and groups commits into meaningful tasks
+2. Calls `create-task.sh` for each task with `--done --project "Project Name"`
+
 ## Task Queries — `scripts/query-tasks.sh`
 
 ```bash

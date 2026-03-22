@@ -52,7 +52,7 @@ Read these as needed — do NOT load them all upfront:
 | User Intent | Target DB | Method |
 |-------------|-----------|--------|
 | "Take a note about XXX" | Notes | MCP / API |
-| "Add a task: XXX" | Task | MCP / API |
+| "Add a task: XXX" | Task | `scripts/create-task.sh` / MCP / API |
 | "The best thing today was..." | Make Time | MCP / API (check dedup first) |
 | "Create project XXX" | Projects | MCP / API |
 | "Today's tasks" | Task | `scripts/query-tasks.sh --date today` |
