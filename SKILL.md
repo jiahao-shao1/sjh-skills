@@ -66,7 +66,7 @@ For composite intents (multiple actions in one message), see [references/advance
 
 ## Business Rules
 
-1. **Database IDs**: Read `CONFIG.private.md` for IDs. If missing, search for "LifeOS" root page (NOT "LifeOS Template"). Last resort: guide user to [references/setup.md](./references/setup.md).
+1. **Database IDs**: Read `~/.config/notion-lifeos/CONFIG.private.md` for IDs (fallback: `CONFIG.private.md` in skill dir). If missing, search for "LifeOS" root page (NOT "LifeOS Template"). Last resort: guide user to [references/setup.md](./references/setup.md).
 2. **Schema-first**: Fetch database schema before first write in a session — confirm property names and allowed select values.
 3. **Make Time dedup**: Always check if today's entry exists before creating (`scripts/check_today_journal.sh`). Update if exists.
 4. **Date format**: ISO-8601 only (e.g., `2026-03-08`).

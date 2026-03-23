@@ -17,7 +17,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-CONFIG_FILE="$SKILL_DIR/CONFIG.private.md"
+CONFIG_FILE="$HOME/.config/notion-lifeos/CONFIG.private.md"
+[ -f "$CONFIG_FILE" ] || CONFIG_FILE="$SKILL_DIR/CONFIG.private.md"
 
 # Parse positional args
 if [ $# -lt 2 ]; then
