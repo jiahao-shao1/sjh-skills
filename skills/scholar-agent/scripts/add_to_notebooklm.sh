@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Add arXiv/web URLs to a NotebookLM notebook as sources.
+# Add arXiv/web URLs to a NotebookLM notebook as sources (batch mode).
 #
 # Usage:
 #   add_to_notebooklm.sh <notebook_url> <url1> [url2] ...
@@ -9,6 +9,9 @@
 #     "https://notebooklm.google.com/notebook/d861e423..." \
 #     "https://arxiv.org/abs/2603.19685" \
 #     "https://arxiv.org/abs/2603.20003"
+#
+# All URLs are submitted at once via NotebookLM's "添加来源 → 网站" dialog
+# (space-separated). Much faster than adding one at a time.
 #
 # Prerequisites:
 #   - playwright-cli installed
@@ -31,8 +34,10 @@ if [[ ! -d "$PROFILE" ]]; then
     exit 1
 fi
 
-# playwright-cli writes snapshots to $PWD/.playwright-cli/
-# Use a temp dir to avoid polluting user's cwd
+TOTAL=${#URLS[@]}
+# Join all URLs with spaces
+URL_STRING="${URLS[*]}"
+
 WORKDIR=$(mktemp -d)
 cd "$WORKDIR"
 
@@ -46,44 +51,83 @@ echo "Opening notebook..." >&2
 playwright-cli open --browser=chrome --profile="$PROFILE" "$NOTEBOOK_URL" >/dev/null 2>&1
 sleep 5
 
-ADDED=0
-TOTAL=${#URLS[@]}
+# Click "添加来源" button
+rm -rf .playwright-cli/
+playwright-cli snapshot >/dev/null 2>&1
+SNAP_FILE=$(ls -t .playwright-cli/*.yml 2>/dev/null | head -1)
 
-for url in "${URLS[@]}"; do
-    echo "[$((ADDED + 1))/$TOTAL] Adding: $url" >&2
+if [[ -z "$SNAP_FILE" ]]; then
+    echo "Error: Could not get page snapshot" >&2
+    exit 1
+fi
 
-    # Take snapshot to get current DOM refs
-    playwright-cli snapshot >/dev/null 2>&1
-    SNAP_FILE=$(ls -t .playwright-cli/*.yml 2>/dev/null | head -1)
+ADD_BTN=$(grep -E 'button.*添加来源|button.*Add source' "$SNAP_FILE" \
+    | grep -oE 'ref=e[0-9]+' | head -1 | sed 's/ref=//')
 
-    if [[ -z "$SNAP_FILE" ]]; then
-        echo "  ✗ Could not get page snapshot" >&2
-        continue
-    fi
+if [[ -z "$ADD_BTN" ]]; then
+    echo "Error: Could not find '添加来源' button" >&2
+    exit 1
+fi
 
-    # Find the search textbox ref (NotebookLM's source search box)
-    SEARCH_REF=$(grep -E 'textbox.*查询.*发现|textbox.*搜索|textbox.*[Ss]earch.*source' "$SNAP_FILE" \
-        | grep -oE 'ref=e[0-9]+' | head -1 | sed 's/ref=//')
+echo "Opening source dialog..." >&2
+playwright-cli click "$ADD_BTN" >/dev/null 2>&1
+sleep 2
 
-    if [[ -z "$SEARCH_REF" ]]; then
-        echo "  ✗ Search box not found" >&2
-        continue
-    fi
+# Click "网站" button in the dialog
+rm -rf .playwright-cli/
+playwright-cli snapshot >/dev/null 2>&1
+SNAP_FILE=$(ls -t .playwright-cli/*.yml 2>/dev/null | head -1)
 
-    # Fill URL and press Enter to submit
-    playwright-cli fill "$SEARCH_REF" "$url" >/dev/null 2>&1
-    sleep 1
-    playwright-cli press Enter >/dev/null 2>&1
+WEBSITE_BTN=$(grep -E 'button.*(网站|Website)' "$SNAP_FILE" \
+    | grep -oE 'ref=e[0-9]+' | head -1 | sed 's/ref=//')
 
-    ADDED=$((ADDED + 1))
-    echo "  ✓ Submitted" >&2
+if [[ -z "$WEBSITE_BTN" ]]; then
+    echo "Error: Could not find '网站' button in dialog" >&2
+    exit 1
+fi
 
-    # Wait for NotebookLM to process the source
-    sleep 4
-done
+playwright-cli click "$WEBSITE_BTN" >/dev/null 2>&1
+sleep 1
+
+# Find URL input and fill all URLs at once (space-separated)
+rm -rf .playwright-cli/
+playwright-cli snapshot >/dev/null 2>&1
+SNAP_FILE=$(ls -t .playwright-cli/*.yml 2>/dev/null | head -1)
+
+URL_INPUT=$(grep -E 'textbox.*(输入网址|Enter URL|粘贴|paste)' "$SNAP_FILE" \
+    | grep -oE 'ref=e[0-9]+' | head -1 | sed 's/ref=//')
+
+if [[ -z "$URL_INPUT" ]]; then
+    echo "Error: Could not find URL input field" >&2
+    exit 1
+fi
+
+echo "Adding $TOTAL URLs..." >&2
+playwright-cli fill "$URL_INPUT" "$URL_STRING" >/dev/null 2>&1
+sleep 1
+
+# Click "插入" / "Insert" button
+rm -rf .playwright-cli/
+playwright-cli snapshot >/dev/null 2>&1
+SNAP_FILE=$(ls -t .playwright-cli/*.yml 2>/dev/null | head -1)
+
+INSERT_BTN=$(grep -E 'button.*(插入|Insert)' "$SNAP_FILE" \
+    | grep -v 'disabled' \
+    | grep -oE 'ref=e[0-9]+' | head -1 | sed 's/ref=//')
+
+if [[ -z "$INSERT_BTN" ]]; then
+    echo "Error: '插入' button not found or still disabled" >&2
+    exit 1
+fi
+
+playwright-cli click "$INSERT_BTN" >/dev/null 2>&1
+echo "  ✓ Submitted $TOTAL sources" >&2
+
+# Wait for processing
+sleep 5
 
 echo "" >&2
-echo "Done: $ADDED/$TOTAL sources added." >&2
+echo "Done: $TOTAL sources added." >&2
 
 # JSON summary to stdout
-echo "{\"added\": $ADDED, \"total\": $TOTAL}"
+echo "{\"added\": $TOTAL, \"total\": $TOTAL}"
