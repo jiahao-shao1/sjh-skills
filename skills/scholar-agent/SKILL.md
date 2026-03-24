@@ -5,128 +5,128 @@ description: "Scholar Inbox CLI — fetch daily paper digest, rate papers, manag
 
 # Scholar Agent
 
-论文发现 → 筛选 → 深度阅读 → 反馈的全流程自动化。
+End-to-end automation: paper discovery → filtering → deep reading → feedback.
 
-两种模式：
+Two modes:
 - **Basic Mode**: Pure CLI — fetch, filter, rate papers via REST API (no browser needed)
 - **Enhanced Mode**: CLI + NotebookLM — deep-read papers with source-grounded answers from Gemini
 
-## 子命令
+## Subcommands
 
-| 命令 | 说明 |
-|------|------|
-| `/scholar-inbox` | 今日论文 → AI 筛选 → 加入 NotebookLM → 深度阅读 → 报告 |
-| `/scholar-inbox <arXiv ID>` | 指定论文加入 NotebookLM 并阅读 |
-| `/scholar-inbox ask "问题"` | 向 NotebookLM 论文库提问 |
-| `/scholar-inbox like 1,3,5` | 给报告中指定编号的论文点赞 |
+| Command | Description |
+|---------|-------------|
+| `/scholar-inbox` | Today's papers → AI filtering → add to NotebookLM → deep read → report |
+| `/scholar-inbox <arXiv ID>` | Add specific paper to NotebookLM and read |
+| `/scholar-inbox ask "question"` | Ask NotebookLM paper library a question |
+| `/scholar-inbox like 1,3,5` | Upvote papers by report index |
 
 ## Prerequisites
 
-| 依赖 | 用途 | 安装方式 |
-|------|------|---------|
-| `playwright-cli` | 浏览器登录 + NotebookLM 操作 | `npm install -g @anthropic-ai/playwright-cli` |
-| `notebooklm` skill | Enhanced Mode 深度阅读 (可选) | `npx skills add notebooklm` |
+| Dependency | Purpose | Install |
+|------------|---------|---------|
+| `playwright-cli` | Browser login + NotebookLM operations | `npm install -g @anthropic-ai/playwright-cli` |
+| `notebooklm` skill | Enhanced Mode deep reading (optional) | `npx skills add notebooklm` |
 
-- **Basic Mode** 只需 `playwright-cli`（用于首次登录）
-- **Enhanced Mode** 额外需要 `notebooklm` skill 并完成 Google 认证
+- **Basic Mode** only requires `playwright-cli` (for initial login)
+- **Enhanced Mode** additionally requires `notebooklm` skill with Google auth completed
 
 ## Setup
 
-一键检查环境和登录：
+One-click environment check and login:
 ```bash
 PYTHONPATH=<skill-path> python3 -m scholar_inbox setup
 ```
 
-检查项：Python → playwright-cli → Scholar Inbox 登录 → NotebookLM skill → add_to_notebooklm.sh
+Checks: Python → playwright-cli → Scholar Inbox login → NotebookLM skill → add_to_notebooklm.sh
 
-手动安装步骤：
+Manual install steps:
 ```bash
-# 1. 浏览器自动化（必须）
+# 1. Browser automation (required)
 npm install -g @anthropic-ai/playwright-cli
 
-# 2. NotebookLM skill（Enhanced Mode 必须）
+# 2. NotebookLM skill (required for Enhanced Mode)
 npx skills add notebooklm
 
-# 3. NotebookLM Google 登录（仅首次）
+# 3. NotebookLM Google login (first time only)
 python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
 ```
 
-## 筛选配置
+## Filtering Configuration
 
-配置文件在 `~/.config/scholar-inbox/`：
+Config files at `~/.config/scholar-inbox/`:
 
-| 文件 | 作用 |
-|------|------|
-| `context.md` | 全局偏好（研究方向、机构分级、每日篇数等） |
-| `<project>.md` | 项目级配置（关键词过滤 + NotebookLM 分类规则） |
+| File | Purpose |
+|------|---------|
+| `context.md` | Global preferences (research interests, institution tiers, daily limit, etc.) |
+| `<project>.md` | Project-level config (keyword filters + NotebookLM classification rules) |
 
-执行 `/scholar-inbox` 时，根据当前工作目录的项目名加载对应配置文件。如果存在项目配置，按其中的关键词和机构分级过滤论文列表，并按分类规则将论文归入对应 NotebookLM notebook。
+When `/scholar-inbox` is invoked, the corresponding project config is loaded based on the current working directory name. If a project config exists, papers are filtered by keywords and institution tiers, and classified into NotebookLM notebooks according to the rules.
 
-### 首次配置
+### First-Time Setup
 
-首次执行 `/scholar-inbox` 时，检查 `~/.config/scholar-inbox/context.md` 是否存在：
+On first `/scholar-inbox` invocation, check if `~/.config/scholar-inbox/context.md` exists:
 
-- **存在** → 读取配置，直接进入正常流程
-- **不存在** → 用 AskUserQuestion 交互式收集偏好，生成配置文件
+- **Exists** → Load config, proceed to normal flow
+- **Missing** → Interactively collect preferences via AskUserQuestion, then generate config
 
-#### 第 1 轮：研究偏好（同时问 3 个问题）
+#### Round 1: Research Preferences (ask 3 questions simultaneously)
 
-1. **研究方向**
-   - header: "研究方向关键词"
-   - 选项: "RL, VLM, visual reasoning" / "NLP, LLM, alignment" / Other（自定义）
-   - preview: `用于论文筛选时的相关性排序\n示例: "reinforcement learning, vision-language model, tool use"`
+1. **Research Interests**
+   - header: "Research interest keywords"
+   - options: "RL, VLM, visual reasoning" / "NLP, LLM, alignment" / Other (custom)
+   - preview: `Used for relevance ranking during paper filtering\nExample: "reinforcement learning, vision-language model, tool use"`
 
-2. **机构偏好**
-   - header: "机构分级"
-   - 选项: "区分（顶级 > 知名 > 其他）" / "不区分"
-   - preview: `区分时：OpenAI/DeepMind/META 等优先展示`
+2. **Institution Preference**
+   - header: "Institution tiering"
+   - options: "Tier-aware (top > well-known > other)" / "No preference"
+   - preview: `When enabled: OpenAI/DeepMind/META etc. shown first`
 
-3. **每日篇数**
-   - header: "每天想看几篇"
-   - 选项: "5" / "10" / "15"
+3. **Daily Paper Count**
+   - header: "Papers per day"
+   - options: "5" / "10" / "15"
 
-#### 第 2 轮：分类 + 项目（同时问 2 个问题）
+#### Round 2: Classification + Project (ask 2 questions simultaneously)
 
-4. **NotebookLM 分类方式**
-   - header: "论文分类到 notebook 的维度"
-   - 选项: "按研究主题自动分类" / "按方法类型（RL / SFT / 数据 / 评估）" / "全部放一个 notebook"
+4. **NotebookLM Classification**
+   - header: "Notebook classification dimension"
+   - options: "Auto-classify by research topic" / "By method type (RL / SFT / Data / Eval)" / "All in one notebook"
 
-5. **项目级配置**
-   - header: "是否需要项目级筛选"
-   - 选项: "需要（在特定项目目录下只看该项目相关论文）" / "不需要"
-   - 如果选「需要」，追问当前项目的核心关键词
+5. **Project-Level Config**
+   - header: "Enable project-level filtering?"
+   - options: "Yes (only show project-relevant papers in specific project directories)" / "No"
+   - If "Yes", follow up with the current project's core keywords
 
-#### 生成配置
+#### Config Generation
 
-根据用户回答，生成 `~/.config/scholar-inbox/context.md`：
+Based on user answers, generate `~/.config/scholar-inbox/context.md`:
 
 ```markdown
-# Scholar Inbox 全局配置
+# Scholar Inbox Global Config
 
-## 研究方向
+## Research Interests
 keywords: RL, VLM, visual reasoning, tool use
 
-## 筛选偏好
+## Filtering Preferences
 daily_limit: 10
-institution_tier: true  # 是否区分机构分级
+institution_tier: true  # whether to tier institutions
 
-## NotebookLM 分类
+## NotebookLM Classification
 mode: auto_topic  # auto_topic / method_type / single_notebook
 ```
 
-如果用户启用了项目级配置，额外生成 `~/.config/scholar-inbox/<project>.md`：
+If project-level config is enabled, also generate `~/.config/scholar-inbox/<project>.md`:
 
 ```markdown
-# <project> 项目配置
+# <project> Project Config
 
-## 项目关键词
+## Project Keywords
 keywords: agentic reasoning, image editing, multi-turn tool use
 
-## 筛选规则
-仅展示与项目关键词匹配的论文，其余论文降低优先级但不隐藏。
+## Filtering Rules
+Only show papers matching project keywords; demote others but don't hide them.
 ```
 
-后续可手动编辑配置文件调整。
+Config files can be manually edited afterwards.
 
 ## CLI Quick Reference
 
@@ -162,48 +162,48 @@ scholar-inbox login --cookie VAL # manual paste from DevTools
 scholar-inbox status             # check if session is valid
 ```
 
-## 执行流程
+## Execution Flow
 
-### 模式 1: `/scholar-inbox`（每日论文筛选 + 阅读）
+### Mode 1: `/scholar-inbox` (Daily Paper Filtering + Reading)
 
-#### Phase A: 收集 + 筛选 + 入库 [派 Subagent 后台执行]
+#### Phase A: Collect + Filter + Ingest [Dispatch Subagent in Background]
 
-派一个 subagent 执行以下步骤，完成后返回筛选结果和入库状态：
+Dispatch a subagent to execute the following steps, returning filtered results and ingestion status:
 
-**Step A1: 从 Scholar Inbox 抓取论文（REST API）**
+**Step A1: Fetch Papers from Scholar Inbox (REST API)**
 
 ```bash
 scholar-inbox digest --json --limit 20
 scholar-inbox config  # get user's research interests
 ```
 
-**Step A2: AI 筛选**
+**Step A2: AI Filtering**
 
-根据用户 research interests 筛选 top 5-10 最相关论文。跳过已评分/已读论文。
-如果未配置 interests，按 score 排序取 top 10。
+Filter top 5-10 most relevant papers based on user's research interests. Skip already-rated/read papers.
+If interests are not configured, sort by score and take top 10.
 
-**Step A3: 动态分类**
+**Step A3: Dynamic Classification**
 
-根据标题和关键词自动分类到 NotebookLM notebook。分类名从论文内容动态生成，不使用硬编码分类。
+Auto-classify papers into NotebookLM notebooks based on title and keywords. Category names are dynamically generated from paper content — no hardcoded categories.
 
-每个分类对应一个 NotebookLM notebook。查找已有 notebook：
+Each category maps to a NotebookLM notebook. Search for existing notebooks:
 ```bash
 python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "<topic>"
 ```
 
-如果没有匹配的 notebook，用脚本自动创建：
+If no matching notebook exists, auto-create one:
 ```bash
 NB_URL=$(bash <skill-path>/scripts/create_notebook.sh)
-# 注册到本地 library
+# Register in local library
 python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py add \
   --url "$NB_URL" --name "<topic>" --description "<desc>" --topics "<t1,t2>"
 ```
 
-**注意**：连续执行 create → add 等多步 playwright-cli 操作时，步骤间需 `sleep 2-3` 等 browser session 完全关闭。
+**Note**: When running consecutive playwright-cli operations (create → add, etc.), add `sleep 2-3` between steps to let the browser session fully close.
 
-**Step A4: 批量添加到 NotebookLM**
+**Step A4: Batch Add to NotebookLM**
 
-使用 `add_to_notebooklm.sh` 脚本（通过 playwright-cli + NotebookLM browser profile）：
+Use `add_to_notebooklm.sh` (via playwright-cli + NotebookLM browser profile):
 
 ```bash
 bash <skill-path>/scripts/add_to_notebooklm.sh \
@@ -212,121 +212,121 @@ bash <skill-path>/scripts/add_to_notebooklm.sh \
   "https://arxiv.org/abs/YYYY.YYYYY"
 ```
 
-脚本内部流程已改为显式策略路由：
-1. `playwright-cli open --browser=chrome --profile=<notebooklm-profile>` 打开 notebook
-2. 探测当前 source 进入策略：
+The script uses explicit strategy routing internally:
+1. `playwright-cli open --browser=chrome --profile=<notebooklm-profile>` opens the notebook
+2. Detect the current source entry strategy:
    - `open_source_dialog`
    - `open_website_form`
    - `url_input_ready`
-3. 进入 URL 输入界面后一次性批量粘贴多个 URL
-4. 点击 `插入 / Insert`
+3. Once at the URL input, batch-paste all URLs at once
+4. Click `Insert`
 5. `playwright-cli close`
 
-Browser profile 路径：`$NOTEBOOKLM_PROFILE`（默认 `~/.claude/skills/notebooklm/data/browser_state/browser_profile`）
+Browser profile path: `$NOTEBOOKLM_PROFILE` (default `~/.claude/skills/notebooklm/data/browser_state/browser_profile`)
 
-Subagent 返回：筛选后的论文列表 + 分类 + 入库状态
+Subagent returns: filtered paper list + classifications + ingestion status
 
-#### Phase B: 深度阅读 [主 Context]
+#### Phase B: Deep Reading [Main Context]
 
-拿到 subagent 返回的论文列表后，调 notebooklm skill 提问：
+After receiving the paper list from the subagent, query NotebookLM:
 
 ```bash
 NOTEBOOKLM="python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
 
-# 概览
-$NOTEBOOKLM --question "总结每篇论文的核心贡献（2-3 句），标注论文标题" --notebook-url "$URL"
+# Overview
+$NOTEBOOKLM --question "Summarize each paper's core contribution (2-3 sentences), label with paper title" --notebook-url "$URL"
 
-# 方法对比
-$NOTEBOOKLM --question "对比各论文的方法创新、技术路线和 baseline" --notebook-url "$URL"
+# Method comparison
+$NOTEBOOKLM --question "Compare the methodological innovations, technical approaches, and baselines across papers" --notebook-url "$URL"
 
-# 与用户研究的关联
-$NOTEBOOKLM --question "这些论文与 [user interests] 有何关联？哪些发现最可落地？" --notebook-url "$URL"
+# Relevance to user's research
+$NOTEBOOKLM --question "How do these papers relate to [user interests]? Which findings are most actionable?" --notebook-url "$URL"
 ```
 
-**Follow-up 很重要**：NotebookLM 回答末尾常问 "还需要了解什么？" — 如果回答不完整或有新问题，继续追问。
+**Follow-up is important**: NotebookLM often asks "What else would you like to know?" at the end — if the answer is incomplete or raises new questions, keep asking.
 
-#### Phase C: 输出阅读报告
+#### Phase C: Output Reading Report
 
 ```markdown
-## YYYY-MM-DD 论文阅读报告 (N 篇新增)
+## YYYY-MM-DD Paper Reading Report (N new papers)
 
-### 分类: RL Reward Design
+### Category: RL Reward Design
 
 #### 1. Paper Title | Author et al. (Institution)
 - **Paper ID**: 4626954 | **Score**: 0.880
 - **arXiv**: https://arxiv.org/abs/XXXX.XXXXX
-- **核心发现**：[from NotebookLM, with citation]
-- **方法**：[key technical details]
-- **与项目关联**：[how it connects to user's work]
+- **Key Findings**: [from NotebookLM, with citation]
+- **Method**: [key technical details]
+- **Project Relevance**: [how it connects to user's work]
 
 #### 2. ...
 
 ---
-👍 点赞: `/scholar-inbox like 1,3`
-👎 踩: `scholar-inbox rate-batch down <id1> <id2>`
+Upvote: `/scholar-inbox like 1,3`
+Downvote: `scholar-inbox rate-batch down <id1> <id2>`
 ```
 
-### 模式 2: `/scholar-inbox <arXiv ID>`
+### Mode 2: `/scholar-inbox <arXiv ID>`
 
-1. 用 `scholar-inbox paper <id>` 获取论文信息（如果是 paper_id）
-2. 根据标题关键词动态分类到对应 notebook
-3. `add_to_notebooklm.sh` 添加 arXiv URL 到 notebook
-4. NotebookLM skill 提问深度阅读
-5. 输出单篇阅读报告
+1. Fetch paper info with `scholar-inbox paper <id>` (if paper_id)
+2. Dynamically classify into the appropriate notebook by title keywords
+3. Add arXiv URL to notebook via `add_to_notebooklm.sh`
+4. Deep-read via NotebookLM skill
+5. Output single-paper reading report
 
-### 模式 3: `/scholar-inbox ask "问题"`
+### Mode 3: `/scholar-inbox ask "question"`
 
-直接调 NotebookLM skill 向 notebook 提问：
+Directly query NotebookLM:
 ```bash
 python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
-  --question "问题" --notebook-url "<url>"
+  --question "question" --notebook-url "<url>"
 ```
 
-如果不指定 notebook，使用最近活跃的 notebook。
+If no notebook is specified, use the most recently active one.
 
-### 模式 4: `/scholar-inbox like 1,3,5`
+### Mode 4: `/scholar-inbox like 1,3,5`
 
-从最近一次阅读报告中提取对应编号的 paper_id，调 REST API 批量点赞：
+Extract paper_ids from the most recent reading report by index, then batch upvote via REST API:
 ```bash
 scholar-inbox rate-batch up <id1> <id2> <id3>
 ```
 
-## Basic Mode（无 NotebookLM）
+## Basic Mode (No NotebookLM)
 
-适用于快速浏览、不需要深度阅读的场景：
+For quick browsing when deep reading isn't needed:
 
 ```bash
-scholar-inbox digest --limit 10          # 今日论文列表
-scholar-inbox digest --min-score 0.8     # 高分论文
-scholar-inbox paper <id>                 # 论文详情（含 Scholar Inbox AI 摘要）
-scholar-inbox trending --days 7          # 近 7 天热门
-scholar-inbox rate <id> up               # 点赞
-scholar-inbox rate-batch down 111 222    # 批量踩
+scholar-inbox digest --limit 10          # today's paper list
+scholar-inbox digest --min-score 0.8     # high-score papers
+scholar-inbox paper <id>                 # paper details (with Scholar Inbox AI summary)
+scholar-inbox trending --days 7          # trending in past 7 days
+scholar-inbox rate <id> up               # upvote
+scholar-inbox rate-batch down 111 222    # batch downvote
 ```
 
-**展示论文时**：显示 title, paper_id, score, keywords, one-line contribution, arXiv link。
+**When displaying papers**: Show title, paper_id, score, keywords, one-line contribution, arXiv link.
 
-## Notebook 生命周期
+## Notebook Lifecycle
 
-- Notebook 跨 session 积累知识 — 今天加的论文明天仍可查询
-- Source 上限 50/notebook。接近 40 时提醒用户，满 50 创建 "Topic v2"
-- 每次最多处理 10 篇新论文
-- 用完 playwright-cli 必须 `close`
+- Notebooks accumulate knowledge across sessions — papers added today can be queried tomorrow
+- Source limit: 50/notebook. Warn user when approaching 40; at 50, create "Topic v2"
+- Process at most 10 new papers per run
+- Always `close` playwright-cli when done
 
-## 约束
+## Constraints
 
-| 规则 | 原因 |
-|------|------|
-| REST API 优先于 DOM scraping | 更稳定，不依赖 SPA 结构 |
-| 动态分类，不硬编码分类名 | 硬编码分类会过时 |
-| 添加 source 用 `add_to_notebooklm.sh` | 已验证可用，处理了 playwright-cli 行为 |
-| NotebookLM UI 识别优先走策略路由 | 进入 notebook 时的初始 UI 状态不稳定，不能假设永远先看到同一个按钮 |
-| 深度阅读用 notebooklm skill scripts | 可靠性、认证管理、venv 隔离 |
-| Follow-up NotebookLM 回答 | 第一次回答常不完整 |
+| Rule | Reason |
+|------|--------|
+| REST API over DOM scraping | More stable, no SPA dependency |
+| Dynamic classification, no hardcoded categories | Hardcoded categories go stale |
+| Use `add_to_notebooklm.sh` to add sources | Verified working, handles playwright-cli quirks |
+| Strategy routing for NotebookLM UI detection | Initial UI state after entering a notebook is unpredictable |
+| Use notebooklm skill scripts for deep reading | Reliability, auth management, venv isolation |
+| Follow up on NotebookLM answers | First answer is often incomplete |
 
-## 已实际验证
+## Verified Behaviors
 
-以下行为已在真实环境中验证通过：
+The following have been verified in production:
 
 - `scholar-inbox status`
 - `scholar-inbox digest`
@@ -337,68 +337,68 @@ scholar-inbox rate-batch down 111 222    # 批量踩
 - `scholar-inbox collections`
 - `create_notebook.sh`
 - `rename_notebook.sh`
-- `add_to_notebooklm.sh` 单篇添加
-- `add_to_notebooklm.sh` 3 篇批量添加
+- `add_to_notebooklm.sh` single paper
+- `add_to_notebooklm.sh` 3-paper batch
 - `ask_question.py`
 - `scholar-inbox doctor --online`
 
-仍建议继续补测：
+Still recommended to test:
 
 - `scholar-inbox rate-batch`
 - `scholar-inbox collect`
 - `scholar-inbox read`
-- 更大批量的 NotebookLM source 导入
-- NotebookLM 多轮 follow-up 对话
+- Larger batch NotebookLM source imports
+- NotebookLM multi-turn follow-up conversations
 
 ## Error Handling
 
-| 错误 | 处理 |
-|------|------|
-| NotebookLM skill 未安装 | 降级到 Basic Mode |
-| Google auth 过期 | `python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
-| Source 添加失败 | 跳过该论文，继续处理其余 |
-| NotebookLM rate limit | 降级到 Basic Mode |
-| Scholar Inbox session 过期 | `scholar-inbox login --browser` 重新登录 |
-| `add_to_notebooklm.sh` 找不到 “添加来源 / Add source” 按钮 | 先怀疑 NotebookLM UI 改版。不要反复重试脚本；改用 `playwright-cli snapshot` 检查真实按钮文本和 ref，再手动点击当前 UI 中的 “添加来源” / “网站” / “插入” |
-| `ask_question.py` 报 `Failed to create a ProcessSingleton` 或 `SingletonLock` | NotebookLM Chrome profile 仍被残留 Chromium 进程占用。先执行 `pkill -f '/Users/$USER/.claude/skills/notebooklm/data/browser_state/browser_profile'` 或按实际 profile 路径 `pkill -f '<profile-path>'`，等待 1-2 秒后再重试 |
+| Error | Action |
+|-------|--------|
+| NotebookLM skill not installed | Fall back to Basic Mode |
+| Google auth expired | `python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
+| Source addition failed | Skip that paper, continue with the rest |
+| NotebookLM rate limit | Fall back to Basic Mode |
+| Scholar Inbox session expired | `scholar-inbox login --browser` to re-login |
+| `add_to_notebooklm.sh` can't find "Add source" button | Suspect NotebookLM UI change. Don't retry the script blindly; use `playwright-cli snapshot` to check actual button text and ref, then manually click the current UI's "Add source" / "Website" / "Insert" |
+| `ask_question.py` reports `Failed to create a ProcessSingleton` or `SingletonLock` | NotebookLM Chrome profile still held by residual Chromium process. Run `pkill -f '/Users/$USER/.claude/skills/notebooklm/data/browser_state/browser_profile'` or the actual profile path, wait 1-2 seconds, then retry |
 
-优先先跑：
+Run diagnostics first:
 
 ```bash
 scholar-inbox doctor
 scholar-inbox doctor --online
 ```
 
-它会检查：
-- Scholar Inbox 登录是否有效
-- NotebookLM skill / browser profile / state.json 是否存在
-- `add_to_notebooklm.sh` / `create_notebook.sh` / `rename_notebook.sh` / `notebooklm_site_knowledge.sh` 是否齐全
-- 当前是否有进程占用 NotebookLM profile
-- `--online` 时还会真实打开 Scholar Inbox / NotebookLM 页面做只读探测
+It checks:
+- Scholar Inbox login validity
+- NotebookLM skill / browser profile / state.json existence
+- Presence of `add_to_notebooklm.sh` / `create_notebook.sh` / `rename_notebook.sh` / `notebooklm_site_knowledge.sh`
+- Whether any process is holding the NotebookLM profile
+- With `--online`: actually opens Scholar Inbox / NotebookLM pages for read-only probing
 
 ### NotebookLM Troubleshooting
 
-#### 1. `add_to_notebooklm.sh` 因 UI 改版失效
+#### 1. `add_to_notebooklm.sh` Broken by UI Change
 
-现象：
-- 脚本直接退出
-- `bash -x add_to_notebooklm.sh ...` 显示 `ADD_BTN=` 或找不到 `网站` / `Insert` 按钮
+Symptoms:
+- Script exits immediately
+- `bash -x add_to_notebooklm.sh ...` shows `ADD_BTN=` or can't find "Website" / "Insert" button
 
-推荐处理：
+Recommended fix:
 
 ```bash
-# 1. 打开 notebook
+# 1. Open notebook
 playwright-cli open --browser=chrome --profile="$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" "<notebook-url>"
 sleep 6
 
-# 2. 抓当前 DOM 快照
+# 2. Capture current DOM snapshot
 playwright-cli snapshot
 
-# 3. 在快照里找真实按钮文案和 ref
-rg -n '添加来源|Add source|网站|Website|输入网址|插入|Insert' .playwright-cli/*.yml
+# 3. Find actual button text and refs in snapshot
+rg -n 'Add source|Website|Enter URL|Insert' .playwright-cli/*.yml
 ```
 
-如果脚本里的文案匹配失效，按快照中的真实 ref 手动执行：
+If the script's text matching is broken, manually execute with real refs from the snapshot:
 
 ```bash
 playwright-cli click <add-source-ref>
@@ -407,36 +407,36 @@ playwright-cli fill <url-input-ref> "https://arxiv.org/abs/XXXX https://arxiv.or
 playwright-cli click <insert-ref>
 ```
 
-经验规则：
-- NotebookLM 当前 UI 可能在进入 notebook 后已经自动弹出 “添加来源” 对话框，此时无需再点一次旧按钮
-- `网站和 YouTube 网址` 页面支持空格或换行批量粘贴多个 URL
-- 修脚本前先用一次手工 ref 验证流程，确认不是 auth 或 profile 问题
+Rules of thumb:
+- NotebookLM may auto-open the "Add source" dialog upon entering a notebook — no need to click the old button
+- The "Website and YouTube URLs" page supports batch-pasting multiple URLs separated by spaces or newlines
+- Before modifying the script, manually verify the flow with real refs to rule out auth or profile issues
 
-#### 2. `ask_question.py` 被 NotebookLM profile 锁住
+#### 2. `ask_question.py` Blocked by NotebookLM Profile Lock
 
-现象：
+Symptoms:
 - `BrowserType.launch_persistent_context: Failed to create a ProcessSingleton`
-- 报错里出现 `SingletonLock` / `profile directory is already in use`
+- Error mentions `SingletonLock` / `profile directory is already in use`
 
-原因：
-- 上一步 `playwright-cli open` 或其他 Chrome headless 进程没有完全退出
-- 同一个 NotebookLM browser profile 被多个会话同时占用
+Cause:
+- Previous `playwright-cli open` or other Chrome headless process didn't fully exit
+- Same NotebookLM browser profile occupied by multiple sessions
 
-推荐处理：
+Recommended fix:
 
 ```bash
-# 查残留进程
+# Check for residual processes
 ps aux | rg 'browser_profile|Google Chrome|Chromium'
 
-# 杀掉占用 NotebookLM profile 的进程
+# Kill processes holding the NotebookLM profile
 pkill -f "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
 sleep 2
 
-# 再次确认没有残留
+# Confirm no residual processes
 ps aux | rg "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
 ```
 
-然后再执行：
+Then retry:
 
 ```bash
 python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
@@ -444,10 +444,10 @@ python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
   --question "..."
 ```
 
-经验规则：
-- 连续执行 `create_notebook.sh` → `add_to_notebooklm.sh` → `ask_question.py` 时，步骤间最好显式留 `sleep 2-3`
-- 如果刚用 `playwright-cli` 手工调过 NotebookLM，再跑 `ask_question.py` 前优先检查 profile 锁
-- `playwright-cli close` 只能关闭它自己管理的浏览器；遇到残留 headless Chrome，还是要 `pkill -f '<profile-path>'`
+Rules of thumb:
+- When running `create_notebook.sh` → `add_to_notebooklm.sh` → `ask_question.py` consecutively, add explicit `sleep 2-3` between steps
+- If you just used `playwright-cli` manually with NotebookLM, check for profile lock before running `ask_question.py`
+- `playwright-cli close` only closes browsers it manages; for residual headless Chrome, use `pkill -f '<profile-path>'`
 
 ## When to Use Browser Instead
 
