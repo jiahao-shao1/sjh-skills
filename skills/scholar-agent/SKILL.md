@@ -20,6 +20,16 @@ description: "Scholar Inbox CLI — fetch daily paper digest, rate papers, manag
 | `/scholar-inbox ask "问题"` | 向 NotebookLM 论文库提问 |
 | `/scholar-inbox like 1,3,5` | 给报告中指定编号的论文点赞 |
 
+## Prerequisites
+
+| 依赖 | 用途 | 安装方式 |
+|------|------|---------|
+| `playwright-cli` | 浏览器登录 + NotebookLM 操作 | `npm install -g @anthropic-ai/playwright-cli` |
+| `notebooklm` skill | Enhanced Mode 深度阅读 (可选) | `npx skills add notebooklm` |
+
+- **Basic Mode** 只需 `playwright-cli`（用于首次登录）
+- **Enhanced Mode** 额外需要 `notebooklm` skill 并完成 Google 认证
+
 ## Setup
 
 一键检查环境和登录：
@@ -31,8 +41,14 @@ PYTHONPATH=<skill-path> python3 -m scholar_inbox setup
 
 手动安装步骤：
 ```bash
-npm install -g @anthropic-ai/playwright-cli      # 浏览器自动化
-python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup  # NotebookLM Google 登录（仅首次）
+# 1. 浏览器自动化（必须）
+npm install -g @anthropic-ai/playwright-cli
+
+# 2. NotebookLM skill（Enhanced Mode 必须）
+npx skills add notebooklm
+
+# 3. NotebookLM Google 登录（仅首次）
+python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
 ```
 
 ## CLI Quick Reference
@@ -95,6 +111,16 @@ scholar-inbox config  # get user's research interests
 ```bash
 python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "<topic>"
 ```
+
+如果没有匹配的 notebook，用脚本自动创建：
+```bash
+NB_URL=$(bash <skill-path>/scripts/create_notebook.sh)
+# 注册到本地 library
+python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py add \
+  --url "$NB_URL" --name "<topic>" --description "<desc>" --topics "<t1,t2>"
+```
+
+**注意**：连续执行 create → add 等多步 playwright-cli 操作时，步骤间需 `sleep 2-3` 等 browser session 完全关闭。
 
 **Step A4: 批量添加到 NotebookLM**
 
