@@ -1,6 +1,6 @@
 ---
 name: cmux
-description: "cmux terminal orchestration — split panes, spawn Claude Code instances, send commands, poll output, report sidebar progress, automate the built-in browser, and preview markdown. Use this skill whenever you need to: run parallel tasks in separate panes, launch sub-Claude-Code instances, monitor terminal output, update sidebar status/progress, coordinate multiple terminal sessions, fan out work across splits, open a website in a cmux browser pane, interact with web pages, or display markdown alongside the terminal. Even if the user just says 'run these in parallel', 'open that in a browser', or 'show the plan', this skill applies."
+description: "cmux terminal orchestration — split panes, spawn coding agents (Claude Code, Codex, etc.), send commands, poll output, report sidebar progress, automate the built-in browser, and preview markdown. Use this skill whenever you need to: run parallel tasks in separate panes, launch sub-agents (Claude Code, Codex) in splits, monitor terminal output, update sidebar status/progress, coordinate multiple terminal sessions, fan out work across splits, open a website in a cmux browser pane, interact with web pages, or display markdown alongside the terminal. Even if the user just says 'run these in parallel', 'split a Codex pane', 'open that in a browser', or 'show the plan', this skill applies."
 ---
 
 # cmux Orchestration
@@ -37,17 +37,30 @@ cmux new-workspace --cwd <path>                   # new workspace tab
 cmux new-surface                                  # new tab in current pane
 ```
 
-## Launch Claude Code in a Pane
+## Launch Agents in a Pane
 
-Network access requires `proxy`. Always include it before `claude`.
+Network access requires `proxy`. Always include it before agent commands.
+
+**Important**: When sending compound commands (`proxy && agent ...`), send them as a single string to `cmux send`. Do NOT split into separate `send` calls — the second command would run before the first finishes.
 
 ```bash
-# Interactive mode — user can switch to this pane and intervene anytime
+# Claude Code — interactive mode (user can switch to this pane and intervene)
 cmux send --surface <ref> 'proxy && claude --dangerously-skip-permissions\n'
 
-# Non-interactive mode — run a task, capture output, signal completion
+# Claude Code — non-interactive mode (run task, capture output, signal completion)
 cmux send --surface <ref> 'proxy && claude -p "your prompt" --model haiku 2>&1 | tee /tmp/agent-output.txt; echo "AGENT_DONE"\n'
+
+# Codex — interactive mode (full-auto, user can intervene)
+cmux send --surface <ref> 'proxy && codex --dangerously-bypass-approvals-and-sandbox\n'
+
+# Codex — with initial prompt
+cmux send --surface <ref> 'proxy && codex --dangerously-bypass-approvals-and-sandbox -p "your prompt"\n'
 ```
+
+When the user asks to "split a pane with Codex/Claude/agent", always:
+1. `cmux new-split <direction>` to create the pane
+2. `cmux send --surface <new-ref> '<proxy && agent command>\n'` to launch
+3. Optionally `cmux send --surface <new-ref> 'initial prompt or context\n'` after the agent starts
 
 ## Send Input / Read Output
 
@@ -122,11 +135,26 @@ cmux set-status task "Running" --icon hammer --color "#1565C0"
 
 ### Interactive sub-agents (user can intervene)
 
+Launch an agent in a split pane that the user can interact with directly:
+
 ```bash
+# Claude Code in right split
 cmux new-split right
 cmux send --surface surface:2 'proxy && claude --dangerously-skip-permissions\n'
-# User can ⌥⌘→ to switch to that pane and talk to the sub-agent directly
+
+# Codex in right split (full-auto mode)
+cmux new-split right
+cmux send --surface surface:2 'proxy && codex --dangerously-bypass-approvals-and-sandbox\n'
 ```
+
+To feed context to the agent after it starts (e.g., a handoff prompt):
+```bash
+# Wait for the agent to be ready, then send context
+sleep 5
+cmux send --surface surface:2 'Here is the task: ...\n'
+```
+
+User can press `⌥⌘→` to switch to the agent pane and talk to it directly.
 
 ### Progress tracking
 

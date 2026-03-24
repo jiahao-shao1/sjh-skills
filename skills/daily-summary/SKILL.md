@@ -21,6 +21,14 @@ Triggered by `/daily-summary` or conversational triggers. Arguments come from th
 /daily-summary 2026-03-20   → specific date
 ```
 
+## Prerequisites
+
+| Dependency | Purpose | Check |
+|------------|---------|-------|
+| `collect-daily-data.sh` | Aggregates git log, Claude sessions, Notion tasks | Bundled in `scripts/` |
+| `notion-lifeos` skill | Notion task data (optional — skipped if missing) | `~/.claude/skills/notion-lifeos/` |
+| `git` | Commit history | Available on PATH |
+
 ## Execution Steps
 
 1. Parse date argument from ARGUMENTS, default to `today`
@@ -66,3 +74,12 @@ Where `<skill-base-dir>` is the directory containing this SKILL.md (known at ski
 - Timeline entries in chronological order
 - Language: Chinese
 - No emojis
+
+## Error Handling
+
+| Error | Action |
+|-------|--------|
+| `collect-daily-data.sh` returns empty | Report "no activity found for this date" — don't generate an empty summary |
+| Notion tasks unavailable | Skip the Task Completion section, note it was skipped |
+| No git repos found | Skip git data, rely on Claude Code sessions only |
+| Date argument invalid | Default to `today`, warn user about invalid input |
