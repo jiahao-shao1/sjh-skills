@@ -123,16 +123,20 @@ def extract_via_playwright_cli() -> str | None:
 
 
 def open_browser_for_login() -> str | None:
-    """Open browser with --persistent --headed for user to do OAuth.
+    """Open browser for OAuth, then guide user to copy cookie.
 
-    After the user completes login, extracts cookie from the persistent
-    profile by re-opening headlessly and reading cookies directly.
+    playwright-cli's cookie commands don't share context with the headed
+    browser, so we navigate the user to the session_info API endpoint
+    and ask them to copy the cookie value from the page or address bar.
     """
     try:
         print("Opening browser for login...", file=sys.stderr)
-        print("Please complete Google OAuth in the browser window.", file=sys.stderr)
-        print("After logging in, close the browser or press Ctrl+C.", file=sys.stderr)
+        print("1. Complete Google OAuth in the browser window.", file=sys.stderr)
+        print("2. After login, the browser will navigate to the session API.", file=sys.stderr)
+        print("3. Copy the session cookie when prompted.", file=sys.stderr)
+        print(file=sys.stderr)
 
+        # Open Scholar Inbox for OAuth login
         subprocess.run(
             ["playwright-cli", "open", "--persistent", "--headed",
              "https://www.scholar-inbox.com"],
@@ -146,29 +150,35 @@ def open_browser_for_login() -> str | None:
     except KeyboardInterrupt:
         pass
 
-    # Re-open headlessly with same persistent profile to extract cookie.
-    # The persistent profile retains cookies from the headed session.
+    # Now open the session_info API endpoint so user can see their cookie
     try:
+        print(file=sys.stderr)
+        print("Now opening session API to extract cookie...", file=sys.stderr)
         subprocess.run(
-            ["playwright-cli", "open", "--persistent",
-             "https://www.scholar-inbox.com/digest"],
-            capture_output=True, timeout=15,
+            ["playwright-cli", "open", "--persistent", "--headed",
+             "https://api.scholar-inbox.com/api/session_info"],
+            timeout=60,
         )
-        result = subprocess.run(
-            ["playwright-cli", "cookie-get", "session"],
-            capture_output=True, text=True, timeout=10,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            for line in result.stdout.strip().split("\n"):
-                if line.startswith("session="):
-                    cookie = line.split("=", 1)[1].split(" ")[0].strip()
-                    return cookie
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+    except (subprocess.TimeoutExpired, FileNotFoundError, KeyboardInterrupt):
         pass
-    finally:
-        try:
-            subprocess.run(["playwright-cli", "close"], capture_output=True, timeout=5)
-        except Exception:
-            pass
+
+    # Prompt user for the cookie value
+    print(file=sys.stderr)
+    print("Could not auto-extract cookie (macOS encrypts browser cookies).", file=sys.stderr)
+    print(file=sys.stderr)
+    print("To get your cookie manually:", file=sys.stderr)
+    print("  1. Open https://www.scholar-inbox.com in Chrome/Arc", file=sys.stderr)
+    print("  2. Open DevTools (F12) → Network tab", file=sys.stderr)
+    print("  3. Reload the page, click any request to scholar-inbox.com", file=sys.stderr)
+    print("  4. In Request Headers, find: Cookie: session=...", file=sys.stderr)
+    print("  5. Copy the value after 'session=' (without quotes)", file=sys.stderr)
+    print(file=sys.stderr)
+
+    try:
+        cookie = input("Paste session cookie value (or press Enter to skip): ").strip()
+        if cookie:
+            return cookie
+    except (EOFError, KeyboardInterrupt):
+        pass
 
     return None
