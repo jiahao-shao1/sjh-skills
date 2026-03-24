@@ -61,6 +61,8 @@ PYTHONPATH=<skill-path> python3 -m scholar_inbox <command>
 | Command | Description |
 |---------|-------------|
 | `scholar-inbox setup` | One-click environment check + login |
+| `scholar-inbox doctor` | Diagnose NotebookLM/auth/profile/script issues |
+| `scholar-inbox doctor --online` | Open Scholar Inbox / NotebookLM pages and verify live page state |
 | `scholar-inbox status` | Check login status |
 | `scholar-inbox login [--browser] [--cookie VAL]` | Authenticate |
 | `scholar-inbox digest [--limit N] [--min-score F] [--json]` | Today's papers |
@@ -133,11 +135,15 @@ bash <skill-path>/scripts/add_to_notebooklm.sh \
   "https://arxiv.org/abs/YYYY.YYYYY"
 ```
 
-脚本内部流程：
+脚本内部流程已改为显式策略路由：
 1. `playwright-cli open --browser=chrome --profile=<notebooklm-profile>` 打开 notebook
-2. `playwright-cli snapshot` 获取 DOM → grep 找到搜索框 ref
-3. `playwright-cli fill <ref> <url>` + `playwright-cli press Enter` 提交每个 URL
-4. 循环处理所有 URL，最后 `playwright-cli close`
+2. 探测当前 source 进入策略：
+   - `open_source_dialog`
+   - `open_website_form`
+   - `url_input_ready`
+3. 进入 URL 输入界面后一次性批量粘贴多个 URL
+4. 点击 `插入 / Insert`
+5. `playwright-cli close`
 
 Browser profile 路径：`$NOTEBOOKLM_PROFILE`（默认 `~/.claude/skills/notebooklm/data/browser_state/browser_profile`）
 
@@ -237,8 +243,35 @@ scholar-inbox rate-batch down 111 222    # 批量踩
 | REST API 优先于 DOM scraping | 更稳定，不依赖 SPA 结构 |
 | 动态分类，不硬编码分类名 | 硬编码分类会过时 |
 | 添加 source 用 `add_to_notebooklm.sh` | 已验证可用，处理了 playwright-cli 行为 |
+| NotebookLM UI 识别优先走策略路由 | 进入 notebook 时的初始 UI 状态不稳定，不能假设永远先看到同一个按钮 |
 | 深度阅读用 notebooklm skill scripts | 可靠性、认证管理、venv 隔离 |
 | Follow-up NotebookLM 回答 | 第一次回答常不完整 |
+
+## 已实际验证
+
+以下行为已在真实环境中验证通过：
+
+- `scholar-inbox status`
+- `scholar-inbox digest`
+- `scholar-inbox paper`
+- `scholar-inbox rate <id> up`
+- `scholar-inbox rate <id> reset`
+- `scholar-inbox trending`
+- `scholar-inbox collections`
+- `create_notebook.sh`
+- `rename_notebook.sh`
+- `add_to_notebooklm.sh` 单篇添加
+- `add_to_notebooklm.sh` 3 篇批量添加
+- `ask_question.py`
+- `scholar-inbox doctor --online`
+
+仍建议继续补测：
+
+- `scholar-inbox rate-batch`
+- `scholar-inbox collect`
+- `scholar-inbox read`
+- 更大批量的 NotebookLM source 导入
+- NotebookLM 多轮 follow-up 对话
 
 ## Error Handling
 
@@ -249,6 +282,95 @@ scholar-inbox rate-batch down 111 222    # 批量踩
 | Source 添加失败 | 跳过该论文，继续处理其余 |
 | NotebookLM rate limit | 降级到 Basic Mode |
 | Scholar Inbox session 过期 | `scholar-inbox login --browser` 重新登录 |
+| `add_to_notebooklm.sh` 找不到 “添加来源 / Add source” 按钮 | 先怀疑 NotebookLM UI 改版。不要反复重试脚本；改用 `playwright-cli snapshot` 检查真实按钮文本和 ref，再手动点击当前 UI 中的 “添加来源” / “网站” / “插入” |
+| `ask_question.py` 报 `Failed to create a ProcessSingleton` 或 `SingletonLock` | NotebookLM Chrome profile 仍被残留 Chromium 进程占用。先执行 `pkill -f '/Users/$USER/.claude/skills/notebooklm/data/browser_state/browser_profile'` 或按实际 profile 路径 `pkill -f '<profile-path>'`，等待 1-2 秒后再重试 |
+
+优先先跑：
+
+```bash
+scholar-inbox doctor
+scholar-inbox doctor --online
+```
+
+它会检查：
+- Scholar Inbox 登录是否有效
+- NotebookLM skill / browser profile / state.json 是否存在
+- `add_to_notebooklm.sh` / `create_notebook.sh` / `rename_notebook.sh` / `notebooklm_site_knowledge.sh` 是否齐全
+- 当前是否有进程占用 NotebookLM profile
+- `--online` 时还会真实打开 Scholar Inbox / NotebookLM 页面做只读探测
+
+### NotebookLM Troubleshooting
+
+#### 1. `add_to_notebooklm.sh` 因 UI 改版失效
+
+现象：
+- 脚本直接退出
+- `bash -x add_to_notebooklm.sh ...` 显示 `ADD_BTN=` 或找不到 `网站` / `Insert` 按钮
+
+推荐处理：
+
+```bash
+# 1. 打开 notebook
+playwright-cli open --browser=chrome --profile="$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" "<notebook-url>"
+sleep 6
+
+# 2. 抓当前 DOM 快照
+playwright-cli snapshot
+
+# 3. 在快照里找真实按钮文案和 ref
+rg -n '添加来源|Add source|网站|Website|输入网址|插入|Insert' .playwright-cli/*.yml
+```
+
+如果脚本里的文案匹配失效，按快照中的真实 ref 手动执行：
+
+```bash
+playwright-cli click <add-source-ref>
+playwright-cli click <website-ref>
+playwright-cli fill <url-input-ref> "https://arxiv.org/abs/XXXX https://arxiv.org/abs/YYYY"
+playwright-cli click <insert-ref>
+```
+
+经验规则：
+- NotebookLM 当前 UI 可能在进入 notebook 后已经自动弹出 “添加来源” 对话框，此时无需再点一次旧按钮
+- `网站和 YouTube 网址` 页面支持空格或换行批量粘贴多个 URL
+- 修脚本前先用一次手工 ref 验证流程，确认不是 auth 或 profile 问题
+
+#### 2. `ask_question.py` 被 NotebookLM profile 锁住
+
+现象：
+- `BrowserType.launch_persistent_context: Failed to create a ProcessSingleton`
+- 报错里出现 `SingletonLock` / `profile directory is already in use`
+
+原因：
+- 上一步 `playwright-cli open` 或其他 Chrome headless 进程没有完全退出
+- 同一个 NotebookLM browser profile 被多个会话同时占用
+
+推荐处理：
+
+```bash
+# 查残留进程
+ps aux | rg 'browser_profile|Google Chrome|Chromium'
+
+# 杀掉占用 NotebookLM profile 的进程
+pkill -f "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
+sleep 2
+
+# 再次确认没有残留
+ps aux | rg "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
+```
+
+然后再执行：
+
+```bash
+python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
+  --notebook-url "<notebook-url>" \
+  --question "..."
+```
+
+经验规则：
+- 连续执行 `create_notebook.sh` → `add_to_notebooklm.sh` → `ask_question.py` 时，步骤间最好显式留 `sleep 2-3`
+- 如果刚用 `playwright-cli` 手工调过 NotebookLM，再跑 `ask_question.py` 前优先检查 profile 锁
+- `playwright-cli close` 只能关闭它自己管理的浏览器；遇到残留 headless Chrome，还是要 `pkill -f '<profile-path>'`
 
 ## When to Use Browser Instead
 

@@ -35,6 +35,36 @@ Requirements:
 
 The script uses `playwright-cli open --browser=chrome --profile=<path>` (NOT `--persistent`).
 
+Current implementation detail:
+
+- The add flow now uses an explicit strategy router rather than assuming a single click path.
+- Supported source-entry strategies currently include:
+  - `open_source_dialog`
+  - `open_website_form`
+  - `url_input_ready`
+
+This matters because NotebookLM may:
+
+- open a notebook directly into `?addSource=true`
+- show the website picker immediately
+- require clicking `添加来源` first on existing notebooks
+
+Related files:
+
+- `scripts/notebooklm_flow.sh`
+- `scripts/notebooklm_site_knowledge.sh`
+- `scripts/add_to_notebooklm.sh`
+
+## Renaming Notebooks
+
+Use `<skill-path>/scripts/rename_notebook.sh`:
+
+```bash
+bash scripts/rename_notebook.sh <notebook_url> "Notebook Name"
+```
+
+This script edits the in-page title field using the shared NotebookLM browser profile.
+
 ## Querying NotebookLM
 
 ```bash
@@ -55,8 +85,38 @@ $NB add --url <url> --name <name> --description <desc> --topics <t1,t2>  # regis
 $NB stats                         # library statistics
 ```
 
+## Diagnostics
+
+For local-only checks:
+
+```bash
+scholar-inbox doctor
+```
+
+For read-only live probes against Scholar Inbox and NotebookLM pages:
+
+```bash
+scholar-inbox doctor --online
+```
+
+The online mode verifies:
+
+- Scholar Inbox page reachability
+- NotebookLM home page readiness
+- NotebookLM source-dialog strategy detection on an existing notebook
+
 ## Notebook Lifecycle
 
 - Notebooks accumulate knowledge — papers added today are queryable tomorrow
 - Source limit: 50 per notebook. At 40+, warn the user. At 50, create "Topic v2"
 - Track notebooks via `notebook_manager.py`
+
+## Verified Behavior
+
+Real browser validation completed on 2026-03-24 for:
+
+- notebook creation
+- notebook renaming
+- single-paper add
+- three-paper batch add
+- NotebookLM question answering

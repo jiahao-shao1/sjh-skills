@@ -118,10 +118,17 @@ class ScholarInboxClient:
         return self._request("GET", "/", params=params)
 
     def get_paper(self, paper_id: int) -> dict | None:
-        """Fetch details for a single paper from current digest."""
+        """Fetch details for a single paper from current digest.
+
+        The upstream `/?paper_id=...` endpoint is not stable: it may return a
+        full digest page instead of the requested paper. Filter explicitly by
+        `paper_id` so callers never get the wrong paper by accident.
+        """
         data = self._request("GET", "/", params={"paper_id": paper_id})
         if data and data.get("digest_df"):
-            return data["digest_df"][0]
+            for row in data["digest_df"]:
+                if row.get("paper_id") == paper_id:
+                    return row
         return None
 
     def rate(self, paper_id: int, rating: int | str) -> None:

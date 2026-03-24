@@ -7,3 +7,6 @@ build/
 session.json
 *.session
 .ruff_cache/
+.playwright-cli/
+open-notebook.log
+verify-open.log

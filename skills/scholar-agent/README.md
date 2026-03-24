@@ -34,9 +34,39 @@ The result: tell Claude Code "show me today's interesting papers about RL for VL
 - **Collections** — organize papers into named collections
 - **Trending** — discover trending papers across categories
 - **One-Click Setup** — `scholar-inbox setup` checks all prerequisites and guides you through
+- **Doctor Command** — `scholar-inbox doctor` diagnoses auth, scripts, NotebookLM profile state, and lock conflicts
+- **Online Doctor** — `scholar-inbox doctor --online` performs read-only live probes against Scholar Inbox and NotebookLM
 - **Claude Code Skill** — natural language interaction via Claude Code
 - **NotebookLM Deep Reading** — batch-add papers to NotebookLM for hallucination-free Q&A
 - **Zero Dependencies** — pure Python stdlib, works everywhere
+
+## Verified Status
+
+The following paths have been exercised against real accounts and real NotebookLM pages on 2026-03-24:
+
+| Flow | Real-world status | Notes |
+|------|-------------------|-------|
+| `scholar-inbox status` | Verified | Reads real login state |
+| `scholar-inbox digest` / `--json` | Verified | Real API responses |
+| `scholar-inbox paper` | Verified | Now filters exact `paper_id` instead of trusting the first row returned by the upstream API |
+| `scholar-inbox rate up` | Verified | Real thumbs-up executed |
+| `scholar-inbox rate reset` | Verified | Real reset executed; digest reflected the reset after a short delay |
+| `scholar-inbox trending` | Verified | Read-only API path |
+| `scholar-inbox collections` | Verified | Real collections listed |
+| `create_notebook.sh` | Verified | Real notebook creation succeeded |
+| `rename_notebook.sh` | Verified | Real notebook rename to `testbook` succeeded |
+| `add_to_notebooklm.sh` single-paper add | Verified | Real add succeeded |
+| `add_to_notebooklm.sh` batch add | Verified | Real 3-paper batch add succeeded |
+| `ask_question.py` | Verified | Real NotebookLM question answered successfully |
+| `scholar-inbox doctor --online` | Verified | Live page probes succeeded |
+
+Still worth further testing:
+
+- `scholar-inbox rate-batch`
+- `scholar-inbox collect`
+- `scholar-inbox read`
+- Large NotebookLM batches beyond 3 papers
+- Multi-turn NotebookLM follow-up conversations
 
 ## Quick Start
 
@@ -100,6 +130,12 @@ Verify login status:
 ```bash
 scholar-inbox status
 # Logged in as: Jiahao Shao (user_id: 12345)
+
+# Diagnose local setup without changing anything
+scholar-inbox doctor
+
+# Run read-only live probes against Scholar Inbox and NotebookLM
+scholar-inbox doctor --online
 ```
 
 ### Usage
@@ -132,7 +168,9 @@ $ scholar-inbox digest --limit 5
 scholar-inbox digest --limit 3 --min-score 0.9 --json
 ```
 
-**Paper details** — full abstract, method summary, and contributions:
+If Scholar Inbox returns a clearly mismatched summary for a paper, the CLI now marks it as suspect and suppresses it in the human-readable output instead of printing misleading content. In JSON output, these cases surface as `suspect_summary: true`.
+
+**Paper details** — full abstract, with suspect summaries automatically hidden when they appear unrelated to the paper title:
 
 ```bash
 $ scholar-inbox paper 94712
@@ -178,6 +216,13 @@ scholar-inbox collect 94712 "Visual Reasoning"
 
 This is the key differentiator. Instead of Claude reading entire PDFs (expensive, hallucination-prone), papers are batch-loaded into NotebookLM where Gemini reads them with source grounding.
 
+The NotebookLM integration has been live-tested end to end for:
+
+- creating a notebook
+- renaming it
+- batch-adding three arXiv papers
+- asking NotebookLM a paper-grounded question
+
 **Batch add papers** — one command instead of 10 manual clicks:
 
 ```bash
@@ -185,18 +230,23 @@ scripts/add_to_notebooklm.sh <notebook-url> \
   https://arxiv.org/abs/2603.14821 \
   https://arxiv.org/abs/2603.14507 \
   https://arxiv.org/abs/2603.14398
-# [1/3] Adding: https://arxiv.org/abs/2603.14821
-#   ✓ Submitted
-# [2/3] Adding: https://arxiv.org/abs/2603.14507
-#   ✓ Submitted
-# [3/3] Adding: https://arxiv.org/abs/2603.14398
-#   ✓ Submitted
-# Done: 3/3 sources added.
+# Strategy: open_website_form
+# Strategy: url_input_ready
+# Adding 3 URLs...
+#   ✓ Submitted 3 sources
+# Done: 3 sources added.
+```
+
+**Rename a notebook** after creation:
+
+```bash
+bash scripts/rename_notebook.sh <notebook-url> "testbook"
 ```
 
 Then query NotebookLM via the `notebooklm` skill for source-grounded answers — ~500 tokens per query instead of ~50K tokens per PDF.
 
-See [references/notebooklm.md](references/notebooklm.md) for the full Enhanced Mode workflow.
+See [references/notebooklm.md](references/notebooklm.md) for the full Enhanced Mode workflow and
+[references/notebooklm-site-knowledge.md](references/notebooklm-site-knowledge.md) for the maintained UI assumptions behind the automation.
 
 ## Python SDK
 
@@ -245,7 +295,7 @@ Scholar Inbox API endpoints (discovered via reverse engineering):
 |--------|------|-------------|
 | `GET` | `/api/check_session` | Verify session validity |
 | `GET` | `/api/digest` | Fetch paper digest (params: `date`, `from_date`, `to_date`) |
-| `GET` | `/api/paper/{id}` | Get paper details |
+| `GET` | `/?paper_id=ID` | Fetch paper details from the current digest view; upstream behavior is unstable, so CLI filters exact matches |
 | `POST` | `/api/rate` | Rate paper(s) (body: `{rating, id}` or `{rating, ids}`) |
 | `POST` | `/api/mark_read` | Mark paper as read (body: `{id}`) |
 | `GET` | `/api/collections` | List user collections |

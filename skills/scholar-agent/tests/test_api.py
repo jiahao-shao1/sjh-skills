@@ -58,6 +58,33 @@ class TestGetDigest:
             assert "date=2026-03-20" in req.full_url
 
 
+class TestGetPaper:
+    def test_returns_exact_matching_paper(self):
+        client = ScholarInboxClient(session="test")
+        mock_data = {
+            "digest_df": [
+                {"paper_id": 1, "title": "Wrong"},
+                {"paper_id": 42, "title": "Right"},
+            ]
+        }
+        with patch("urllib.request.urlopen", return_value=_mock_response(mock_data)):
+            result = client.get_paper(42)
+        assert result["paper_id"] == 42
+        assert result["title"] == "Right"
+
+    def test_returns_none_when_upstream_ignores_paper_id(self):
+        client = ScholarInboxClient(session="test")
+        mock_data = {
+            "digest_df": [
+                {"paper_id": 1, "title": "Top Digest Paper"},
+                {"paper_id": 2, "title": "Another Digest Paper"},
+            ]
+        }
+        with patch("urllib.request.urlopen", return_value=_mock_response(mock_data)):
+            result = client.get_paper(42)
+        assert result is None
+
+
 class TestRate:
     def test_rate_up_with_int(self):
         client = ScholarInboxClient(session="test")
