@@ -24,11 +24,7 @@ from pathlib import Path
 
 import scholar_inbox
 from scholar_inbox.api import RATING_MAP, APIError, ScholarInboxClient, SessionExpiredError
-from scholar_inbox.auth import (
-    extract_from_playwright_profile,
-    extract_via_playwright_cli,
-    open_browser_for_login,
-)
+from scholar_inbox.auth import open_browser_for_login
 from scholar_inbox.config import Config
 
 
@@ -106,31 +102,10 @@ def cmd_login(args):
             print(f"Warning: Cookie saved but verification failed: {e}", file=sys.stderr)
         return
 
-    # Interactive browser login
-    if args.browser:
-        cookie = open_browser_for_login()
-        if cookie:
-            config.save_session(cookie)
-            print(f"Session saved.", file=sys.stderr)
-            try:
-                client = _get_client(config)
-                data = client.check_session()
-                if data and data.get("is_logged_in"):
-                    print(f"Logged in as: {data.get('name', 'unknown')}")
-                    return
-            except Exception:
-                pass
-            print("Cookie extracted but verification uncertain.", file=sys.stderr)
-        else:
-            print("Could not extract cookie from browser session.", file=sys.stderr)
-            sys.exit(1)
-        return
-
-    # Auto-extract: try profile DB first, then playwright-cli
-    cookie = extract_from_playwright_profile()
+    # Browser login (default) or explicit --browser
+    cookie = open_browser_for_login()
     if cookie:
         config.save_session(cookie)
-        print(f"Session saved (from Playwright profile).", file=sys.stderr)
         try:
             client = _get_client(config)
             data = client.check_session()
@@ -139,32 +114,10 @@ def cmd_login(args):
                 return
         except Exception:
             pass
-        print("Warning: Cookie found but login check failed. May need to re-login.", file=sys.stderr)
-        return
-
-    # Fallback: playwright-cli
-    print("Could not extract cookie from profile database (likely encrypted).", file=sys.stderr)
-    print("Trying playwright-cli...", file=sys.stderr)
-    cookie = extract_via_playwright_cli()
-    if cookie:
-        config.save_session(cookie)
-        print(f"Session saved (via playwright-cli).", file=sys.stderr)
-        try:
-            client = _get_client(config)
-            data = client.check_session()
-            if data and data.get("is_logged_in"):
-                print(f"Logged in as: {data.get('name', 'unknown')}")
-                return
-        except Exception:
-            pass
-        print("Cookie extracted but verification uncertain.", file=sys.stderr)
-        return
-
-    print("\nCould not extract cookie automatically.", file=sys.stderr)
-    print("Options:", file=sys.stderr)
-    print("  1. scholar-inbox login --browser    (open browser for OAuth)", file=sys.stderr)
-    print("  2. scholar-inbox login --cookie VAL  (paste cookie manually)", file=sys.stderr)
-    sys.exit(1)
+        print("Cookie saved but verification failed. Try: scholar-inbox status", file=sys.stderr)
+    else:
+        print("Login failed. Try: scholar-inbox login --cookie YOUR_COOKIE", file=sys.stderr)
+        sys.exit(1)
 
 
 def cmd_digest(args):
