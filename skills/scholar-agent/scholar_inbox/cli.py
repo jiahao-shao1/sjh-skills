@@ -462,7 +462,7 @@ def cmd_setup(args):
     warn = "\u26a0"
     all_good = True
 
-    print("Scholar Inbox Setup\n")
+    print("Scholar Agent Setup\n")
 
     # 1. Python version
     py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
@@ -481,7 +481,17 @@ def cmd_setup(args):
         print(f"  {fail} scholar-inbox not importable")
         all_good = False
 
-    # 3. Login status
+    # 3. playwright-cli (required for login and NotebookLM)
+    has_playwright = shutil.which("playwright-cli") is not None
+    if has_playwright:
+        print(f"  {ok} playwright-cli found")
+    else:
+        print(f"  {fail} playwright-cli not found")
+        print(f"    Install: npm install -g @anthropic-ai/playwright-cli")
+        print(f"    Then:    playwright-cli install chromium")
+        all_good = False
+
+    # 4. Login status
     config = _get_config()
     session = config.load_session()
     logged_in = False
@@ -502,23 +512,8 @@ def cmd_setup(args):
 
     if not logged_in:
         all_good = False
-        print(f"\n  Attempting login...\n")
-        # Try auto-extract first
-        cookie = extract_from_playwright_profile()
-        if cookie:
-            config.save_session(cookie)
-            try:
-                client = _get_client(config)
-                data = client.check_session()
-                if data and data.get("is_logged_in"):
-                    print(f"  {ok} Auto-login successful: {data.get('name', 'unknown')}")
-                    logged_in = True
-                    all_good = True
-            except Exception:
-                pass
-
-        if not logged_in:
-            print(f"  Auto-extract failed. Opening browser for OAuth...\n")
+        if has_playwright:
+            print(f"\n  Attempting login via browser...\n")
             cookie = open_browser_for_login()
             if cookie:
                 config.save_session(cookie)
@@ -533,15 +528,17 @@ def cmd_setup(args):
                     pass
 
             if not logged_in:
-                print(f"  {fail} Login failed. Try manually:")
-                print(f"    scholar-inbox login --cookie YOUR_COOKIE")
-
-    # 4. playwright-cli (optional, for NotebookLM)
-    has_playwright = shutil.which("playwright-cli") is not None
-    if has_playwright:
-        print(f"  {ok} playwright-cli found")
-    else:
-        print(f"  {warn} playwright-cli not found (optional — needed for NotebookLM deep reading)")
+                print(f"  {fail} Browser login failed. Try manually:")
+                print(f"    1. Open https://www.scholar-inbox.com in your browser")
+                print(f"    2. Log in with Google")
+                print(f"    3. Open DevTools (F12) → Application → Cookies")
+                print(f"    4. Copy the 'session' cookie value")
+                print(f"    5. Run: scholar-inbox login --cookie YOUR_COOKIE")
+        else:
+            print(f"\n  Cannot auto-login without playwright-cli.")
+            print(f"  Install playwright-cli first, then re-run: scholar-inbox setup")
+            print(f"  Or manually: scholar-inbox login --cookie YOUR_COOKIE")
+            print(f"    (see above for how to get the cookie)")
 
     # 5. NotebookLM skill (optional)
     notebooklm_profile = Path.home() / ".claude" / "skills" / "notebooklm"
