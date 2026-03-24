@@ -23,7 +23,7 @@
 **Claude Code skill** (recommended for Claude Code users):
 
 ```bash
-claude install-skill https://github.com/jiahao-shao1/scholar-inbox
+claude install-skill https://github.com/jiahao-shao1/scholar-inbox-cli
 ```
 
 **pip:**

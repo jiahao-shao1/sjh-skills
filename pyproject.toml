@@ -27,8 +27,8 @@ dependencies = []
 scholar-inbox = "scholar_inbox.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/jiahao-shao1/scholar-inbox"
-Repository = "https://github.com/jiahao-shao1/scholar-inbox"
+Homepage = "https://github.com/jiahao-shao1/scholar-inbox-cli"
+Repository = "https://github.com/jiahao-shao1/scholar-inbox-cli"
 
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
