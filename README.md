@@ -1,5 +1,7 @@
 # SJH Skills
 
+English | [中文](README.zh-CN.md)
+
 > A collection of Claude Code skills for research workflow automation.
 
 ## Skills
@@ -25,6 +27,20 @@ claude install-skill https://github.com/jiahao-shao1/sjh-skills
 ```bash
 claude install-skill https://github.com/jiahao-shao1/sjh-skills --path skills/scholar-agent
 ```
+
+## Architecture
+
+```
+sjh_skills/
+└── skills/
+    ├── scholar-agent/     # Scholar Inbox API + NotebookLM deep reading
+    ├── cmux/              # tmux multiplexer + browser panes
+    ├── daily-summary/     # git + Claude sessions + Notion aggregation
+    ├── notion-lifeos/     # PARA method + Make Time journaling
+    └── web-fetcher/       # Jina → defuddle → markdown.new fallback
+```
+
+Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.
 
 ## License
 
