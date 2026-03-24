@@ -453,6 +453,126 @@ def cmd_read(args):
     print(f"Paper {args.paper_id}: marked as read")
 
 
+def cmd_setup(args):
+    """Interactive setup — check all prerequisites and guide user through configuration."""
+    import shutil
+
+    ok = "\u2713"
+    fail = "\u2717"
+    warn = "\u26a0"
+    all_good = True
+
+    print("Scholar Inbox Setup\n")
+
+    # 1. Python version
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    if sys.version_info >= (3, 10):
+        print(f"  {ok} Python {py_ver}")
+    else:
+        print(f"  {fail} Python {py_ver} (need 3.10+)")
+        all_good = False
+
+    # 2. scholar-inbox importable
+    try:
+        import scholar_inbox as _si
+
+        print(f"  {ok} scholar-inbox {_si.__version__}")
+    except ImportError:
+        print(f"  {fail} scholar-inbox not importable")
+        all_good = False
+
+    # 3. Login status
+    config = _get_config()
+    session = config.load_session()
+    logged_in = False
+    if session:
+        try:
+            client = _get_client(config)
+            data = client.check_session()
+            if data and data.get("is_logged_in"):
+                name = data.get("name", "unknown")
+                print(f"  {ok} Logged in as: {name}")
+                logged_in = True
+            else:
+                print(f"  {fail} Session expired")
+        except Exception:
+            print(f"  {fail} Session invalid")
+    else:
+        print(f"  {fail} Not logged in")
+
+    if not logged_in:
+        all_good = False
+        print(f"\n  Attempting login...\n")
+        # Try auto-extract first
+        cookie = extract_from_playwright_profile()
+        if cookie:
+            config.save_session(cookie)
+            try:
+                client = _get_client(config)
+                data = client.check_session()
+                if data and data.get("is_logged_in"):
+                    print(f"  {ok} Auto-login successful: {data.get('name', 'unknown')}")
+                    logged_in = True
+                    all_good = True
+            except Exception:
+                pass
+
+        if not logged_in:
+            print(f"  Auto-extract failed. Opening browser for OAuth...\n")
+            cookie = open_browser_for_login()
+            if cookie:
+                config.save_session(cookie)
+                try:
+                    client = _get_client(config)
+                    data = client.check_session()
+                    if data and data.get("is_logged_in"):
+                        print(f"  {ok} Login successful: {data.get('name', 'unknown')}")
+                        logged_in = True
+                        all_good = True
+                except Exception:
+                    pass
+
+            if not logged_in:
+                print(f"  {fail} Login failed. Try manually:")
+                print(f"    scholar-inbox login --cookie YOUR_COOKIE")
+
+    # 4. playwright-cli (optional, for NotebookLM)
+    has_playwright = shutil.which("playwright-cli") is not None
+    if has_playwright:
+        print(f"  {ok} playwright-cli found")
+    else:
+        print(f"  {warn} playwright-cli not found (optional — needed for NotebookLM deep reading)")
+
+    # 5. NotebookLM skill (optional)
+    notebooklm_profile = Path.home() / ".claude" / "skills" / "notebooklm"
+    if notebooklm_profile.exists():
+        print(f"  {ok} NotebookLM skill installed")
+    else:
+        print(f"  {warn} NotebookLM skill not found (optional — enables deep reading mode)")
+
+    # 6. Add-to-NotebookLM script
+    script_candidates = [
+        Path(__file__).parent.parent / "scripts" / "add_to_notebooklm.sh",
+        Path.home() / ".agents" / "skills" / "scholar-inbox" / "scripts" / "add_to_notebooklm.sh",
+    ]
+    script_found = any(s.exists() for s in script_candidates)
+    if has_playwright and notebooklm_profile.exists() and script_found:
+        print(f"  {ok} NotebookLM batch-add script ready")
+    elif not has_playwright or not notebooklm_profile.exists():
+        pass  # Already warned above
+    elif not script_found:
+        print(f"  {warn} add_to_notebooklm.sh not found")
+
+    # Summary
+    print()
+    if all_good:
+        mode = "Enhanced (CLI + NotebookLM)" if (has_playwright and notebooklm_profile.exists()) else "Basic (CLI only)"
+        print(f"  {ok} Setup complete! Mode: {mode}")
+        print(f"\n  Try: scholar-inbox digest --limit 5")
+    else:
+        print(f"  {fail} Setup incomplete — fix the issues above and re-run: scholar-inbox setup")
+
+
 def cmd_config(args):
     """Show or set configuration values."""
     config = _get_config()
@@ -489,6 +609,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     subparsers = parser.add_subparsers(dest="command")
+
+    # setup
+    subparsers.add_parser("setup", help="Interactive setup — check prerequisites and configure")
 
     # status
     subparsers.add_parser("status", help="Check login status")
@@ -558,6 +681,7 @@ def main(argv: list[str] | None = None):
         sys.exit(0)
 
     commands = {
+        "setup": cmd_setup,
         "status": cmd_status,
         "login": cmd_login,
         "digest": cmd_digest,
