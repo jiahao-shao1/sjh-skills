@@ -16,16 +16,19 @@
 
 ## 安装
 
+**安装单个**（推荐）：
+
+```bash
+npx skills add https://github.com/jiahao-shao1/sjh-skills --skill scholar-agent
+npx skills add https://github.com/jiahao-shao1/sjh-skills --skill cmux
+```
+
+会同时安装到 `~/.claude/skills/` 和 `~/.agents/skills/`，所有 coding agent（Claude Code、Cursor、Windsurf 等）都能使用。
+
 **安装全部：**
 
 ```bash
-claude install-skill https://github.com/jiahao-shao1/sjh-skills
-```
-
-**安装单个：**
-
-```bash
-claude install-skill https://github.com/jiahao-shao1/sjh-skills --path skills/scholar-agent
+npx skills add https://github.com/jiahao-shao1/sjh-skills
 ```
 
 ## 项目结构
