@@ -353,11 +353,11 @@ def cmd_trending(args):
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    if not data or "trending_df" not in data:
+    if not data:
         print("Error: Failed to fetch trending.", file=sys.stderr)
         sys.exit(1)
 
-    papers = data["trending_df"][:args.limit]
+    papers = (data.get("trending_df") or data.get("digest_df") or [])[:args.limit]
     print(f"# Trending Papers (last {args.days} days, category: {args.category})\n")
 
     for i, p in enumerate(papers, 1):
