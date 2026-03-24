@@ -324,51 +324,6 @@ def _slugify_notebook_name(name: str) -> str:
     return slug or "notebook"
 
 
-def _register_notebook_in_library(
-    notebooklm: dict[str, Path], notebook_url: str, notebook_name: str
-) -> None:
-    """Best-effort register/update notebook metadata in NotebookLM library."""
-    run_script = notebooklm["run_script"]
-    manager_script = notebooklm["skill_dir"] / "scripts" / "notebook_manager.py"
-    if not run_script.exists() or not manager_script.exists():
-        return
-
-    topics = notebook_name.lower().replace(" ", "-")
-    _run_command(
-        [
-            "python3",
-            str(run_script),
-            "notebook_manager.py",
-            "add",
-            "--url",
-            notebook_url,
-            "--name",
-            notebook_name,
-            "--description",
-            f"Created by scholar-inbox e2e for {notebook_name}",
-            "--topics",
-            topics,
-        ],
-        timeout=30,
-    )
-
-
-def _extract_answer_block(output: str) -> str:
-    """Extract the answer portion from ask_question.py output."""
-    marker = "============================================================"
-    if marker not in output:
-        return output.strip()
-
-    parts = output.split(marker)
-    if len(parts) < 3:
-        return output.strip()
-
-    answer = parts[2].strip()
-    if answer.startswith("Question:"):
-        answer = answer.split("\n", 1)[1].strip() if "\n" in answer else ""
-    return answer
-
-
 def _append_query_param(url: str, key: str, value: str) -> str:
     """Append or replace a query parameter in a URL."""
     parsed = urlparse(url)
@@ -1356,118 +1311,6 @@ def cmd_doctor(args):
         sys.exit(1)
 
 
-def cmd_e2e(args):
-    """Run the Scholar Inbox -> NotebookLM -> Q&A flow in one command."""
-    notebooklm = _notebooklm_paths()
-    create_script = _first_existing(_script_candidates("create_notebook.sh"))
-    rename_script = _first_existing(_script_candidates("rename_notebook.sh"))
-    add_script = _first_existing(_script_candidates("add_to_notebooklm.sh"))
-
-    if not create_script or not rename_script or not add_script:
-        print("Error: NotebookLM scripts are incomplete. Run 'scholar-inbox doctor'.", file=sys.stderr)
-        sys.exit(1)
-
-    if not notebooklm["run_script"].exists() or not notebooklm["ask_question_script"].exists():
-        print("Error: NotebookLM ask scripts are missing. Run 'scholar-inbox doctor'.", file=sys.stderr)
-        sys.exit(1)
-
-    client = _get_client()
-    papers = []
-    urls = []
-
-    for paper_id in args.paper_ids:
-        try:
-            paper = client.get_paper(paper_id)
-        except SessionExpiredError:
-            print("Error: Session expired. Run 'scholar-inbox login' first.", file=sys.stderr)
-            sys.exit(1)
-        except APIError as e:
-            print(f"Error: Failed to fetch paper {paper_id}: {e}", file=sys.stderr)
-            sys.exit(1)
-
-        if not paper:
-            print(f"Error: Paper {paper_id} not found in Scholar Inbox.", file=sys.stderr)
-            sys.exit(1)
-
-        arxiv_id = paper.get("arxiv_id")
-        if not arxiv_id:
-            print(f"Error: Paper {paper_id} has no arXiv ID and cannot be sent to NotebookLM.", file=sys.stderr)
-            sys.exit(1)
-
-        papers.append(
-            {
-                "paper_id": paper_id,
-                "title": paper.get("title", ""),
-                "arxiv_id": arxiv_id,
-                "url": f"https://arxiv.org/abs/{arxiv_id}",
-            }
-        )
-        urls.append(f"https://arxiv.org/abs/{arxiv_id}")
-
-    create_result = _run_checked_command(
-        ["bash", str(create_script)],
-        timeout=180,
-        description="create notebook",
-    )
-    notebook_url = create_result.stdout.strip().splitlines()[-1].strip()
-    time.sleep(3)
-
-    _run_checked_command(
-        ["bash", str(rename_script), notebook_url, args.notebook_name],
-        timeout=180,
-        description="rename notebook",
-    )
-    time.sleep(2)
-
-    _register_notebook_in_library(notebooklm, notebook_url, args.notebook_name)
-
-    add_cmd = ["bash", str(add_script), notebook_url, *urls]
-    _run_checked_command(
-        add_cmd,
-        timeout=240,
-        description="add papers to notebook",
-    )
-    time.sleep(3)
-
-    ask_result = _run_checked_command(
-        [
-            "python3",
-            str(notebooklm["run_script"]),
-            "ask_question.py",
-            "--notebook-url",
-            notebook_url,
-            "--question",
-            args.question,
-        ],
-        timeout=300,
-        description="ask NotebookLM",
-    )
-    answer = _extract_answer_block(ask_result.stdout)
-
-    output = {
-        "notebook_name": args.notebook_name,
-        "notebook_url": notebook_url,
-        "paper_count": len(papers),
-        "papers": papers,
-        "question": args.question,
-        "answer": answer,
-    }
-
-    if args.json:
-        print(json.dumps(output, ensure_ascii=False, indent=2))
-        return
-
-    print(f"Notebook: {args.notebook_name}")
-    print(notebook_url)
-    print()
-    print("Papers:")
-    for paper in papers:
-        print(f"- [{paper['paper_id']}] {paper['arxiv_id']} — {paper['title']}")
-    print()
-    print("Answer:")
-    print(answer)
-
-
 def cmd_config(args):
     """Show or set configuration values."""
     config = _get_config()
@@ -1521,16 +1364,6 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Exit non-zero on critical failures",
     )
-
-    # e2e
-    e2e_p = subparsers.add_parser(
-        "e2e",
-        help="Create a NotebookLM notebook, add papers, and ask a question in one run",
-    )
-    e2e_p.add_argument("--notebook-name", required=True, help="NotebookLM notebook name")
-    e2e_p.add_argument("--question", required=True, help="Question to ask NotebookLM")
-    e2e_p.add_argument("--json", action="store_true", help="Output machine-readable JSON")
-    e2e_p.add_argument("paper_ids", type=int, nargs="+", help="Scholar Inbox paper IDs with arXiv IDs")
 
     # status
     subparsers.add_parser("status", help="Check login status")
@@ -1602,7 +1435,6 @@ def main(argv: list[str] | None = None):
     commands = {
         "setup": cmd_setup,
         "doctor": cmd_doctor,
-        "e2e": cmd_e2e,
         "status": cmd_status,
         "login": cmd_login,
         "digest": cmd_digest,

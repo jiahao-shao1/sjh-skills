@@ -36,17 +36,6 @@ def test_cli_doctor_json():
     assert '"checks"' in result.stdout
 
 
-def test_cli_e2e_help():
-    """e2e subcommand is registered and prints help."""
-    result = subprocess.run(
-        [sys.executable, "-m", "scholar_inbox", "e2e", "--help"],
-        capture_output=True, text=True,
-    )
-    assert result.returncode == 0
-    assert "--notebook-name" in result.stdout
-    assert "--question" in result.stdout
-
-
 def test_sanitize_summary_flags_obvious_mismatch():
     """Clearly unrelated benchmark-heavy summaries should be suppressed."""
     title = "FactorSmith: Agentic Simulation Generation via MDP Decomposition"
