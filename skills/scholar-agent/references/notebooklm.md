@@ -12,10 +12,10 @@ The `notebooklm` skill must be installed and authenticated:
 
 ```bash
 # Check auth
-python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py status
+python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py status
 
 # Setup (first time)
-python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
+python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
 ```
 
 If notebooklm skill is not installed or auth fails, fall back to Basic Mode.
@@ -68,7 +68,7 @@ This script edits the in-page title field using the shared NotebookLM browser pr
 ## Querying NotebookLM
 
 ```bash
-NOTEBOOKLM="python ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
+NOTEBOOKLM="python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
 
 $NOTEBOOKLM --question "your question" --notebook-url "<url>"
 $NOTEBOOKLM --question "your question" --notebook-id "<id>"
@@ -77,7 +77,7 @@ $NOTEBOOKLM --question "your question" --notebook-id "<id>"
 ## Notebook Management
 
 ```bash
-NB="python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py"
+NB="python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py"
 
 $NB list                          # list all notebooks
 $NB search --query "topic"        # find notebook by topic

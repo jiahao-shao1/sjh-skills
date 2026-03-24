@@ -682,7 +682,7 @@ def _build_doctor_report(online: bool = False) -> dict:
                 "warn",
                 "NotebookLM auth state",
                 f"Missing {state_file}",
-                "Run: python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup",
+                "Run: python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup",
             )
         )
 

@@ -48,7 +48,7 @@ npm install -g @anthropic-ai/playwright-cli
 npx skills add notebooklm
 
 # 3. NotebookLM Google 登录（仅首次）
-python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
+python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
 ```
 
 ## CLI Quick Reference
@@ -111,14 +111,14 @@ scholar-inbox config  # get user's research interests
 
 每个分类对应一个 NotebookLM notebook。查找已有 notebook：
 ```bash
-python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "<topic>"
+python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "<topic>"
 ```
 
 如果没有匹配的 notebook，用脚本自动创建：
 ```bash
 NB_URL=$(bash <skill-path>/scripts/create_notebook.sh)
 # 注册到本地 library
-python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py add \
+python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py add \
   --url "$NB_URL" --name "<topic>" --description "<desc>" --topics "<t1,t2>"
 ```
 
@@ -154,7 +154,7 @@ Subagent 返回：筛选后的论文列表 + 分类 + 入库状态
 拿到 subagent 返回的论文列表后，调 notebooklm skill 提问：
 
 ```bash
-NOTEBOOKLM="python ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
+NOTEBOOKLM="python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
 
 # 概览
 $NOTEBOOKLM --question "总结每篇论文的核心贡献（2-3 句），标注论文标题" --notebook-url "$URL"
@@ -201,7 +201,7 @@ $NOTEBOOKLM --question "这些论文与 [user interests] 有何关联？哪些�
 
 直接调 NotebookLM skill 向 notebook 提问：
 ```bash
-python ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
+python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
   --question "问题" --notebook-url "<url>"
 ```
 
@@ -278,7 +278,7 @@ scholar-inbox rate-batch down 111 222    # 批量踩
 | 错误 | 处理 |
 |------|------|
 | NotebookLM skill 未安装 | 降级到 Basic Mode |
-| Google auth 过期 | `python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
+| Google auth 过期 | `python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
 | Source 添加失败 | 跳过该论文，继续处理其余 |
 | NotebookLM rate limit | 降级到 Basic Mode |
 | Scholar Inbox session 过期 | `scholar-inbox login --browser` 重新登录 |
