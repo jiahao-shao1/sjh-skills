@@ -51,6 +51,83 @@ npx skills add notebooklm
 python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
 ```
 
+## 筛选配置
+
+配置文件在 `~/.config/scholar-inbox/`：
+
+| 文件 | 作用 |
+|------|------|
+| `context.md` | 全局偏好（研究方向、机构分级、每日篇数等） |
+| `<project>.md` | 项目级配置（关键词过滤 + NotebookLM 分类规则） |
+
+执行 `/scholar-inbox` 时，根据当前工作目录的项目名加载对应配置文件。如果存在项目配置，按其中的关键词和机构分级过滤论文列表，并按分类规则将论文归入对应 NotebookLM notebook。
+
+### 首次配置
+
+首次执行 `/scholar-inbox` 时，检查 `~/.config/scholar-inbox/context.md` 是否存在：
+
+- **存在** → 读取配置，直接进入正常流程
+- **不存在** → 用 AskUserQuestion 交互式收集偏好，生成配置文件
+
+#### 第 1 轮：研究偏好（同时问 3 个问题）
+
+1. **研究方向**
+   - header: "研究方向关键词"
+   - 选项: "RL, VLM, visual reasoning" / "NLP, LLM, alignment" / Other（自定义）
+   - preview: `用于论文筛选时的相关性排序\n示例: "reinforcement learning, vision-language model, tool use"`
+
+2. **机构偏好**
+   - header: "机构分级"
+   - 选项: "区分（顶级 > 知名 > 其他）" / "不区分"
+   - preview: `区分时：OpenAI/DeepMind/META 等优先展示`
+
+3. **每日篇数**
+   - header: "每天想看几篇"
+   - 选项: "5" / "10" / "15"
+
+#### 第 2 轮：分类 + 项目（同时问 2 个问题）
+
+4. **NotebookLM 分类方式**
+   - header: "论文分类到 notebook 的维度"
+   - 选项: "按研究主题自动分类" / "按方法类型（RL / SFT / 数据 / 评估）" / "全部放一个 notebook"
+
+5. **项目级配置**
+   - header: "是否需要项目级筛选"
+   - 选项: "需要（在特定项目目录下只看该项目相关论文）" / "不需要"
+   - 如果选「需要」，追问当前项目的核心关键词
+
+#### 生成配置
+
+根据用户回答，生成 `~/.config/scholar-inbox/context.md`：
+
+```markdown
+# Scholar Inbox 全局配置
+
+## 研究方向
+keywords: RL, VLM, visual reasoning, tool use
+
+## 筛选偏好
+daily_limit: 10
+institution_tier: true  # 是否区分机构分级
+
+## NotebookLM 分类
+mode: auto_topic  # auto_topic / method_type / single_notebook
+```
+
+如果用户启用了项目级配置，额外生成 `~/.config/scholar-inbox/<project>.md`：
+
+```markdown
+# <project> 项目配置
+
+## 项目关键词
+keywords: agentic reasoning, image editing, multi-turn tool use
+
+## 筛选规则
+仅展示与项目关键词匹配的论文，其余论文降低优先级但不隐藏。
+```
+
+后续可手动编辑配置文件调整。
+
 ## CLI Quick Reference
 
 **Running the CLI**: If `scholar-inbox` is not on PATH:
