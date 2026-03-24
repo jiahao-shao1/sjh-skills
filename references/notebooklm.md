@@ -1,157 +1,148 @@
-# NotebookLM Enhanced Mode Reference
+# Enhanced Mode: NotebookLM Deep Reading
 
-This reference is loaded when Enhanced Mode (NotebookLM integration) is activated.
-Claude follows this workflow to perform deep paper reading via NotebookLM.
+Scholar Inbox CLI's Enhanced Mode uses NotebookLM as a **RAG subagent** — Gemini reads the PDFs, Claude asks questions and synthesizes. This avoids Claude reading full papers directly, saving tokens and eliminating hallucination about paper content.
 
-## Prerequisites Check
+## How It Works
 
-Before starting, verify:
+NotebookLM (backed by Gemini) ingests arXiv papers as sources. When Claude queries it, responses come exclusively from the paper content with inline citations. Claude never sees the raw PDF — only source-grounded answers.
+
+**Token economics**: Reading a 20-page paper directly costs ~50K tokens. Querying NotebookLM about it costs ~500 tokens per question. For 5 papers, that's 250K saved.
+
+## Prerequisites
+
+The `notebooklm` skill must be installed and authenticated. All NotebookLM operations go through its scripts — this skill does NOT use playwright-cli directly for NotebookLM.
 
 ```bash
-# playwright-cli must be installed
-which playwright-cli
+# Check notebooklm auth
+python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py status
 
-# NotebookLM requires Google login state in playwright-cli persistent profile
-# If login has expired, prompt user to re-authenticate manually
+# If not authenticated:
+python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
+# (Browser opens for Google login)
 ```
 
-If either check fails, fall back to Basic Mode and inform the user.
+If notebooklm skill is not installed or auth fails, fall back to Basic Mode.
 
-## Workflow
+## Step-by-Step Workflow
 
-### Step 1: Get Papers via CLI
+### Step 1: Fetch and Filter Papers
 
 ```bash
 scholar-inbox digest --json --limit 20
+scholar-inbox config  # get user's research interests
 ```
 
-Parse the JSON output to get paper IDs, titles, arXiv URLs, abstracts, and scores.
+AI-filter papers based on interests. Select top 5-10 most relevant papers. Skip papers the user has already rated or read.
 
-### Step 2: AI Classification
+### Step 2: Classify Papers into Groups
 
-Dynamically group papers by topic based on the user's configured interests:
+Dynamically group selected papers by topic. Derive group names from paper titles, keywords, and user interests — never use hardcoded categories.
+
+Example grouping:
+- "RL Reward Design" (3 papers)
+- "VLM Tool Use" (2 papers)
+- "Multimodal Reasoning" (2 papers)
+
+Each group maps to a NotebookLM notebook. If no interests configured, use a single group "Daily Papers".
+
+### Step 3: Add Papers to NotebookLM
+
+For each group, use the notebooklm skill's scripts:
 
 ```bash
-scholar-inbox config  # check user's research interests
+# Check if a notebook for this group already exists
+python ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "RL Reward Design"
+
+# If not found, the paper URL can be added directly with --notebook-url for a new notebook
+# If found, use the existing notebook ID
+
+# Add each paper's arXiv URL as a source
+# NotebookLM's add source supports website URLs — use the arXiv abstract page
+python ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
+  --question "What are the key contributions, methods, and results of the most recently added paper?" \
+  --notebook-url "https://notebooklm.google.com/notebook/..."
 ```
 
-**Rules:**
-- Generate group names from paper titles, keywords, and user interests
-- DO NOT use hardcoded categories — derive them from the actual paper content
-- Each group should have 2-5 papers
-- If no interests are configured, skip classification and use all high-score papers as one group
-- Limit to top 10 papers total per session
+**Important**: When adding new papers to an existing notebook, first add the arXiv URL as a source (via the NotebookLM web UI through playwright-cli if the notebooklm skill doesn't support direct source addition), then query.
 
-### Step 3: Open NotebookLM
+### Step 4: Deep Read via NotebookLM
+
+For each paper group, ask NotebookLM targeted questions:
 
 ```bash
-playwright-cli open --persistent https://notebooklm.google.com
+NOTEBOOKLM="python ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
+
+# Overview question
+$NOTEBOOKLM --question "Summarize each paper's core contribution in 2-3 sentences. Include the paper title before each summary." --notebook-url "$URL"
+
+# Method deep-dive
+$NOTEBOOKLM --question "Compare the methods across papers. What are the key technical innovations? What baselines do they compare against?" --notebook-url "$URL"
+
+# Relevance to user's research
+$NOTEBOOKLM --question "How do these papers relate to [user's research interests]? Which findings are most actionable?" --notebook-url "$URL"
 ```
 
-Wait 3-5 seconds for the page to fully load. Verify the page rendered correctly
-before proceeding.
+**Follow-up is critical**: NotebookLM answers end with "Is that ALL you need to know?" — if the answer is incomplete or raises new questions, ask follow-ups until you have enough information to write a comprehensive report.
 
-### Step 4: For Each Paper Group
+### Step 5: Compile Reading Report
 
-For each classified group:
+Synthesize NotebookLM's responses into a structured report:
 
-1. **Find or create a notebook** matching the group name
-   - Search existing notebooks first
-   - Only create a new one if no match is found
-2. **Add sources** to the notebook:
-   - Click "Add source" button
-   - Select "Website" as the source type
-   - Paste the arXiv URL for each paper
-   - Wait for NotebookLM to finish processing each source before adding the next
-3. **Repeat** for all papers in the group
+```markdown
+## YYYY-MM-DD Paper Reading Report (N papers)
 
-### Step 5: Ask NotebookLM for Analysis
+### Group: RL Reward Design
 
-Use playwright-cli to interact with the notebook's chat interface:
+#### 1. [Paper Title] | Authors (Institution)
+- **Paper ID**: 4626954 | **Score**: 0.880
+- **arXiv**: https://arxiv.org/abs/XXXX.XXXXX
+- **Core contribution**: [from NotebookLM, with citation]
+- **Method**: [key technical details]
+- **Results**: [main numbers]
+- **Relevance**: [how it connects to user's work]
 
-- Type: "Summarize the key contributions and methods of the newly added papers"
-- Wait for response, then ask:
-  "How do these papers relate to [user's research interests]?"
+#### 2. ...
 
-Capture the responses for the user's review.
+### Group: VLM Tool Use
+...
 
-### Step 6: Close Browser
+---
+**Actions**: Rate papers with `scholar-inbox rate <id> up/down`
+```
 
-Always close the browser when done:
+### Step 6: Rate Papers
+
+After the user reviews the report:
 
 ```bash
-playwright-cli close
+scholar-inbox rate <id> up      # relevant papers
+scholar-inbox rate <id> down    # not relevant
+scholar-inbox rate-batch up 111 222 333  # batch
 ```
 
-### Step 7: Rate Papers
+## Notebook Lifecycle
 
-Based on the analysis, suggest ratings and let the user confirm:
-
-```bash
-scholar-inbox rate <id> up    # for relevant papers
-scholar-inbox rate <id> down  # for irrelevant papers
-```
-
-## Notebook Management
-
-Notebooks are tracked in `~/.config/scholar-inbox/notebooks.json`.
-
-**Format:**
-```json
-{
-  "notebooks": {
-    "Group Name": {
-      "url": "https://notebooklm.google.com/notebook/...",
-      "source_count": 12,
-      "last_updated": "2026-03-24"
-    }
-  }
-}
-```
-
-**Rules:**
-- NotebookLM has a limit of **50 sources per notebook**
-- When a notebook reaches 40+ sources, warn the user
-- When it reaches 50, suggest creating a new notebook (e.g., "Topic Name v2")
-- Update `notebooks.json` after each session
+- **Notebooks accumulate knowledge** — papers added today are queryable tomorrow
+- **Source limit**: 50 per notebook. At 40+, warn the user. At 50, create "Topic v2"
+- Track notebooks in `~/.config/scholar-inbox/notebooks.json` (update after each session)
+- Periodically query old notebooks to answer cross-paper questions
 
 ## Constraints
 
-| Constraint | Value | Reason |
-|------------|-------|--------|
-| Max papers per session | 10 | Avoid overwhelming NotebookLM |
-| Wait between source adds | 2-3 sec | Let NotebookLM process each URL |
-| Max sources per notebook | 50 | NotebookLM hard limit |
-| Always close playwright-cli | Required | Prevent orphan browser processes |
+| Rule | Why |
+|------|-----|
+| Max 10 papers per session | NotebookLM processing time + quality |
+| Use notebooklm skill scripts, not raw playwright-cli | Reliability, auth management, venv isolation |
+| Follow up on NotebookLM answers | First answer is often incomplete |
+| Close browser after each session | Prevent orphan processes |
+| Dynamic classification only | Hardcoded categories become stale |
 
 ## Error Handling
 
-- **NotebookLM unreachable**: Fall back to Basic Mode, inform user
-- **Google login expired**: Prompt user to run `playwright-cli open --persistent https://accounts.google.com` to re-login
-- **Source add fails**: Skip the paper, log warning, continue with remaining papers
-- **Rate limit / slow processing**: Increase wait times, reduce batch size
-
-## Example Session
-
-```
-> scholar-inbox enhanced
-
-Checking prerequisites... OK
-Fetching papers... 18 papers found
-Classifying into groups:
-  - "Vision-Language Models" (3 papers)
-  - "Reinforcement Learning for LLMs" (4 papers)
-  - "3D Scene Understanding" (3 papers)
-
-Opening NotebookLM...
-Processing "Vision-Language Models":
-  Added: arxiv.org/abs/2603.12345
-  Added: arxiv.org/abs/2603.12346
-  Added: arxiv.org/abs/2603.12347
-  Requesting analysis...
-
-[NotebookLM response displayed]
-
-Closing browser...
-Rating suggestions ready. Use `scholar-inbox rate` to confirm.
-```
+| Error | Action |
+|-------|--------|
+| notebooklm skill not installed | Fall back to Basic Mode, inform user |
+| Google auth expired | `python ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
+| Source add fails | Skip paper, continue with rest |
+| NotebookLM rate limit (50/day) | Switch to Basic Mode for remaining papers |
+| Notebook at 50 sources | Create new notebook with "v2" suffix |
