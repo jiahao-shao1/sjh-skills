@@ -1,14 +1,18 @@
 ---
 name: notion-lifeos
 description: >
-  Notion LifeOS — PARA life management with Make Time journaling.
-  Activate when: user mentions Notion, notes, tasks, projects, todos, journals,
-  or uses phrases like 'take a note', 'add a task', 'what do I need to do',
-  'search my notes', 'jot down', 'today was great', 'record a thought',
-  or Chinese equivalents like '帮我记一下', '加个任务', '今天要做什么', '查笔记'.
-  Also: PARA method, personal knowledge management, daily reviews.
-  Do NOT activate for: Notion API docs, Notion pricing/plans, workspace admin,
-  database schema modification, or general productivity advice without data intent.
+  Use this skill whenever the user wants to interact with their personal Notion LifeOS system —
+  a PARA-based life management system with tasks, notes, projects, and Make Time journals.
+  MUST invoke for: adding tasks or todos, taking quick notes, jotting down ideas, recording
+  thoughts or journal reflections (e.g. "the best thing today was..."), checking what needs
+  to be done today, querying unfinished tasks, searching personal notes, creating new projects,
+  or any personal data storage/retrieval. This skill has pre-configured Notion database IDs
+  and API access — you cannot interact with the user's LifeOS without it.
+  Trigger phrases: 'add task', 'take a note', 'jot down', 'what do I need to do',
+  'search my notes', 'unfinished tasks', 'create project', 'today was great',
+  'record this', '帮我记一下', '加个任务', '今天要做什么', '查笔记', '待办', '记录想法'.
+  NOT for: Notion API docs, pricing, workspace admin, schema design, productivity advice,
+  or work summaries (use daily-summary for that).
 ---
 
 # Notion LifeOS Skill

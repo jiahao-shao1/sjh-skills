@@ -1,0 +1,22 @@
+[
+  {"query": "fetch this page https://blog.openai.com/gpt5", "should_trigger": true},
+  {"query": "read this URL for me: https://arxiv.org/abs/2401.12345", "should_trigger": true},
+  {"query": "抓取这个网页的内容 https://zhuanlan.zhihu.com/p/123456", "should_trigger": true},
+  {"query": "grab the content from https://twitter.com/karpathy/status/12345", "should_trigger": true},
+  {"query": "summarize this article https://lilianweng.github.io/posts/2024-01-01/", "should_trigger": true},
+  {"query": "读这个链接 https://reddit.com/r/MachineLearning/comments/abc123", "should_trigger": true},
+  {"query": "extract the text from this web page https://example.com/blog/post", "should_trigger": true},
+  {"query": "can you get the markdown content of https://docs.python.org/3/tutorial/", "should_trigger": true},
+  {"query": "help me read what's on this page https://news.ycombinator.com/item?id=12345", "should_trigger": true},
+  {"query": "把这个网页转成 markdown https://weibo.com/detail/12345", "should_trigger": true},
+  {"query": "search the web for recent papers on RLHF", "should_trigger": false},
+  {"query": "download this file https://example.com/data.zip", "should_trigger": false},
+  {"query": "open this URL in the browser", "should_trigger": false},
+  {"query": "what's the weather in Beijing today", "should_trigger": false},
+  {"query": "帮我搜索一下关于 transformer 的资料", "should_trigger": false},
+  {"query": "take a screenshot of this website", "should_trigger": false},
+  {"query": "fill in the form on this webpage and submit", "should_trigger": false},
+  {"query": "monitor this website for changes", "should_trigger": false},
+  {"query": "how do I scrape websites with Python", "should_trigger": false},
+  {"query": "check if this URL is accessible", "should_trigger": false}
+]

@@ -1,0 +1,22 @@
+[
+  {"query": "run these two test suites in parallel in separate panes", "should_trigger": true},
+  {"query": "split a right pane and launch codex there to fix the bug", "should_trigger": true},
+  {"query": "spawn a claude code agent in a new split to handle the refactor", "should_trigger": true},
+  {"query": "open https://github.com/my/repo/pull/42 in the browser pane", "should_trigger": true},
+  {"query": "show the plan markdown side by side with my terminal", "should_trigger": true},
+  {"query": "帮我开个新 pane 跑 pytest，同时我继续写代码", "should_trigger": true},
+  {"query": "set the sidebar progress to 50% with label 'testing'", "should_trigger": true},
+  {"query": "fan out these 3 tasks across splits and collect results", "should_trigger": true},
+  {"query": "read the last 20 lines from the pane running tests", "should_trigger": true},
+  {"query": "send ctrl-c to the surface running the dev server", "should_trigger": true},
+  {"query": "open a terminal for me", "should_trigger": false},
+  {"query": "run pytest tests/ -v", "should_trigger": false},
+  {"query": "帮我执行一下这个命令 ls -la", "should_trigger": false},
+  {"query": "what's the output of git status", "should_trigger": false},
+  {"query": "install this npm package globally", "should_trigger": false},
+  {"query": "how do I configure tmux panes", "should_trigger": false},
+  {"query": "create a new file called test.py", "should_trigger": false},
+  {"query": "can you debug this Python script for me", "should_trigger": false},
+  {"query": "show me the git diff for my changes", "should_trigger": false},
+  {"query": "kill the process on port 8080", "should_trigger": false}
+]

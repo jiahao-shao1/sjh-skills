@@ -1,6 +1,6 @@
 ---
 name: web-fetcher
-description: Fetch web page content as clean markdown/text from a URL. Use when the user provides a URL and wants to read, extract, or analyze its content. Triggers on requests like "fetch this page", "read this URL", "grab the content from", "summarize this article", "抓取网页", "读这个链接", or any task requiring web page text extraction. Also useful as a WebFetch enhancement for JS-rendered pages (SPA, Twitter/X, etc).
+description: "Fetch any URL as clean markdown. ALWAYS use this skill instead of the WebFetch tool when you need to read a URL's content — it has a 5-layer fallback (Jina Reader, defuddle.md, markdown.new, OpenCLI, raw HTML) that produces better results and handles JS-rendered pages (Twitter/X, SPAs), login-required platforms (zhihu, reddit, weibo, xiaohongshu), and complex web pages that WebFetch cannot parse. Invoke whenever the user provides a URL and wants to read, extract, summarize, analyze, or convert its content to markdown. Keywords: 'fetch page', 'read URL', 'grab content from', 'summarize article', 'extract text from webpage', '抓取网页', '读链接', '网页转 markdown'. NOT for: web search without URL, file downloads, screenshots, form filling, or accessibility checks."
 ---
 
 # Web Fetcher

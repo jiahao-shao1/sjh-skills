@@ -1,0 +1,22 @@
+[
+  {"query": "add a task: review PR #42 by tomorrow", "should_trigger": true},
+  {"query": "take a note about the meeting with Prof. Chen", "should_trigger": true},
+  {"query": "what do I need to do today", "should_trigger": true},
+  {"query": "帮我记一下：明天下午3点开组会", "should_trigger": true},
+  {"query": "search my notes for anything about verl training config", "should_trigger": true},
+  {"query": "今天要做什么", "should_trigger": true},
+  {"query": "jot down this idea: use Gemini for reward model", "should_trigger": true},
+  {"query": "the best thing today was finishing the RL experiment", "should_trigger": true},
+  {"query": "create a new project called Agentic-VLM-v2", "should_trigger": true},
+  {"query": "any unfinished tasks from last week", "should_trigger": true},
+  {"query": "how does the Notion API work", "should_trigger": false},
+  {"query": "set up a new Notion workspace for the team", "should_trigger": false},
+  {"query": "what's the pricing for Notion enterprise", "should_trigger": false},
+  {"query": "帮我写一个 Notion 数据库的 schema", "should_trigger": false},
+  {"query": "how should I organize my productivity system", "should_trigger": false},
+  {"query": "compare Notion vs Obsidian for note taking", "should_trigger": false},
+  {"query": "fetch the content from this Notion page URL", "should_trigger": false},
+  {"query": "summarize my day's work", "should_trigger": false},
+  {"query": "create a database with columns for name, date, and status", "should_trigger": false},
+  {"query": "export all my Notion pages to markdown", "should_trigger": false}
+]

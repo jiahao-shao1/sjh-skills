@@ -1,0 +1,22 @@
+[
+  {"query": "daily summary", "should_trigger": true},
+  {"query": "今天干了什么", "should_trigger": true},
+  {"query": "每日总结", "should_trigger": true},
+  {"query": "what did I do today", "should_trigger": true},
+  {"query": "summarize my day", "should_trigger": true},
+  {"query": "总结一下今天的工作", "should_trigger": true},
+  {"query": "日报", "should_trigger": true},
+  {"query": "give me yesterday's work summary", "should_trigger": true},
+  {"query": "帮我看看 2026-03-20 那天做了啥", "should_trigger": true},
+  {"query": "what did I accomplish in the past 24 hours", "should_trigger": true},
+  {"query": "summarize this file for me", "should_trigger": false},
+  {"query": "what's in my git log", "should_trigger": false},
+  {"query": "帮我总结一下这篇论文的内容", "should_trigger": false},
+  {"query": "show me the recent commits on this branch", "should_trigger": false},
+  {"query": "what tasks do I have for tomorrow", "should_trigger": false},
+  {"query": "create a summary of the project architecture", "should_trigger": false},
+  {"query": "how much time did this function take to run", "should_trigger": false},
+  {"query": "write a weekly report for the meeting", "should_trigger": false},
+  {"query": "list all the files I changed today", "should_trigger": false},
+  {"query": "give me an overview of the codebase", "should_trigger": false}
+]

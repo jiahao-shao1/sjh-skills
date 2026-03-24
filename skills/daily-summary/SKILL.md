@@ -1,11 +1,16 @@
 ---
 name: daily-summary
 description: >
-  Daily work summary. Aggregates Claude Code sessions, Git commits, and Notion Tasks
-  into a timeline-style Chinese work summary.
-  Triggers on: 'daily summary', '今天干了什么', '每日总结', '日报',
-  'what did I do', 'summarize my day', '总结一下今天'.
+  Use this skill to produce a daily/yesterday work summary or daily report (日报).
+  Aggregates Claude Code session history, Git commits across all repos, and Notion task
+  completion data into a chronological timeline — this data collection CANNOT be done with
+  git log alone. MUST invoke when the user asks what they did on a specific day, wants a
+  daily recap, or needs a work report for any date.
+  Triggers: 'daily summary', 'summarize my day', 'what did I do today', 'what did I accomplish',
+  'yesterday summary', '今天干了什么', '每日总结', '日报', '总结一下今天', '那天做了啥',
+  '工作总结', '做了什么', 'work summary', '某天做了什么'.
   Arguments: today (default), yesterday, 24h, YYYY-MM-DD.
+  NOT for: summarizing files/articles, viewing git log, weekly reports, or project overviews.
 ---
 
 # Daily Summary

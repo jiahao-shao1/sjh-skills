@@ -1,0 +1,22 @@
+[
+  {"query": "我今天看到一篇关于 reward hacking 的论文，帮我加到 NotebookLM 里读一下", "should_trigger": true},
+  {"query": "scholar inbox 今天有什么新论文吗", "should_trigger": true},
+  {"query": "帮我筛选一下今天的论文，只看 VLM 相关的", "should_trigger": true},
+  {"query": "rate papers 2401.12345 and 2401.67890 as up", "should_trigger": true},
+  {"query": "paper digest for today please", "should_trigger": true},
+  {"query": "看看最近有什么好的论文推荐", "should_trigger": true},
+  {"query": "I want to deep read this arXiv paper 2403.01234 with NotebookLM", "should_trigger": true},
+  {"query": "收藏论文 2401.55555 到 RL 合集里", "should_trigger": true},
+  {"query": "trending papers this week in reinforcement learning", "should_trigger": true},
+  {"query": "读论文 2406.12345 帮我总结一下方法部分", "should_trigger": true},
+  {"query": "help me read https://arxiv.org/abs/2401.12345 and extract the key findings", "should_trigger": false},
+  {"query": "summarize this article https://blog.openai.com/new-model", "should_trigger": false},
+  {"query": "fetch the content from this web page for me", "should_trigger": false},
+  {"query": "take notes on what I just read and save to Notion", "should_trigger": false},
+  {"query": "帮我把这个 PDF 的内容提取出来 /tmp/paper.pdf", "should_trigger": false},
+  {"query": "search the web for recent papers on RLHF", "should_trigger": false},
+  {"query": "how do I set up a NotebookLM account", "should_trigger": false},
+  {"query": "write a literature review section about visual reasoning", "should_trigger": false},
+  {"query": "add a task to read that paper tomorrow", "should_trigger": false},
+  {"query": "what's the citation format for this conference paper", "should_trigger": false}
+]

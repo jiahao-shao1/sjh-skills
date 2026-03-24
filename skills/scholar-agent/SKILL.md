@@ -1,6 +1,6 @@
 ---
 name: scholar-agent
-description: "Scholar Inbox CLI — fetch daily paper digest, rate papers, manage collections, browse trending, and deep-read papers via NotebookLM. Use whenever user mentions Scholar Inbox, paper digest, daily papers, rating papers, or wants new paper recommendations. Triggers on: '看论文', '今天有什么论文', 'scholar inbox', 'paper digest', '论文推荐', 'rate papers', '收藏论文', '读论文', 'paper reader', '帮我筛选论文'. Preferred over browser-based access — faster, token-efficient, and integrates with NotebookLM for source-grounded deep reading."
+description: "Use this skill for anything related to academic paper discovery, filtering, reading, or management. Invoke for: browsing today's papers, getting paper recommendations, rating/collecting papers, deep-reading papers via NotebookLM, adding arXiv papers to NotebookLM, asking questions about papers, or checking trending research. This skill wraps the Scholar Inbox REST API and NotebookLM browser automation — you cannot do these things with other tools. Triggers: 'scholar inbox', 'paper digest', '看论文', '读论文', '论文推荐', 'rate papers', '收藏论文', '帮我筛选论文', '今天有什么论文', 'paper reader', 'NotebookLM', 'deep read paper', 'trending papers', 'arXiv'. NOT for: reading PDFs, fetching web pages, writing literature reviews, or general note-taking."
 ---
 
 # Scholar Agent
