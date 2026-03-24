@@ -1,10 +1,31 @@
-# Scholar Inbox CLI
+# Scholar Agent
 
-> CLI & Python SDK for [Scholar Inbox](https://www.scholar-inbox.com) — your daily paper digest, without the browser.
+> A taste-aware research agent that discovers papers you'll love and reads them deeply — powered by [Scholar Inbox](https://www.scholar-inbox.com) + [NotebookLM](https://notebooklm.google.com).
 
 [![PyPI version](https://img.shields.io/pypi/v/scholar-inbox)](https://pypi.org/project/scholar-inbox/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## Why This Exists
+
+Reading papers is broken. Here's what a typical day looks like:
+
+1. **Finding papers**: You open Scholar Inbox, scroll through 50+ papers, click into each one, decide if it's relevant. 30 minutes gone.
+2. **Reading papers**: You find 10 interesting ones. Each PDF is 10–20 pages. You either skim (and miss details) or read carefully (and lose the afternoon).
+3. **Asking an AI to help**: You feed PDFs to Claude/GPT. But a 20-page PDF costs ~50K tokens. 10 papers = 500K tokens — context window blown. And the AI doesn't know your taste, so it can't filter for you.
+
+**Scholar Agent solves both problems by composing two existing services:**
+
+- **Scholar Inbox** already knows your taste. It tracks every paper you upvote/downvote and builds a personalized ranking model. We reverse-engineered its REST API so you can access this programmatically — no browser needed.
+- **NotebookLM** already knows how to read papers. It ingests PDFs, extracts structured content, and answers questions grounded in the source — zero hallucination on paper content. Querying it costs ~500 tokens instead of ~50K.
+
+The result: tell Claude Code "show me today's interesting papers about RL for VLMs and summarize the key ideas", and it will:
+1. Fetch your personalized digest from Scholar Inbox (your taste, not generic rankings)
+2. Batch-add the relevant papers to NotebookLM (one command, not 10 manual clicks)
+3. Query NotebookLM for source-grounded summaries (500 tokens/paper, not 50K)
+4. Synthesize a reading report and let you rate papers to refine future recommendations
+
+**No custom ML model. No training data. Just two good services, composed well.**
 
 ## Features
 
@@ -12,8 +33,9 @@
 - **Rate Papers** — thumbs up/down to improve your recommendations
 - **Collections** — organize papers into named collections
 - **Trending** — discover trending papers across categories
+- **One-Click Setup** — `scholar-inbox setup` checks all prerequisites and guides you through
 - **Claude Code Skill** — natural language interaction via Claude Code
-- **NotebookLM Integration** — deep reading with Google's AI (optional, requires playwright-cli)
+- **NotebookLM Deep Reading** — batch-add papers to NotebookLM for hallucination-free Q&A
 - **Zero Dependencies** — pure Python stdlib, works everywhere
 
 ## Quick Start
@@ -23,7 +45,7 @@
 **Claude Code skill** (recommended for Claude Code users):
 
 ```bash
-claude install-skill https://github.com/jiahao-shao1/scholar-inbox-cli
+claude install-skill https://github.com/jiahao-shao1/scholar-agent
 ```
 
 **pip:**
@@ -37,6 +59,26 @@ pip install scholar-inbox
 ```bash
 uv tool install scholar-inbox
 ```
+
+### Setup
+
+```bash
+$ scholar-inbox setup
+Scholar Inbox Setup
+
+  ✓ Python 3.14.3
+  ✓ scholar-inbox 0.1.0
+  ✓ Logged in as: Jiahao Shao
+  ✓ playwright-cli found
+  ✓ NotebookLM skill installed
+  ✓ NotebookLM batch-add script ready
+
+  ✓ Setup complete! Mode: Enhanced (CLI + NotebookLM)
+
+  Try: scholar-inbox digest --limit 5
+```
+
+If not logged in, setup will auto-extract your session or open a browser for Google OAuth.
 
 ### Authenticate
 
@@ -82,27 +124,6 @@ $ scholar-inbox digest --limit 5
    Keywords: reinforcement learning, multimodal, tool use
    https://arxiv.org/abs/2603.14507
    > Proposes tool-augmented reward shaping that enables efficient multi-turn RL training for VLMs
-
-3. [94601] 0.941 -- Efficient Fine-Tuning of Vision-Language Models via Adaptive LoRA
-   Wang et al.
-   Affiliations: Tsinghua University
-   Keywords: LoRA, vision-language models, fine-tuning
-   https://arxiv.org/abs/2603.14398
-   > Adaptive rank allocation for LoRA reduces parameters by 40% while maintaining performance
-
-4. [94587] 0.928 -- Self-Reflective Agents for Scientific Discovery
-   Chen et al.
-   Affiliations: MIT, Allen AI
-   Keywords: agents, scientific discovery, self-reflection
-   https://arxiv.org/abs/2603.14255
-   > Demonstrates self-reflective agents can autonomously design and iterate on experiments
-
-5. [94523] 0.912 -- Towards Unified Evaluation of Multimodal Reasoning
-   Park et al.
-   Affiliations: Seoul National University, KAIST
-   Keywords: evaluation, multimodal reasoning, benchmarks
-   https://arxiv.org/abs/2603.14102
-   > A unified benchmark covering 12 reasoning dimensions across vision-language tasks
 ```
 
 **JSON output** for programmatic use:
@@ -117,16 +138,12 @@ scholar-inbox digest --limit 3 --min-score 0.9 --json
 $ scholar-inbox paper 94712
 # Visual Chain-of-Thought Reasoning with Grounded Verification
 Authors: Zhang et al.
-Affiliations: Stanford University, Google DeepMind
 Published: 2026-03-23 | NeurIPS 2026
 Ranking Score: 0.971
-ArXiv: https://arxiv.org/abs/2603.14821
-Keywords: visual reasoning, chain-of-thought, verification
 
 ## Abstract
 We present a grounded verification mechanism for visual chain-of-thought
-reasoning that systematically validates each reasoning step against the
-visual input...
+reasoning that systematically validates each reasoning step...
 
 ## Contributions
 - Introduces grounded verification for visual CoT, reducing hallucination by 34%
@@ -147,43 +164,39 @@ scholar-inbox rate-batch up 94712 94658 94601
 **Trending papers** across the community:
 
 ```bash
-$ scholar-inbox trending --days 7 --limit 3
-# Trending Papers (last 7 days, category: ALL)
-
-1. [93201] Large Concept Models: Language Modeling in a Sentence Representation Space
-   Meta AI
-   https://arxiv.org/abs/2603.12345
-
-2. [93198] Reasoning with Reinforced Fine-Tuning
-   DeepSeek AI
-   https://arxiv.org/abs/2603.12340
-
-3. [93185] Unified Multimodal Understanding and Generation
-   Google DeepMind
-   https://arxiv.org/abs/2603.12330
+scholar-inbox trending --days 7 --limit 3
 ```
 
 **Collections** — organize papers:
 
 ```bash
-# List your collections
-$ scholar-inbox collections
-# Collections
-
-  [1] Reading List (23 papers)
-  [2] RL for LLM (15 papers)
-  [3] Visual Reasoning (8 papers)
-
-# Add a paper to a collection (by name or ID)
+scholar-inbox collections
 scholar-inbox collect 94712 "Visual Reasoning"
-scholar-inbox collect 94658 2
 ```
 
-**Mark as read:**
+## NotebookLM Deep Reading
+
+This is the key differentiator. Instead of Claude reading entire PDFs (expensive, hallucination-prone), papers are batch-loaded into NotebookLM where Gemini reads them with source grounding.
+
+**Batch add papers** — one command instead of 10 manual clicks:
 
 ```bash
-scholar-inbox read 94712
+scripts/add_to_notebooklm.sh <notebook-url> \
+  https://arxiv.org/abs/2603.14821 \
+  https://arxiv.org/abs/2603.14507 \
+  https://arxiv.org/abs/2603.14398
+# [1/3] Adding: https://arxiv.org/abs/2603.14821
+#   ✓ Submitted
+# [2/3] Adding: https://arxiv.org/abs/2603.14507
+#   ✓ Submitted
+# [3/3] Adding: https://arxiv.org/abs/2603.14398
+#   ✓ Submitted
+# Done: 3/3 sources added.
 ```
+
+Then query NotebookLM via the `notebooklm` skill for source-grounded answers — ~500 tokens per query instead of ~50K tokens per PDF.
+
+See [references/notebooklm.md](references/notebooklm.md) for the full Enhanced Mode workflow.
 
 ## Python SDK
 
@@ -214,21 +227,15 @@ similar = client.get_similar(94712)
 
 ## Claude Code Integration
 
-When installed as a Claude Code skill, you can interact with Scholar Inbox using natural language:
+When installed as a Claude Code skill, you can interact naturally:
 
 ```
 > Show me today's top papers about reinforcement learning
 > Rate paper 94712 thumbs up
 > What's trending in AI this week?
 > Add paper 94658 to my "RL for LLM" collection
-> Show me the details of paper 94712
+> Read these 10 papers and summarize the key ideas
 ```
-
-## NotebookLM Enhanced Mode
-
-For deep reading, Scholar Inbox can integrate with Google NotebookLM to generate podcast-style audio summaries of papers. This is an optional feature that requires `playwright-cli`.
-
-See [references/notebooklm.md](references/notebooklm.md) for the concept and setup.
 
 ## API Reference
 
