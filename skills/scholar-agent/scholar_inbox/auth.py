@@ -125,8 +125,8 @@ def extract_via_playwright_cli() -> str | None:
 def open_browser_for_login() -> str | None:
     """Open browser with --persistent --headed for user to do OAuth.
 
-    After the user completes login, attempts to extract the cookie
-    from the Playwright profile.
+    After the user completes login, extracts cookie from the persistent
+    profile by re-opening headlessly and reading cookies directly.
     """
     try:
         print("Opening browser for login...", file=sys.stderr)
@@ -146,10 +146,29 @@ def open_browser_for_login() -> str | None:
     except KeyboardInterrupt:
         pass
 
-    # After browser closes, try to extract cookie from profile
-    cookie = extract_from_playwright_profile()
-    if cookie:
-        return cookie
+    # Re-open headlessly with same persistent profile to extract cookie.
+    # The persistent profile retains cookies from the headed session.
+    try:
+        subprocess.run(
+            ["playwright-cli", "open", "--persistent",
+             "https://www.scholar-inbox.com/digest"],
+            capture_output=True, timeout=15,
+        )
+        result = subprocess.run(
+            ["playwright-cli", "cookie-get", "session"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            for line in result.stdout.strip().split("\n"):
+                if line.startswith("session="):
+                    cookie = line.split("=", 1)[1].split(" ")[0].strip()
+                    return cookie
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass
+    finally:
+        try:
+            subprocess.run(["playwright-cli", "close"], capture_output=True, timeout=5)
+        except Exception:
+            pass
 
-    # Fallback: try playwright-cli cookie extraction
-    return extract_via_playwright_cli()
+    return None
