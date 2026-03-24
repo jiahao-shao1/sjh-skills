@@ -7,6 +7,11 @@ description: Scholar Inbox CLI — fetch daily paper digest, rate papers, manage
 
 API-driven CLI for Scholar Inbox. No browser needed for daily workflows.
 
+**Running the CLI**: If `scholar-inbox` is not on PATH (not pip-installed), use:
+```bash
+PYTHONPATH=<skill-path> python3 -m scholar_inbox <command>
+```
+
 ## Quick Start
 
 | Command | Description | Example |
