@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scholar-inbox"
+version = "0.1.0"
+description = "CLI & Python SDK for Scholar Inbox — your daily paper digest"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Jiahao Shao" },
+]
+keywords = ["scholar-inbox", "arxiv", "paper", "research", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = []
+
+[project.scripts]
+scholar-inbox = "scholar_inbox.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/jiahao-shao1/scholar-inbox-cli"
+Repository = "https://github.com/jiahao-shao1/scholar-inbox-cli"
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
