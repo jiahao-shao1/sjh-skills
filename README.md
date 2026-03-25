@@ -45,6 +45,10 @@ sjh_skills/
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and what changed in each release.
+
 ## License
 
 [MIT](LICENSE)

@@ -45,6 +45,10 @@ sjh_skills/
 
 每个 skill 都是独立的，包含 `SKILL.md`、`scripts/` 和 `references/`。可以单独安装，也可以作为合集安装。
 
+## 更新日志
+
+详见 [CHANGELOG.md](CHANGELOG.md)。
+
 ## 许可证
 
 [MIT](LICENSE)
