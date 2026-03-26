@@ -64,7 +64,7 @@ pipx install "notebooklm-py[browser]"
 
 # 3. Login (one-time each)
 notebooklm login                     # Google — opens browser
-scholar-inbox login --cookie VAL     # Scholar Inbox — paste from DevTools
+scholar-inbox login --browser         # Scholar Inbox — opens browser for OAuth
 ```
 
 ### Authenticate
