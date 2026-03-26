@@ -1,6 +1,6 @@
 ---
 name: scholar-agent
-description: "Use this skill for anything related to academic paper discovery, filtering, reading, or management. Invoke for: browsing today's papers, getting paper recommendations, rating/collecting papers, deep-reading papers via NotebookLM, adding arXiv papers to NotebookLM, asking questions about papers, or checking trending research. This skill wraps the Scholar Inbox REST API and NotebookLM browser automation — you cannot do these things with other tools. Triggers: 'scholar inbox', 'paper digest', '看论文', '读论文', '论文推荐', 'rate papers', '收藏论文', '帮我筛选论文', '今天有什么论文', 'paper reader', 'NotebookLM', 'deep read paper', 'trending papers', 'arXiv'. NOT for: reading PDFs, fetching web pages, writing literature reviews, or general note-taking."
+description: "Use this skill for anything related to academic paper discovery, filtering, reading, or management. Invoke for: browsing today's papers, getting paper recommendations, rating/collecting papers, deep-reading papers via NotebookLM, adding arXiv papers to NotebookLM, asking questions about papers, or checking trending research. This skill wraps the Scholar Inbox REST API and notebooklm-py CLI — you cannot do these things with other tools. Triggers: 'scholar inbox', 'paper digest', '看论文', '读论文', '论文推荐', 'rate papers', '收藏论文', '帮我筛选论文', '今天有什么论文', 'paper reader', 'NotebookLM', 'deep read paper', 'trending papers', 'arXiv'. NOT for: reading PDFs, fetching web pages, writing literature reviews, or general note-taking."
 ---
 
 # Scholar Agent
@@ -24,11 +24,11 @@ Two modes:
 
 | Dependency | Purpose | Install |
 |------------|---------|---------|
-| `playwright-cli` | Browser login + NotebookLM operations | `npm install -g @anthropic-ai/playwright-cli` |
-| `notebooklm` skill | Enhanced Mode deep reading (optional) | `npx skills add notebooklm` |
+| `playwright-cli` | Scholar Inbox browser login | `npm install -g @anthropic-ai/playwright-cli` |
+| `notebooklm-py` | NotebookLM API (notebooks, sources, chat) | `pipx install "notebooklm-py[browser]"` |
 
-- **Basic Mode** only requires `playwright-cli` (for initial login)
-- **Enhanced Mode** additionally requires `notebooklm` skill with Google auth completed
+- **Basic Mode** only requires `playwright-cli` (for Scholar Inbox login)
+- **Enhanced Mode** additionally requires `notebooklm-py` with Google auth completed
 
 ## Setup
 
@@ -37,18 +37,18 @@ One-click environment check and login:
 PYTHONPATH=<skill-path> python3 -m scholar_inbox setup
 ```
 
-Checks: Python → playwright-cli → Scholar Inbox login → NotebookLM skill → add_to_notebooklm.sh
+Checks: Python → playwright-cli → Scholar Inbox login → notebooklm CLI
 
 Manual install steps:
 ```bash
-# 1. Browser automation (required)
+# 1. Scholar Inbox browser login (required)
 npm install -g @anthropic-ai/playwright-cli
 
-# 2. NotebookLM skill (required for Enhanced Mode)
-npx skills add notebooklm
+# 2. NotebookLM API (required for Enhanced Mode)
+pipx install "notebooklm-py[browser]"
 
-# 3. NotebookLM Google login (first time only)
-python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py setup
+# 3. NotebookLM Google login (first time only — opens browser)
+notebooklm login
 ```
 
 ## Filtering Configuration
@@ -188,41 +188,31 @@ Auto-classify papers into NotebookLM notebooks based on title and keywords. Cate
 
 Each category maps to a NotebookLM notebook. Search for existing notebooks:
 ```bash
-python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py search --query "<topic>"
+notebooklm list  # list all notebooks, find matching one by title
 ```
 
 If no matching notebook exists, auto-create one:
 ```bash
-NB_URL=$(bash <skill-path>/scripts/create_notebook.sh)
-# Register in local library
-python3 ~/.claude/skills/notebooklm/scripts/run.py notebook_manager.py add \
-  --url "$NB_URL" --name "<topic>" --description "<desc>" --topics "<t1,t2>"
+notebooklm create "<topic>"
+# Note the notebook ID from output, then set as active:
+notebooklm use <notebook_id>
 ```
 
-**Note**: When running consecutive playwright-cli operations (create → add, etc.), add `sleep 2-3` between steps to let the browser session fully close.
+**Step A4: Batch Add Sources to NotebookLM**
 
-**Step A4: Batch Add to NotebookLM**
-
-Use `add_to_notebooklm.sh` (via playwright-cli + NotebookLM browser profile):
+Add arXiv URLs as sources to the target notebook:
 
 ```bash
-bash <skill-path>/scripts/add_to_notebooklm.sh \
-  "<notebook_url>" \
-  "https://arxiv.org/abs/XXXX.XXXXX" \
-  "https://arxiv.org/abs/YYYY.YYYYY"
+notebooklm use <notebook_id>
+notebooklm source add "https://arxiv.org/abs/XXXX.XXXXX"
+notebooklm source add "https://arxiv.org/abs/YYYY.YYYYY"
+# ... repeat for each paper
 ```
 
-The script uses explicit strategy routing internally:
-1. `playwright-cli open --browser=chrome --profile=<notebooklm-profile>` opens the notebook
-2. Detect the current source entry strategy:
-   - `open_source_dialog`
-   - `open_website_form`
-   - `url_input_ready`
-3. Once at the URL input, batch-paste all URLs at once
-4. Click `Insert`
-5. `playwright-cli close`
-
-Browser profile path: `$NOTEBOOKLM_PROFILE` (default `~/.claude/skills/notebooklm/data/browser_state/browser_profile`)
+Check source status before querying (ensure status is "ready"):
+```bash
+notebooklm source list  # check all sources are "ready" before asking questions
+```
 
 Subagent returns: filtered paper list + classifications + ingestion status
 
@@ -231,19 +221,19 @@ Subagent returns: filtered paper list + classifications + ingestion status
 After receiving the paper list from the subagent, query NotebookLM:
 
 ```bash
-NOTEBOOKLM="python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py"
+notebooklm use <notebook_id>
 
 # Overview
-$NOTEBOOKLM --question "Summarize each paper's core contribution (2-3 sentences), label with paper title" --notebook-url "$URL"
+notebooklm ask "Summarize each paper's core contribution (2-3 sentences), label with paper title"
 
 # Method comparison
-$NOTEBOOKLM --question "Compare the methodological innovations, technical approaches, and baselines across papers" --notebook-url "$URL"
+notebooklm ask "Compare the methodological innovations, technical approaches, and baselines across papers"
 
 # Relevance to user's research
-$NOTEBOOKLM --question "How do these papers relate to [user interests]? Which findings are most actionable?" --notebook-url "$URL"
+notebooklm ask "How do these papers relate to [user interests]? Which findings are most actionable?"
 ```
 
-**Follow-up is important**: NotebookLM often asks "What else would you like to know?" at the end — if the answer is incomplete or raises new questions, keep asking.
+**Follow-up is important**: Each `notebooklm ask` continues the conversation by default. If the answer is incomplete or raises new questions, keep asking. Use `--new` to start a fresh conversation.
 
 #### Phase C: Output Reading Report
 
@@ -270,19 +260,21 @@ Downvote: `scholar-inbox rate-batch down <id1> <id2>`
 
 1. Fetch paper info with `scholar-inbox paper <id>` (if paper_id)
 2. Dynamically classify into the appropriate notebook by title keywords
-3. Add arXiv URL to notebook via `add_to_notebooklm.sh`
-4. Deep-read via NotebookLM skill
-5. Output single-paper reading report
+3. Add arXiv URL: `notebooklm use <notebook_id> && notebooklm source add "https://arxiv.org/abs/XXXX.XXXXX"`
+4. Wait for indexing: `notebooklm source wait`
+5. Deep-read: `notebooklm ask "Summarize this paper's core contribution, method, and key findings"`
+6. Output single-paper reading report
 
 ### Mode 3: `/scholar-inbox ask "question"`
 
 Directly query NotebookLM:
 ```bash
-python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
-  --question "question" --notebook-url "<url>"
+notebooklm ask "question"  # uses current notebook context
+# or specify notebook:
+notebooklm ask -n <notebook_id> "question"
 ```
 
-If no notebook is specified, use the most recently active one.
+If no notebook is active, use `notebooklm use <id>` first or pass `-n`.
 
 ### Mode 4: `/scholar-inbox like 1,3,5`
 
@@ -309,9 +301,8 @@ scholar-inbox rate-batch down 111 222    # batch downvote
 ## Notebook Lifecycle
 
 - Notebooks accumulate knowledge across sessions — papers added today can be queried tomorrow
-- Source limit: 50/notebook. Warn user when approaching 40; at 50, create "Topic v2"
+- Source limit: 50/notebook. Check with `notebooklm source list`. At 40+, warn user; at 50, create "Topic v2"
 - Process at most 10 new papers per run
-- Always `close` playwright-cli when done
 
 ## Constraints
 
@@ -319,135 +310,42 @@ scholar-inbox rate-batch down 111 222    # batch downvote
 |------|--------|
 | REST API over DOM scraping | More stable, no SPA dependency |
 | Dynamic classification, no hardcoded categories | Hardcoded categories go stale |
-| Use `add_to_notebooklm.sh` to add sources | Verified working, handles playwright-cli quirks |
-| Strategy routing for NotebookLM UI detection | Initial UI state after entering a notebook is unpredictable |
-| Use notebooklm skill scripts for deep reading | Reliability, auth management, venv isolation |
+| Use `notebooklm` CLI for all NotebookLM operations | RPC API is more stable than browser DOM automation |
 | Follow up on NotebookLM answers | First answer is often incomplete |
 
 ## Verified Behaviors
 
 The following have been verified in production:
 
-- `scholar-inbox status`
-- `scholar-inbox digest`
-- `scholar-inbox paper`
-- `scholar-inbox rate <id> up`
-- `scholar-inbox rate <id> reset`
-- `scholar-inbox trending`
-- `scholar-inbox collections`
-- `create_notebook.sh`
-- `rename_notebook.sh`
-- `add_to_notebooklm.sh` single paper
-- `add_to_notebooklm.sh` 3-paper batch
-- `ask_question.py`
+- `scholar-inbox status` / `digest` / `paper` / `rate` / `trending` / `collections`
 - `scholar-inbox doctor --online`
+- `notebooklm list` / `create` / `use` / `ask`
+- `notebooklm source add <url>` (single + batch)
+- `notebooklm auth check --test`
 
 Still recommended to test:
 
 - `scholar-inbox rate-batch`
 - `scholar-inbox collect`
-- `scholar-inbox read`
-- Larger batch NotebookLM source imports
+- Larger batch NotebookLM source imports (10+ papers)
 - NotebookLM multi-turn follow-up conversations
 
 ## Error Handling
 
 | Error | Action |
 |-------|--------|
-| NotebookLM skill not installed | Fall back to Basic Mode |
-| Google auth expired | `python3 ~/.claude/skills/notebooklm/scripts/run.py auth_manager.py reauth` |
+| `notebooklm` not installed | `pipx install "notebooklm-py[browser]"` or fall back to Basic Mode |
+| NotebookLM auth expired | `notebooklm login` (opens browser for Google login) |
 | Source addition failed | Skip that paper, continue with the rest |
 | NotebookLM rate limit | Fall back to Basic Mode |
 | Scholar Inbox session expired | `scholar-inbox login --browser` to re-login |
-| `add_to_notebooklm.sh` can't find "Add source" button | Suspect NotebookLM UI change. Don't retry the script blindly; use `playwright-cli snapshot` to check actual button text and ref, then manually click the current UI's "Add source" / "Website" / "Insert" |
-| `ask_question.py` reports `Failed to create a ProcessSingleton` or `SingletonLock` | NotebookLM Chrome profile still held by residual Chromium process. Run `pkill -f '/Users/$USER/.claude/skills/notebooklm/data/browser_state/browser_profile'` or the actual profile path, wait 1-2 seconds, then retry |
 
-Run diagnostics first:
+Run diagnostics:
 
 ```bash
-scholar-inbox doctor
-scholar-inbox doctor --online
+scholar-inbox doctor              # Scholar Inbox login + basic checks
+notebooklm auth check --test      # NotebookLM auth + cookie health
 ```
-
-It checks:
-- Scholar Inbox login validity
-- NotebookLM skill / browser profile / state.json existence
-- Presence of `add_to_notebooklm.sh` / `create_notebook.sh` / `rename_notebook.sh` / `notebooklm_site_knowledge.sh`
-- Whether any process is holding the NotebookLM profile
-- With `--online`: actually opens Scholar Inbox / NotebookLM pages for read-only probing
-
-### NotebookLM Troubleshooting
-
-#### 1. `add_to_notebooklm.sh` Broken by UI Change
-
-Symptoms:
-- Script exits immediately
-- `bash -x add_to_notebooklm.sh ...` shows `ADD_BTN=` or can't find "Website" / "Insert" button
-
-Recommended fix:
-
-```bash
-# 1. Open notebook
-playwright-cli open --browser=chrome --profile="$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" "<notebook-url>"
-sleep 6
-
-# 2. Capture current DOM snapshot
-playwright-cli snapshot
-
-# 3. Find actual button text and refs in snapshot
-rg -n 'Add source|Website|Enter URL|Insert' .playwright-cli/*.yml
-```
-
-If the script's text matching is broken, manually execute with real refs from the snapshot:
-
-```bash
-playwright-cli click <add-source-ref>
-playwright-cli click <website-ref>
-playwright-cli fill <url-input-ref> "https://arxiv.org/abs/XXXX https://arxiv.org/abs/YYYY"
-playwright-cli click <insert-ref>
-```
-
-Rules of thumb:
-- NotebookLM may auto-open the "Add source" dialog upon entering a notebook — no need to click the old button
-- The "Website and YouTube URLs" page supports batch-pasting multiple URLs separated by spaces or newlines
-- Before modifying the script, manually verify the flow with real refs to rule out auth or profile issues
-
-#### 2. `ask_question.py` Blocked by NotebookLM Profile Lock
-
-Symptoms:
-- `BrowserType.launch_persistent_context: Failed to create a ProcessSingleton`
-- Error mentions `SingletonLock` / `profile directory is already in use`
-
-Cause:
-- Previous `playwright-cli open` or other Chrome headless process didn't fully exit
-- Same NotebookLM browser profile occupied by multiple sessions
-
-Recommended fix:
-
-```bash
-# Check for residual processes
-ps aux | rg 'browser_profile|Google Chrome|Chromium'
-
-# Kill processes holding the NotebookLM profile
-pkill -f "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
-sleep 2
-
-# Confirm no residual processes
-ps aux | rg "$HOME/.claude/skills/notebooklm/data/browser_state/browser_profile" || true
-```
-
-Then retry:
-
-```bash
-python3 ~/.claude/skills/notebooklm/scripts/run.py ask_question.py \
-  --notebook-url "<notebook-url>" \
-  --question "..."
-```
-
-Rules of thumb:
-- When running `create_notebook.sh` → `add_to_notebooklm.sh` → `ask_question.py` consecutively, add explicit `sleep 2-3` between steps
-- If you just used `playwright-cli` manually with NotebookLM, check for profile lock before running `ask_question.py`
-- `playwright-cli close` only closes browsers it manages; for residual headless Chrome, use `pkill -f '<profile-path>'`
 
 ## When to Use Browser Instead
 

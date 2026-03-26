@@ -25,7 +25,7 @@ Web Fetcher tries 5 strategies in order, returning the first result with enough 
 ### Claude Code Skill (recommended)
 
 ```bash
-claude install-skill https://github.com/jiahao-shao1/web-fetcher
+npx skills add jiahao-shao1/sjh-skills --skill web-fetcher
 ```
 
 Then just ask Claude: *"fetch this page: https://..."* — the skill triggers automatically.
@@ -33,8 +33,7 @@ Then just ask Claude: *"fetch this page: https://..."* — the skill triggers au
 ### Standalone Script
 
 ```bash
-git clone https://github.com/jiahao-shao1/web-fetcher.git
-python3 web-fetcher/scripts/fetch.py <url>
+python3 <skill-path>/scripts/fetch.py <url>
 ```
 
 Zero dependencies — pure Python stdlib.

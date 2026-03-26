@@ -68,13 +68,7 @@ All databases and Relations are pre-configured — works out of the box.
 ### 2. Install the Skill
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/notion-lifeos-skill
-```
-
-Or manually clone:
-
-```bash
-git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git ~/.claude/skills/notion-lifeos
+npx skills add jiahao-shao1/sjh-skills --skill notion-lifeos
 ```
 
 ### 3. Configure

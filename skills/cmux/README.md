@@ -15,14 +15,7 @@ English | [中文](README.zh.md)
 ## Install
 
 ```bash
-# Add to your Claude Code skills
-cp -r cmux ~/.claude/skills/
-```
-
-Or if using [dotfiles with stow](https://github.com/jiahao-shao1/dotfiles):
-
-```bash
-git submodule add <repo-url> agents/.agents/skills/cmux
+npx skills add jiahao-shao1/sjh-skills --skill cmux
 ```
 
 ## Usage

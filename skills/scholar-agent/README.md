@@ -42,73 +42,46 @@ The result: tell Claude Code "show me today's interesting papers about RL for VL
 
 ## Verified Status
 
-The following paths have been exercised against real accounts and real NotebookLM pages on 2026-03-24:
+Last verified: 2026-03-26
 
-| Flow | Real-world status | Notes |
-|------|-------------------|-------|
-| `scholar-inbox status` | Verified | Reads real login state |
-| `scholar-inbox digest` / `--json` | Verified | Real API responses |
-| `scholar-inbox paper` | Verified | Now filters exact `paper_id` instead of trusting the first row returned by the upstream API |
-| `scholar-inbox rate up` | Verified | Real thumbs-up executed |
-| `scholar-inbox rate reset` | Verified | Real reset executed; digest reflected the reset after a short delay |
-| `scholar-inbox trending` | Verified | Read-only API path |
-| `scholar-inbox collections` | Verified | Real collections listed |
-| `create_notebook.sh` | Verified | Real notebook creation succeeded |
-| `rename_notebook.sh` | Verified | Real notebook rename to `testbook` succeeded |
-| `add_to_notebooklm.sh` single-paper add | Verified | Real add succeeded |
-| `add_to_notebooklm.sh` batch add | Verified | Real 3-paper batch add succeeded |
-| `ask_question.py` | Verified | Real NotebookLM question answered successfully |
-| `scholar-inbox doctor --online` | Verified | Live page probes succeeded |
-
-Still worth further testing:
-
-- `scholar-inbox rate-batch`
-- `scholar-inbox collect`
-- `scholar-inbox read`
-- Large NotebookLM batches beyond 3 papers
-- Multi-turn NotebookLM follow-up conversations
+| Flow | Status | Notes |
+|------|--------|-------|
+| `scholar-inbox status` / `digest` / `paper` | ✅ | REST API |
+| `scholar-inbox rate` / `trending` / `collections` | ✅ | REST API |
+| `notebooklm list` / `create` / `use` | ✅ | RPC API via notebooklm-py |
+| `notebooklm source add <url>` | ✅ | Single + batch |
+| `notebooklm ask "..."` | ✅ | Source-grounded Q&A with citations |
+| `notebooklm auth check --test` | ✅ | Cookie health check |
 
 ## Quick Start
 
 ### Install
 
-**Claude Code skill** (recommended for Claude Code users):
+**Claude Code skill** (recommended):
 
 ```bash
-claude install-skill https://github.com/jiahao-shao1/scholar-agent
+npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
 ```
 
-**pip:**
+**Dependencies** (for Enhanced Mode with NotebookLM deep reading):
 
 ```bash
-pip install scholar-inbox
-```
-
-**uv tool** (isolated install):
-
-```bash
-uv tool install scholar-inbox
+# NotebookLM API — notebook management, source ingestion, Q&A
+pipx install "notebooklm-py[browser]"
+notebooklm login  # one-time Google login
 ```
 
 ### Setup
 
 ```bash
-$ scholar-inbox setup
-Scholar Inbox Setup
+# Scholar Inbox login (choose one)
+scholar-inbox login --browser    # interactive OAuth (requires playwright-cli)
+scholar-inbox login --cookie VAL # manual cookie paste (no extra deps)
 
-  ✓ Python 3.14.3
-  ✓ scholar-inbox 0.1.0
-  ✓ Logged in as: Jiahao Shao
-  ✓ playwright-cli found
-  ✓ NotebookLM skill installed
-  ✓ NotebookLM batch-add script ready
-
-  ✓ Setup complete! Mode: Enhanced (CLI + NotebookLM)
-
-  Try: scholar-inbox digest --limit 5
+# Verify
+scholar-inbox status             # Scholar Inbox
+notebooklm auth check --test     # NotebookLM
 ```
-
-If not logged in, setup will auto-extract your session or open a browser for Google OAuth.
 
 ### Authenticate
 
@@ -216,37 +189,19 @@ scholar-inbox collect 94712 "Visual Reasoning"
 
 This is the key differentiator. Instead of Claude reading entire PDFs (expensive, hallucination-prone), papers are batch-loaded into NotebookLM where Gemini reads them with source grounding.
 
-The NotebookLM integration has been live-tested end to end for:
-
-- creating a notebook
-- renaming it
-- batch-adding three arXiv papers
-- asking NotebookLM a paper-grounded question
-
-**Batch add papers** — one command instead of 10 manual clicks:
+Powered by [notebooklm-py](https://github.com/teng-lin/notebooklm-py) — an unofficial Python API that uses Google's internal RPC endpoints (no browser automation needed after login).
 
 ```bash
-scripts/add_to_notebooklm.sh <notebook-url> \
-  https://arxiv.org/abs/2603.14821 \
-  https://arxiv.org/abs/2603.14507 \
-  https://arxiv.org/abs/2603.14398
-# Strategy: open_website_form
-# Strategy: url_input_ready
-# Adding 3 URLs...
-#   ✓ Submitted 3 sources
-# Done: 3 sources added.
+# Create a notebook and add papers
+notebooklm create "RL Papers"
+notebooklm use <notebook_id>
+notebooklm source add "https://arxiv.org/abs/2602.01334"
+notebooklm source add "https://arxiv.org/abs/2505.14362"
+
+# Ask source-grounded questions (~500 tokens/query vs ~50K/PDF)
+notebooklm ask "Compare the key findings of these papers"
+notebooklm ask "How do they prove that tool-returned images are not utilized?"
 ```
-
-**Rename a notebook** after creation:
-
-```bash
-bash scripts/rename_notebook.sh <notebook-url> "testbook"
-```
-
-Then query NotebookLM via the `notebooklm` skill for source-grounded answers — ~500 tokens per query instead of ~50K tokens per PDF.
-
-See [references/notebooklm.md](references/notebooklm.md) for the full Enhanced Mode workflow and
-[references/notebooklm-site-knowledge.md](references/notebooklm-site-knowledge.md) for the maintained UI assumptions behind the automation.
 
 ## Python SDK
 
