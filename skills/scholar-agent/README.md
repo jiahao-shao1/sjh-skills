@@ -63,6 +63,7 @@ npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
 pipx install "notebooklm-py[browser]"
 
 # 3. Login (one-time each)
+npm install -g @anthropic-ai/playwright-cli  # for Scholar Inbox browser login
 notebooklm login                     # Google — opens browser
 scholar-inbox login --browser         # Scholar Inbox — opens browser for OAuth
 ```
