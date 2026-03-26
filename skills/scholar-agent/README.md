@@ -55,32 +55,16 @@ Last verified: 2026-03-26
 
 ## Quick Start
 
-### Install
-
-**Claude Code skill** (recommended):
-
 ```bash
+# 1. Install skill
 npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
-```
 
-**Dependencies** (for Enhanced Mode with NotebookLM deep reading):
-
-```bash
-# NotebookLM API — notebook management, source ingestion, Q&A
+# 2. Install NotebookLM API (for deep reading)
 pipx install "notebooklm-py[browser]"
-notebooklm login  # one-time Google login
-```
 
-### Setup
-
-```bash
-# Scholar Inbox login (choose one)
-scholar-inbox login --browser    # interactive OAuth (requires playwright-cli)
-scholar-inbox login --cookie VAL # manual cookie paste (no extra deps)
-
-# Verify
-scholar-inbox status             # Scholar Inbox
-notebooklm auth check --test     # NotebookLM
+# 3. Login (one-time each)
+notebooklm login                     # Google — opens browser
+scholar-inbox login --cookie VAL     # Scholar Inbox — paste from DevTools
 ```
 
 ### Authenticate
