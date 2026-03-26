@@ -33,12 +33,9 @@ The result: tell Claude Code "show me today's interesting papers about RL for VL
 - **Rate Papers** — thumbs up/down to improve your recommendations
 - **Collections** — organize papers into named collections
 - **Trending** — discover trending papers across categories
-- **One-Click Setup** — `scholar-inbox setup` checks all prerequisites and guides you through
-- **Doctor Command** — `scholar-inbox doctor` diagnoses auth, scripts, NotebookLM profile state, and lock conflicts
-- **Online Doctor** — `scholar-inbox doctor --online` performs read-only live probes against Scholar Inbox and NotebookLM
+- **NotebookLM Deep Reading** — batch-add papers via [notebooklm-py](https://github.com/teng-lin/notebooklm-py) for hallucination-free Q&A
 - **Claude Code Skill** — natural language interaction via Claude Code
-- **NotebookLM Deep Reading** — batch-add papers to NotebookLM for hallucination-free Q&A
-- **Zero Dependencies** — pure Python stdlib, works everywhere
+- **Zero Dependencies** — pure Python stdlib for core functionality
 
 ## Verified Status
 
@@ -68,35 +65,11 @@ notebooklm login                     # Google — opens browser
 PYTHONPATH=~/.claude/skills/scholar-agent python3 -m scholar_inbox login --browser  # Scholar Inbox
 ```
 
-### Authenticate
-
-Scholar Inbox uses Google OAuth. Choose one method:
-
-```bash
-# Auto-extract from existing Playwright browser profile (simplest)
-scholar-inbox login
-
-# Open browser for interactive OAuth login
-scholar-inbox login --browser
-
-# Paste cookie manually (from browser DevTools)
-scholar-inbox login --cookie "your-session-cookie-value"
-```
-
-Verify login status:
-
-```bash
-scholar-inbox status
-# Logged in as: Jiahao Shao (user_id: 12345)
-
-# Diagnose local setup without changing anything
-scholar-inbox doctor
-
-# Run read-only live probes against Scholar Inbox and NotebookLM
-scholar-inbox doctor --online
-```
-
 ### Usage
+
+> **Note**: All `scholar-inbox` commands below require the PYTHONPATH prefix:
+> `PYTHONPATH=~/.claude/skills/scholar-agent python3 -m scholar_inbox <command>`
+> When used as a Claude Code skill, this is handled automatically.
 
 **Daily digest** — your personalized paper feed:
 
