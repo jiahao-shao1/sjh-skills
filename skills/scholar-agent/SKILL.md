@@ -1,6 +1,6 @@
 ---
 name: scholar-agent
-description: "Use this skill for anything related to academic paper discovery, filtering, reading, or management. Invoke for: browsing today's papers, getting paper recommendations, rating/collecting papers, deep-reading papers via NotebookLM, adding arXiv papers to NotebookLM, asking questions about papers, or checking trending research. This skill wraps the Scholar Inbox REST API and notebooklm-py CLI — you cannot do these things with other tools. Triggers: 'scholar inbox', 'paper digest', '看论文', '读论文', '论文推荐', 'rate papers', '收藏论文', '帮我筛选论文', '今天有什么论文', 'paper reader', 'NotebookLM', 'deep read paper', 'trending papers', 'arXiv'. NOT for: reading PDFs, fetching web pages, writing literature reviews, or general note-taking."
+description: "Use this skill for anything related to academic paper discovery, filtering, reading, or management. Invoke for: browsing today's papers, getting paper recommendations, rating/collecting papers, deep-reading papers via NotebookLM, adding arXiv papers to NotebookLM, asking questions about papers, or checking trending research. This skill wraps the Scholar Inbox REST API and notebooklm-py CLI (recommended to install together for deep reading). Triggers: 'scholar inbox', 'paper digest', '看论文', '读论文', '论文推荐', 'rate papers', '收藏论文', '帮我筛选论文', '今天有什么论文', 'paper reader', 'deep read paper', 'trending papers', 'arXiv'. NOT for: reading PDFs, fetching web pages, writing literature reviews, general note-taking, or managing non-paper NotebookLM notebooks."
 ---
 
 # Scholar Agent
