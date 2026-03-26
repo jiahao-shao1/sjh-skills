@@ -25,10 +25,23 @@ Two modes:
 | Dependency | Purpose | Install |
 |------------|---------|---------|
 | `playwright-cli` | Scholar Inbox browser login | `npm install -g @anthropic-ai/playwright-cli` |
-| `notebooklm-py` | NotebookLM API (notebooks, sources, chat) | `pipx install "notebooklm-py[browser]"` |
+| [notebooklm-py](https://github.com/teng-lin/notebooklm-py) | NotebookLM API (notebooks, sources, chat) | `pipx install "notebooklm-py[browser]"` |
 
 - **Basic Mode** only requires `playwright-cli` (for Scholar Inbox login)
-- **Enhanced Mode** additionally requires `notebooklm-py` with Google auth completed
+- **Enhanced Mode** additionally requires `notebooklm-py` with Google auth completed (`notebooklm login`)
+
+### Why notebooklm-py?
+
+Scholar Agent 的深度阅读功能通过 `notebooklm` CLI 实现：自动创建笔记本、批量添加 arXiv 论文为 source、查询 Gemini 获取 source-grounded 回答。notebooklm-py 使用 Google 内部 RPC API（非浏览器自动化），稳定性远高于 DOM 操作。
+
+安装 notebooklm-py 后，你也可以独立使用它管理任意 NotebookLM 笔记本（不限于论文）：
+
+```bash
+notebooklm list                                    # 列出所有笔记本
+notebooklm use <id>                                # 选择笔记本
+notebooklm source add "https://arxiv.org/abs/..."  # 添加 source
+notebooklm ask "summarize the key findings"        # 提问
+```
 
 ## Setup
 
