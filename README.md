@@ -21,8 +21,8 @@ English | [中文](README.zh-CN.md)
 **Single skill** (recommended):
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/sjh-skills --skill scholar-agent
-npx skills add https://github.com/jiahao-shao1/sjh-skills --skill cmux
+npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
+npx skills add jiahao-shao1/sjh-skills --skill cmux
 ```
 
 This installs to both `~/.claude/skills/` and `~/.agents/skills/`, so all coding agents (Claude Code, Cursor, Windsurf, etc.) can use them.
@@ -30,7 +30,7 @@ This installs to both `~/.claude/skills/` and `~/.agents/skills/`, so all coding
 **All skills at once:**
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/sjh-skills
+npx skills add jiahao-shao1/sjh-skills
 ```
 
 ## Architecture

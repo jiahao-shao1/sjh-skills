@@ -1,6 +1,6 @@
 # Notion LifeOS Skill
 
-English | [中文](README.zh.md)
+English | [中文](README.zh-CN.md)
 
 > **Memory System for Human** — A scalable self-awareness system that captures your thoughts, decisions, and growth over decades.
 

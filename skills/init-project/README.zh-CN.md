@@ -7,7 +7,7 @@
 ## 快速开始
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/init-project
+npx skills add jiahao-shao1/sjh-skills --skill init-project
 ```
 
 然后在任意项目中，对 Claude Code 说：

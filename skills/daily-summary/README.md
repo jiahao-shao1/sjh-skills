@@ -1,6 +1,6 @@
 # Daily Summary Skill
 
-English | [中文](README.zh.md)
+English | [中文](README.zh-CN.md)
 
 > A Claude Code skill that aggregates your daily work across Claude Code sessions, Git commits, and Notion tasks into a timeline-style summary.
 

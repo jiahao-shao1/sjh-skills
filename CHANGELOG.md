@@ -4,6 +4,17 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.4.1] - 2026-03-28
+
+### Repo-wide
+- **Added**: `CLAUDE.md` — project guide with conventions, Always Do / Ask First / Never Do boundaries, and changelog policy
+- **Fixed**: Install commands unified to `npx skills add jiahao-shao1/sjh-skills --skill <name>` across all READMEs (root, init-project, notion-lifeos had wrong URLs)
+- **Fixed**: Chinese README naming standardized to `README.zh-CN.md` (renamed cmux, daily-summary, notion-lifeos from `README.zh.md`)
+- **Fixed**: Root `README.zh-CN.md` missing init-project and project-review in skill table and architecture tree
+
+### project-review
+- **Added**: `README.md` — English documentation with install, usage, and configuration guide
+
 ## [0.4.0] - 2026-03-27
 
 ### project-review

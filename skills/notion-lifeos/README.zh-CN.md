@@ -68,13 +68,7 @@
 ### 2. 安装 Skill
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/notion-lifeos-skill
-```
-
-或手动克隆：
-
-```bash
-git clone https://github.com/jiahao-shao1/notion-lifeos-skill.git ~/.claude/skills/notion-lifeos
+npx skills add jiahao-shao1/sjh-skills --skill notion-lifeos
 ```
 
 ### 3. 配置

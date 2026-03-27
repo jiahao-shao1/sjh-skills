@@ -7,7 +7,7 @@ English | [中文](README.zh-CN.md)
 ## Quick Start
 
 ```bash
-npx skills add https://github.com/jiahao-shao1/init-project
+npx skills add jiahao-shao1/sjh-skills --skill init-project
 ```
 
 Then in any project, tell Claude Code:
