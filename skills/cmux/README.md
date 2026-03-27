@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-> A Claude Code skill for orchestrating terminal sessions inside [cmux](https://github.com/nicholasgasior/cmux) — split panes, spawn sub-agents, automate the built-in browser, and preview markdown.
+> A Claude Code skill for orchestrating terminal sessions inside [cmux](https://github.com/manaflow-ai/cmux) — split panes, spawn sub-agents, automate the built-in browser, and preview markdown.
 
 ## Features
 

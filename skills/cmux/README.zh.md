@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-> Claude Code 技能：在 [cmux](https://github.com/nicholasgasior/cmux) 中编排终端会话 — 分屏、启动子 Agent、自动化浏览器、预览 Markdown。
+> Claude Code 技能：在 [cmux](https://github.com/manaflow-ai/cmux) 中编排终端会话 — 分屏、启动子 Agent、自动化浏览器、预览 Markdown。
 
 ## 功能
 

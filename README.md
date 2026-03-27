@@ -13,6 +13,7 @@ English | [中文](README.zh-CN.md)
 | [daily-summary](skills/daily-summary/) | Daily work summary — aggregates Claude Code sessions, git commits, and Notion tasks into a timeline-style Chinese report |
 | [notion-lifeos](skills/notion-lifeos/) | Notion life management — PARA method + Make Time journaling, with natural language task/note/journal CRUD via Notion API |
 | [web-fetcher](skills/web-fetcher/) | Web page → clean markdown with 5-layer fallback: Jina Reader → defuddle.md → markdown.new → OpenCLI (platform-specific with login state) → raw HTML |
+| [init-project](skills/init-project/) | Initialize Claude Code project config — CLAUDE.md scaffolding, agent templates, and research profile setup |
 
 ## Install
 
@@ -40,7 +41,8 @@ sjh_skills/
     ├── cmux/              # Ghostty terminal orchestration + multi-agent coordination
     ├── daily-summary/     # git + Claude sessions + Notion timeline aggregation
     ├── notion-lifeos/     # PARA method + Make Time journaling via Notion API
-    └── web-fetcher/       # 5-layer fallback web content extraction
+    ├── web-fetcher/       # 5-layer fallback web content extraction
+    └── init-project/      # Claude Code project initialization and scaffolding
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.
