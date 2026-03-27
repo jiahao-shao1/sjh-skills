@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.4.2] - 2026-03-28
+
+### cmux
+- **Fixed**: Interactive program send pattern — `\n` in `cmux send` only works as Enter for shell prompts; interactive programs (Claude Code, vim) in raw terminal mode need `cmux send "text"` + `cmux send-key enter` to submit
+- **Added**: "Sending to interactive programs" workflow pattern with examples for Claude Code communication
+- **Added**: Shell vs interactive distinction in "Send Input / Read Output" section
+- **Added**: `trigger-flash` and `surface-health` commands (from official cmux skills) for visual feedback and health checks
+
 ## [0.4.1] - 2026-03-28
 
 ### Repo-wide

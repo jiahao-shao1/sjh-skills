@@ -27,6 +27,8 @@ cmux list-workspaces                              # all workspaces
 cmux list-panes                                   # panes in current workspace
 cmux list-pane-surfaces --pane <ref>              # surfaces in a pane
 cmux tree --all                                   # full hierarchy view
+cmux trigger-flash --surface <ref>               # flash surface for visual confirmation
+cmux surface-health                               # detect hidden/detached surfaces
 ```
 
 ## Create Terminals
@@ -60,14 +62,26 @@ cmux send --surface <ref> 'proxy && codex --dangerously-bypass-approvals-and-san
 When the user asks to "split a pane with Codex/Claude/agent", always:
 1. `cmux new-split <direction>` to create the pane
 2. `cmux send --surface <new-ref> '<proxy && agent command>\n'` to launch
-3. Optionally `cmux send --surface <new-ref> 'initial prompt or context\n'` after the agent starts
+3. Optionally send context after the agent starts: `cmux send --surface <new-ref> 'prompt'` then `cmux send-key --surface <new-ref> enter`
 
 ## Send Input / Read Output
 
 ```bash
-cmux send --surface <ref> "text\n"                # send text (include \n for Enter)
+cmux send --surface <ref> 'text\n'                # send text + Enter (for shell commands)
+cmux send --surface <ref> 'text'                  # send text only (no Enter)
 cmux send-key --surface <ref> <key>               # send special key (ctrl-c, enter, etc.)
 cmux read-screen --surface <ref> --lines <n>      # read last n lines of terminal output
+```
+
+**Shell vs interactive programs**: `\n` works as Enter for shell prompts (bash processes it via line discipline). But interactive programs in raw terminal mode (Claude Code, vim, etc.) treat `\n` as a literal newline character, not a submit action. For those, send text without `\n`, then use `send-key enter`:
+
+```bash
+# Shell command — \n works as Enter
+cmux send --surface <ref> 'ls -la\n'
+
+# Interactive program — use send-key enter to submit
+cmux send --surface <ref> 'your message here'
+cmux send-key --surface <ref> enter
 ```
 
 ## Sidebar Status & Progress
@@ -151,7 +165,8 @@ To feed context to the agent after it starts (e.g., a handoff prompt):
 ```bash
 # Wait for the agent to be ready, then send context
 sleep 5
-cmux send --surface surface:2 'Here is the task: ...\n'
+cmux send --surface surface:2 'Here is the task: ...'
+cmux send-key --surface surface:2 enter
 ```
 
 User can press `⌥⌘→` to switch to the agent pane and talk to it directly.
