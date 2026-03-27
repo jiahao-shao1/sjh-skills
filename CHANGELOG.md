@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.4.0] - 2026-03-27
+
+### project-review
+- **Added**: New skill — strategic project review with five-dimension analysis (vision, roadmap, bottlenecks, related work gaps, next steps)
+- **Added**: Explicit config support via `docs/strategy/.review-sources.md` with auto-discovery fallback
+- **Added**: First-use onboarding that generates recommended config from discovered files
+- **Changed**: Rewrote SKILL.md in English (Chinese trigger words preserved in description)
+- **Changed**: Output language now follows the user's language instead of forcing Chinese
+
 ## [0.3.0] - 2026-03-25
 
 ### scholar-agent

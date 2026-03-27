@@ -1,23 +1,23 @@
 ---
 name: project-review
-description: "项目战略全景审视 — 自动发现并读取战略文档（vision、roadmap、决策记录、会议纪要等），生成五维分析快照。当用户想审视项目方向、检查战略对齐、回顾里程碑进度、或在组会前快速了解项目全貌时使用。触发词包括：project review、项目全景、审视战略、战略 review、项目现在什么状态、review 一下方向。注意：不要被代码 review、PR review、code review 触发 — 那些是代码层面的，本 skill 是战略层面的。"
+description: "Strategic project review — automatically discovers and reads strategy documents (vision, roadmap, decisions, meeting notes, experiments), then generates a five-dimension analysis snapshot. Use when the user wants to review project direction, check strategic alignment, assess milestone progress, or get a quick overview before a team meeting. Triggers: 'project review', 'review the project', 'strategic review', 'where is the project at', 'project status overview', '项目全景', '审视战略', '战略 review', '项目现在什么状态', 'review 一下方向'. NOT for: code review, PR review, or any code-level review — this skill is about strategy, not code."
 ---
 
 # Project Review
 
-读取项目战略文档体系，生成项目全景快照。适合在组会前、方向迷茫时、或阶段性回顾时使用，帮助快速理解项目当前在哪、该往哪走。
+Reads the project's strategy document ecosystem and generates a panoramic snapshot. Useful before team meetings, when feeling lost about direction, or for periodic retrospectives — helps you quickly understand where the project is and where it should go.
 
-## 执行骨架
+## Execution Skeleton
 
-### Phase 1: 加载文档清单
+### Phase 1: Load Document Manifest
 
-先检查项目是否有显式配置：读取 `docs/strategy/.review-sources.md`。
+First check if the project has an explicit configuration: read `docs/strategy/.review-sources.md`.
 
-如果存在，按其中列出的路径逐一读取 — 项目维护者已指定了哪些文档构成"战略全貌"，不需要猜测。
+If it exists, read each path listed — the project maintainer has already specified which documents constitute the "strategic picture", no guessing needed.
 
-如果不存在，进入 Phase 1b 自动发现。
+If it doesn't exist, fall through to Phase 1b (auto-discovery).
 
-#### 项目配置格式（`docs/strategy/.review-sources.md`）
+#### Configuration Format (`docs/strategy/.review-sources.md`)
 
 ```markdown
 # Project Review Sources
@@ -43,55 +43,55 @@ description: "项目战略全景审视 — 自动发现并读取战略文档（v
 - HANDOFF.md
 ```
 
-每个条目是相对于项目根目录的路径。目录路径（以 `/` 结尾）表示读取该目录下最近修改的 2 个文件。`#` 开头的行是 section 标题，用于分组。
+Each entry is a path relative to project root. Directory paths (ending with `/`) mean "read the 2 most recently modified files in that directory". Lines starting with `#` are section headers for grouping.
 
-### Phase 1b: 自动发现（无配置时的 fallback）
+### Phase 1b: Auto-Discovery (fallback when no config exists)
 
-在以下路径中搜索，排除 `third_party/`、`node_modules/`、`.venv/`、`vendor/`：
+Search the following paths, excluding `third_party/`, `node_modules/`, `.venv/`, `vendor/`:
 
-| 文档类型 | 搜索路径（按优先级） | 说明 |
-|----------|---------|------|
-| Vision | `docs/strategy/vision.md` → `docs/vision.md` → `VISION.md` | 项目定位和核心假设 |
-| Roadmap | `docs/strategy/roadmap.md` → `docs/roadmap.md` → `ROADMAP.md` | 路线图 / 里程碑 |
-| Paper Outline | `docs/strategy/paper-outline.md` | 论文大纲（研究项目） |
-| Related Work | `docs/strategy/related-work/` 下的 `_index.md` 或所有 `.md` | related work |
-| Decisions | `docs/strategy/decisions/log.md` → `docs/strategy/decisions/` → `docs/adr/` | 决策记录 |
-| Meetings | `docs/strategy/meetings/` 下最近 2 个 `.md`（排除 `_template.md`） | 会议记录 |
-| Experiments | `.claude/knowledge/experiments.md` | 实验记录 |
-| Progress | `HANDOFF.md`（项目根目录） | 当前进度 |
+| Document Type | Search Paths (by priority) | Purpose |
+|---------------|---------------------------|---------|
+| Vision | `docs/strategy/vision.md` → `docs/vision.md` → `VISION.md` | Core positioning and assumptions |
+| Roadmap | `docs/strategy/roadmap.md` → `docs/roadmap.md` → `ROADMAP.md` | Milestones and timeline |
+| Paper Outline | `docs/strategy/paper-outline.md` | Paper outline (research projects) |
+| Related Work | `_index.md` or all `.md` under `docs/strategy/related-work/` | Related work coverage |
+| Decisions | `docs/strategy/decisions/log.md` → `docs/strategy/decisions/` → `docs/adr/` | Decision records |
+| Meetings | 2 most recent `.md` under `docs/strategy/meetings/` (exclude `_template.md`) | Meeting notes |
+| Experiments | `.claude/knowledge/experiments.md` | Experiment log |
+| Progress | `HANDOFF.md` (project root) | Current progress |
 
-使用精确路径逐级 fallback，不使用 `**/` 递归 glob — 递归搜索容易匹配到 `third_party/` 下的同名文件，产生噪音。
+Use exact paths with sequential fallback — avoid `**/` recursive globs, which tend to match files under `third_party/` and produce noise.
 
-如果以上路径都不存在，提示用户：
-> "未找到战略文档。建议创建 `docs/strategy/.review-sources.md` 指定文档位置，或在 `docs/strategy/` 下创建 `vision.md` 和 `roadmap.md`。"
+If none of the above paths exist, prompt the user:
+> "No strategy documents found. Consider creating `docs/strategy/.review-sources.md` to specify document locations, or create `vision.md` and `roadmap.md` under `docs/strategy/`."
 
-### Phase 2: 五维分析
+### Phase 2: Five-Dimension Analysis
 
-根据找到的文档生成分析。每个维度只在有对应文档时输出 — 没有数据支撑的维度直接跳过，因为猜测比沉默更危险。
+Generate analysis based on the discovered documents. Only produce a dimension when supporting documents exist — skip dimensions without data, because speculation is more dangerous than silence.
 
 **1. Vision Check**
-- 当前工作是否对齐核心目标 / 假设
-- 哪些假设已验证、哪些受质疑、哪些未测试
-- 如果没有 vision 文档，基于 README 推断项目目标（标注为推断）
+- Is current work aligned with core objectives / assumptions?
+- Which assumptions are validated, challenged, or untested?
+- If no vision document exists, infer project goals from README (mark as inferred)
 
 **2. Roadmap Status**
-- 进度总览（done / in-progress / planned）
-- 当前阶段在整体路线图中的位置
-- 是否有偏离计划的工作
+- Progress overview (done / in-progress / planned)
+- Current phase's position in the overall roadmap
+- Any work that deviates from the plan
 
-**3. 瓶颈识别**
-- 从实验结果和决策记录中提取当前阻塞点
-- 区分技术瓶颈（如 API 不稳定）和研究/业务瓶颈（如假设不成立）
+**3. Bottleneck Identification**
+- Extract current blockers from experiment results and decision records
+- Distinguish technical bottlenecks (e.g., unstable API) from research/business bottlenecks (e.g., invalidated assumptions)
 
-**4. Related Work Gap**（研究项目）
-- 哪些主题缺少 related work 覆盖
-- 是否有新发表的相关工作需要关注
+**4. Related Work Gap** (research projects)
+- Which topics lack related work coverage?
+- Are there newly published works that need attention?
 
-**5. 下一步建议**
-- 基于以上分析，推荐接下来做什么
-- 优先级排序：紧急 vs 重要
+**5. Next Steps**
+- Recommendations based on the above analysis
+- Priority ordering: urgent vs. important
 
-### Phase 3: 输出
+### Phase 3: Output
 
 ```
 ========================================
@@ -103,16 +103,16 @@ description: "项目战略全景审视 — 自动发现并读取战略文档（v
 ...
 
 ## 2. Roadmap Status
-| ID | 里程碑 | 状态 | 备注 |
+| ID | Milestone | Status | Notes |
 ...
 
-## 3. 瓶颈识别
+## 3. Bottleneck Identification
 ...
 
 ## 4. Related Work Gap
 ...
 
-## 5. 下一步建议
+## 5. Next Steps
 1. ...
 2. ...
 3. ...
@@ -120,21 +120,21 @@ description: "项目战略全景审视 — 自动发现并读取战略文档（v
 ========================================
 ```
 
-### 首次使用引导
+### First-Use Onboarding
 
-如果是通过 Phase 1b 自动发现（而非配置文件）找到的文档，在输出末尾附上推荐配置，方便用户一键创建 `.review-sources.md`：
+If documents were found via Phase 1b auto-discovery (rather than the config file), append a recommended configuration at the end of the output so the user can quickly create `.review-sources.md`:
 
 ```
-Tip: 创建 docs/strategy/.review-sources.md 可以精确指定文档位置，
-避免误匹配。推荐配置：
+Tip: Create docs/strategy/.review-sources.md to precisely specify document
+locations and avoid false matches. Recommended config:
 
-<根据实际发现的文件生成配置内容>
+<generate config content based on actually discovered files>
 ```
 
-## 约束
+## Constraints
 
-- **只读** — 不修改任何文档。这个 skill 的价值是提供视角，不是代替人做决策。
-- **输出到终端** — 不生成文件，除非用户明确要求保存。避免产生"文档写文档"的噪音。
-- 全部使用中文
-- 缺少某个维度的文档时跳过，不要编造 — 空白比错误的信心更有价值
-- 不替代 weekly-report（面向汇报）或 meeting-slides（面向展示）— 本 skill 面向个人/团队的战略反思
+- **Read-only** — do not modify any documents. This skill's value is providing perspective, not making decisions for the user.
+- **Output to terminal** — do not create files unless the user explicitly asks to save. Avoid "documents writing documents" noise.
+- **Follow the user's language** — respond in whichever language the user uses.
+- Skip dimensions that lack supporting documents — silence is more valuable than false confidence.
+- This skill does not replace weekly-report (for reporting) or meeting-slides (for presentations) — it's for personal/team strategic reflection.
