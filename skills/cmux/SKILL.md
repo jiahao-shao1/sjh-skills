@@ -41,27 +41,27 @@ cmux new-surface                                  # new tab in current pane
 
 ## Launch Agents in a Pane
 
-Network access requires `proxy`. Always include it before agent commands.
+Network access requires proxy env vars. Always set them before agent commands.
 
-**Important**: When sending compound commands (`proxy && agent ...`), send them as a single string to `cmux send`. Do NOT split into separate `send` calls — the second command would run before the first finishes.
+**Important**: When sending compound commands (proxy export + agent launch), send them as a single string to `cmux send`. Do NOT split into separate `send` calls — the second command would run before the first finishes.
 
 ```bash
 # Claude Code — interactive mode (user can switch to this pane and intervene)
-cmux send --surface <ref> 'proxy && claude --dangerously-skip-permissions\n'
+cmux send --surface <ref> 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && claude --dangerously-skip-permissions\n'
 
 # Claude Code — non-interactive mode (run task, capture output, signal completion)
-cmux send --surface <ref> 'proxy && claude -p "your prompt" --model haiku 2>&1 | tee /tmp/agent-output.txt; echo "AGENT_DONE"\n'
+cmux send --surface <ref> 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && claude -p "your prompt" --model haiku 2>&1 | tee /tmp/agent-output.txt; echo "AGENT_DONE"\n'
 
 # Codex — interactive mode (full-auto, user can intervene)
-cmux send --surface <ref> 'proxy && codex --dangerously-bypass-approvals-and-sandbox\n'
+cmux send --surface <ref> 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && codex --dangerously-bypass-approvals-and-sandbox\n'
 
 # Codex — with initial prompt
-cmux send --surface <ref> 'proxy && codex --dangerously-bypass-approvals-and-sandbox -p "your prompt"\n'
+cmux send --surface <ref> 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && codex --dangerously-bypass-approvals-and-sandbox -p "your prompt"\n'
 ```
 
 When the user asks to "split a pane with Codex/Claude/agent", always:
 1. `cmux new-split <direction>` to create the pane
-2. `cmux send --surface <new-ref> '<proxy && agent command>\n'` to launch
+2. `cmux send --surface <new-ref> '<export https_proxy=... && agent command>\n'` to launch
 3. Optionally send context after the agent starts: `cmux send --surface <new-ref> 'prompt'` then `cmux send-key --surface <new-ref> enter`
 
 ## Send Input / Read Output
@@ -136,10 +136,10 @@ cmux markdown open plan.md --workspace workspace:2 # target specific workspace
 
 ```bash
 cmux new-split right
-cmux send --surface surface:2 'proxy && claude -p "analyze project structure" --model haiku > /tmp/a1.txt; echo "DONE"\n'
+cmux send --surface surface:2 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && claude -p "analyze project structure" --model haiku > /tmp/a1.txt; echo "DONE"\n'
 
 cmux new-split down
-cmux send --surface surface:3 'proxy && claude -p "count code lines" --model haiku > /tmp/a2.txt; echo "DONE"\n'
+cmux send --surface surface:3 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && claude -p "count code lines" --model haiku > /tmp/a2.txt; echo "DONE"\n'
 
 cmux set-status task "Running" --icon hammer --color "#1565C0"
 # Poll: cmux read-screen --surface surface:2 --lines 5
@@ -154,11 +154,11 @@ Launch an agent in a split pane that the user can interact with directly:
 ```bash
 # Claude Code in right split
 cmux new-split right
-cmux send --surface surface:2 'proxy && claude --dangerously-skip-permissions\n'
+cmux send --surface surface:2 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && claude --dangerously-skip-permissions\n'
 
 # Codex in right split (full-auto mode)
 cmux new-split right
-cmux send --surface surface:2 'proxy && codex --dangerously-bypass-approvals-and-sandbox\n'
+cmux send --surface surface:2 'export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 ALL_PROXY=socks5://127.0.0.1:7890 && codex --dangerously-bypass-approvals-and-sandbox\n'
 ```
 
 To feed context to the agent after it starts (e.g., a handoff prompt):

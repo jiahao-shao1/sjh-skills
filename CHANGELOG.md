@@ -4,6 +4,11 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.4.3] - 2026-03-28
+
+### cmux
+- **Changed**: Replace `proxy` alias with explicit `export https_proxy=... http_proxy=... all_proxy=...` for portability — not all users have a `proxy` alias
+
 ## [0.4.2] - 2026-03-28
 
 ### cmux
