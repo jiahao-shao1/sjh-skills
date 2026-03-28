@@ -1,0 +1,26 @@
+{
+  "skill_name": "codex-review",
+  "evals": [
+    {
+      "id": 1,
+      "name": "plan-review-refactor",
+      "prompt": "I just finished a plan to refactor the reward function in our RL training system. The plan has 5 steps: extract reward_tool_strict into two functions, update the config YAML to point to the new functions, add unit tests, run the existing test suite, and update the docs. Can you get a second opinion from Codex on this plan?",
+      "expected_output": "Should detect plan review mode, send to Codex with plan-specific dimensions (goal alignment, completeness, risks, ordering, testability), present Codex feedback, and iterate if needed",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "code-review-staged-diff",
+      "prompt": "I've staged some changes to the dataset loader — added retry logic for failed API calls and a new config parameter. /codex-review",
+      "expected_output": "Should detect code review mode via git diff --cached, send to Codex with code-specific dimensions (correctness, security, edge cases, error handling, compatibility, test coverage), show proposed fixes if any",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "explicit-model-override",
+      "prompt": "/codex-review gpt-5.4",
+      "expected_output": "Should detect available content (plan or diff), use gpt-5.4 instead of default gpt-5.3-codex, and proceed with the appropriate review mode",
+      "files": []
+    }
+  ]
+}
