@@ -14,14 +14,7 @@
 ## 安装
 
 ```bash
-# 添加到 Claude Code skills
-cp -r daily-summary ~/.claude/skills/
-```
-
-或通过 [dotfiles + stow](https://github.com/jiahao-shao1/dotfiles) 管理：
-
-```bash
-git submodule add <repo-url> agents/.agents/skills/daily-summary
+npx skills add jiahao-shao1/sjh-skills --skill daily-summary
 ```
 
 ## 使用

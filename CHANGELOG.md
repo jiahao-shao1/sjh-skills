@@ -4,6 +4,24 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.6.0] - 2026-03-29
+
+### codex-review
+- **Added**: New skill — cross-model plan/code review via OpenAI Codex CLI, iterative Claude↔Codex feedback loop (max 5 rounds)
+- **Added**: `README.md` and `README.zh-CN.md`
+
+### paper-analyzer
+- **Added**: New skill — structured deep analysis of academic papers with causal chain methodology (现象→实验设置→归因→解法)
+- **Added**: NotebookLM integration for source-grounded paper reading
+- **Added**: Optional research framework mapping via `references/hypothesis.md`
+- **Added**: `README.md` and `README.zh-CN.md`
+
+### scholar-agent
+- **Added**: `README.zh-CN.md` — Chinese documentation
+
+### project-review
+- **Added**: `README.zh-CN.md` — Chinese documentation
+
 ## [0.5.0] - 2026-03-28
 
 ### remote-cluster-agent

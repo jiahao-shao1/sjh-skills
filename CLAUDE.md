@@ -14,7 +14,9 @@ sjh_skills/
 │   ├── web-fetcher/       # 5-layer fallback web content extraction
 │   ├── init-project/      # Claude Code project initialization
 │   ├── project-review/    # 5-dimension strategy review snapshot
-│   └── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
+│   ├── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
+│   ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
+│   └── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
 ├── CHANGELOG.md           # Version history (must be updated on every change)
 ├── README.md              # English
 └── README.zh-CN.md        # Chinese
