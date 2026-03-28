@@ -15,6 +15,7 @@ English | [中文](README.zh-CN.md)
 | [web-fetcher](skills/web-fetcher/) | Web page → clean markdown with 5-layer fallback: Jina Reader → defuddle.md → markdown.new → OpenCLI (platform-specific with login state) → raw HTML |
 | [init-project](skills/init-project/) | Initialize Claude Code project config — CLAUDE.md scaffolding, agent templates, and research profile setup |
 | [project-review](skills/project-review/) | Project strategy panoramic review — auto-discover strategy docs and generate a 5-dimension snapshot (vision, roadmap, blockers, related work, next steps) |
+| [remote-cluster-agent](skills/remote-cluster-agent/) | Remote GPU cluster operations — edit code locally, run commands remotely with ~0.1s latency via persistent SSH agent connections, cluster health inspection |
 
 ## Install
 
@@ -44,7 +45,8 @@ sjh_skills/
     ├── notion-lifeos/     # PARA method + Make Time journaling via Notion API
     ├── web-fetcher/       # 5-layer fallback web content extraction
     ├── init-project/      # Claude Code project initialization and scaffolding
-    └── project-review/    # 5-dimension strategy review snapshot
+    ├── project-review/    # 5-dimension strategy review snapshot
+    └── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.

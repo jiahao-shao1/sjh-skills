@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remote Cluster Agent — Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Source+Code+Pro:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF9F7;
+    --bg-warm: #F5F0EB;
+    --bg-card: #FFFFFF;
+    --text: #1A1613;
+    --text-secondary: #6B5E54;
+    --text-tertiary: #9B8E82;
+    --accent: #E07A4B;
+    --accent-soft: #F4C3A8;
+    --accent-glow: rgba(224, 122, 75, 0.12);
+    --border: #E8E0D8;
+    --border-light: #F0EAE4;
+    --ssh-color: #D4956B;
+    --local-color: #5B8A72;
+    --remote-color: #7B6BA5;
+    --speed-fast: #3D8B6E;
+    --speed-slow: #C4873B;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 3px rgba(26, 22, 19, 0.04);
+    --shadow-md: 0 4px 16px rgba(26, 22, 19, 0.06);
+    --shadow-lg: 0 8px 32px rgba(26, 22, 19, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ---- Header ---- */
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  header p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ---- Mode Toggle ---- */
+  .mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 40px;
+    background: var(--bg-warm);
+    border-radius: 100px;
+    padding: 4px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mode-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-btn.active {
+    background: var(--bg-card);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mode-btn .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transition: background 0.3s;
+  }
+
+  .mode-btn.active .dot.fast { background: var(--speed-fast); }
+  .mode-btn.active .dot.slow { background: var(--speed-slow); }
+  .mode-btn:not(.active) .dot { background: var(--text-tertiary); }
+
+  /* ---- Architecture Diagram ---- */
+  .arch {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    gap: 0;
+    align-items: stretch;
+    margin-bottom: 56px;
+  }
+
+  .arch-side {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .arch-side.local { border-top: 3px solid var(--local-color); }
+  .arch-side.remote { border-top: 3px solid var(--remote-color); }
+
+  .side-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .side-label .icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+
+  .local .side-label { color: var(--local-color); }
+  .local .side-label .icon { background: rgba(91, 138, 114, 0.1); }
+  .remote .side-label { color: var(--remote-color); }
+  .remote .side-label .icon { background: rgba(123, 107, 165, 0.1); }
+
+  .component {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    transition: all 0.25s ease;
+    position: relative;
+    cursor: default;
+  }
+
+  .component:hover {
+    transform: translateX(2px);
+  }
+
+  .component:last-child { margin-bottom: 0; }
+
+  .component .name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .component .desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .component .latency {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .latency.fast {
+    color: var(--speed-fast);
+    background: rgba(61, 139, 110, 0.08);
+  }
+
+  .latency.slow {
+    color: var(--speed-slow);
+    background: rgba(196, 135, 59, 0.08);
+  }
+
+  .local .component { background: rgba(91, 138, 114, 0.04); }
+  .local .component:hover { background: rgba(91, 138, 114, 0.08); }
+  .remote .component { background: rgba(123, 107, 165, 0.04); }
+  .remote .component:hover { background: rgba(123, 107, 165, 0.08); }
+
+  /* ---- SSH Bridge (center) ---- */
+  .bridge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 20px 0;
+  }
+
+  .bridge-line {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(to bottom, transparent, var(--ssh-color), var(--ssh-color), transparent);
+    position: relative;
+  }
+
+  .bridge-label {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--ssh-color);
+    background: var(--bg);
+    padding: 4px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .bridge-arrow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 12px 0;
+  }
+
+  .arrow-line {
+    width: 20px;
+    height: 2px;
+    background: var(--ssh-color);
+    position: relative;
+  }
+
+  .arrow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ssh-color);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .bridge-arrow.mutagen .arrow-dot { animation-delay: 0s; }
+  .bridge-arrow.command .arrow-dot { animation-delay: 0.7s; }
+
+  .bridge-arrow-label {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* ---- Flow Section ---- */
+  .flow-section {
+    margin-bottom: 56px;
+  }
+
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .section-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+
+  .flow-loop {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 24px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    justify-content: center;
+  }
+
+  .flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 12px 8px;
+    min-width: 100px;
+    position: relative;
+    opacity: 0;
+    animation: flow-in 0.5s ease forwards;
+  }
+
+  .flow-step:nth-child(1) { animation-delay: 0.1s; }
+  .flow-step:nth-child(2) { animation-delay: 0.2s; }
+  .flow-step:nth-child(3) { animation-delay: 0.3s; }
+  .flow-step:nth-child(4) { animation-delay: 0.4s; }
+  .flow-step:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes flow-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .flow-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 8px;
+    transition: transform 0.2s;
+  }
+
+  .flow-step:hover .flow-icon { transform: scale(1.1); }
+
+  .flow-icon.edit { background: rgba(91, 138, 114, 0.1); }
+  .flow-icon.sync { background: rgba(212, 149, 107, 0.1); }
+  .flow-icon.run { background: rgba(123, 107, 165, 0.1); }
+  .flow-icon.read { background: rgba(91, 138, 114, 0.1); }
+  .flow-icon.repeat { background: var(--accent-glow); }
+
+  .flow-step .label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .flow-step .where {
+    font-size: 10px;
+    color: var(--text-tertiary);
+  }
+
+  .flow-arrow {
+    color: var(--border);
+    font-size: 16px;
+    flex-shrink: 0;
+    margin: 0 2px;
+  }
+
+  /* ---- Mode Detail Cards ---- */
+  .mode-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .mode-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+
+  .mode-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .mode-card.active-card {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), var(--shadow-md);
+  }
+
+  .mode-card h3 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mode-card .speed {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 12px 0;
+  }
+
+  .mode-card .speed.fast { color: var(--speed-fast); }
+  .mode-card .speed.slow { color: var(--speed-slow); }
+
+  .mode-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .mode-card .protocol {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 11px;
+    background: var(--bg-warm);
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    margin-top: 16px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .mode-card .protocol .highlight {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .mode-card .tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .tag.primary { background: rgba(61, 139, 110, 0.08); color: var(--speed-fast); }
+  .tag.fallback { background: rgba(196, 135, 59, 0.08); color: var(--speed-slow); }
+
+  /* ---- Footer ---- */
+  footer {
+    text-align: center;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-light);
+  }
+
+  footer p {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 700px) {
+    .arch { grid-template-columns: 1fr; gap: 0; }
+    .bridge { flex-direction: row; padding: 16px 0; }
+    .bridge-line { width: auto; height: 2px; flex: 1;
+      background: linear-gradient(to right, transparent, var(--ssh-color), var(--ssh-color), transparent);
+    }
+    .bridge-arrow { flex-direction: column; margin: 0 12px; }
+    .mode-details { grid-template-columns: 1fr; }
+    .flow-loop { flex-wrap: wrap; gap: 4px; }
+    .flow-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Architecture Overview
+    </div>
+    <h1>Remote Cluster <em>Agent</em></h1>
+    <p>Edit locally, execute remotely. Real-time sync over SSH — no public internet required on the cluster.</p>
+  </header>
+
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" onclick="setMode('agent')" id="btn-agent">
+      <span class="dot fast"></span>
+      Agent Mode
+    </button>
+    <button class="mode-btn" onclick="setMode('sentinel')" id="btn-sentinel">
+      <span class="dot slow"></span>
+      Sentinel Mode
+    </button>
+  </div>
+
+  <!-- Architecture Diagram -->
+  <div class="arch">
+
+    <!-- Local Side -->
+    <div class="arch-side local">
+      <div class="side-label">
+        <span class="icon">💻</span>
+        Local Machine
+      </div>
+
+      <div class="component">
+        <div class="name">
+          Claude Code
+          <span class="latency fast">~0.5ms</span>
+        </div>
+        <div class="desc">Read / Edit / Write via native tools</div>
+      </div>
+
+      <div class="component">
+        <div class="name">MCP Server</div>
+        <div class="desc">
+          <code>remote_bash(node, command)</code><br>
+          Single server, multi-node routing
+        </div>
+      </div>
+
+      <div class="component">
+        <div class="name">Mutagen</div>
+        <div class="desc">Real-time bidirectional file sync</div>
+      </div>
+    </div>
+
+    <!-- SSH Bridge -->
+    <div class="bridge">
+      <div class="bridge-line"></div>
+      <div class="bridge-arrow mutagen" style="position:relative">
+        <span class="bridge-arrow-label">sync</span>
+        <span class="arrow-line"></span>
+        <span class="arrow-dot"></span>
+        <span class="arrow-line"></span>
+      </div>
+      <div class="bridge-label">SSH</div>
+      <div class="bridge-arrow command" style="position:relative">
+        <span class="bridge-arrow-label" id="cmd-label">json</span>
+        <span class="arrow-line"></span>
+        <span class="arrow-dot"></span>
+        <span class="arrow-line"></span>
+      </div>
+      <div class="bridge-line"></div>
+    </div>
+
+    <!-- Remote Side -->
+    <div class="arch-side remote">
+      <div class="side-label">
+        <span class="icon">🖥</span>
+        GPU Cluster
+        <span style="font-weight:400; letter-spacing:0; text-transform:none; color:var(--text-tertiary); font-size:9px;">no internet needed</span>
+      </div>
+
+      <div class="component" id="comp-agent">
+        <div class="name">
+          agent.py
+          <span class="latency fast" id="latency-badge">~0.1s</span>
+        </div>
+        <div class="desc" id="agent-desc">Persistent process, JSON-Lines protocol, zero dependencies</div>
+      </div>
+
+      <div class="component">
+        <div class="name">Project Files</div>
+        <div class="desc">Code, configs, training scripts</div>
+      </div>
+
+      <div class="component">
+        <div class="name">Training Outputs</div>
+        <div class="desc">Logs, checkpoints, metrics</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Automation Loop -->
+  <div class="flow-section">
+    <div class="section-title">The Loop</div>
+    <div class="section-subtitle">Save locally, iterate remotely — all through SSH</div>
+
+    <div class="flow-loop">
+      <div class="flow-step">
+        <div class="flow-icon edit">✏️</div>
+        <div class="label">Edit</div>
+        <div class="where">local native tools</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon sync">🔄</div>
+        <div class="label">Sync</div>
+        <div class="where">mutagen, instant</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon run">⚡</div>
+        <div class="label">Run</div>
+        <div class="where">remote_bash</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon read">📖</div>
+        <div class="label">Read</div>
+        <div class="where">local, ~20x faster</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-icon repeat">♻️</div>
+        <div class="label">Repeat</div>
+        <div class="where"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mode Detail Cards -->
+  <div class="section-title">Execution Modes</div>
+  <div class="section-subtitle">Agent mode is primary. Sentinel is the automatic fallback.</div>
+
+  <div class="mode-details">
+    <div class="mode-card active-card" id="card-agent">
+      <h3>
+        Agent Mode
+        <span class="tag primary">primary</span>
+      </h3>
+      <div class="speed fast">~0.1s</div>
+      <p>Persistent SSH connection to cluster-side <code>agent.py</code>. Commands sent as JSON, results returned immediately.</p>
+      <div class="protocol"><span class="highlight">→</span> {"cmd": "nvidia-smi", "id": "a1b2"}
+<span class="highlight">←</span> {"output": "...", "exit_code": 0}
+<span class="highlight">→</span> {"cmd": "python train.py", ...}
+<span class="highlight">←</span> {"output": "...", "exit_code": 0}</div>
+    </div>
+
+    <div class="mode-card" id="card-sentinel">
+      <h3>
+        Sentinel Mode
+        <span class="tag fallback">fallback</span>
+      </h3>
+      <div class="speed slow">~1.5s</div>
+      <p>Per-command SSH with sentinel pattern detection. Used automatically when agent is unavailable.</p>
+      <div class="protocol"><span class="highlight">→</span> ssh host 'cmd; echo ___EXIT_$?___'
+   ...command output...
+   <span class="highlight">___MCP_EXIT_0___</span>  ← detected
+<span class="highlight">→</span> proc.kill()       ← force close</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>
+      <a href="https://github.com/jiahao-shao1/remote-cluster-agent">remote-cluster-agent</a> · MIT License
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  function setMode(mode) {
+    const btnAgent = document.getElementById('btn-agent');
+    const btnSentinel = document.getElementById('btn-sentinel');
+    const cardAgent = document.getElementById('card-agent');
+    const cardSentinel = document.getElementById('card-sentinel');
+    const compAgent = document.getElementById('comp-agent');
+    const latencyBadge = document.getElementById('latency-badge');
+    const agentDesc = document.getElementById('agent-desc');
+    const cmdLabel = document.getElementById('cmd-label');
+
+    if (mode === 'agent') {
+      btnAgent.classList.add('active');
+      btnSentinel.classList.remove('active');
+      cardAgent.classList.add('active-card');
+      cardSentinel.classList.remove('active-card');
+      latencyBadge.textContent = '~0.1s';
+      latencyBadge.className = 'latency fast';
+      agentDesc.textContent = 'Persistent process, JSON-Lines protocol, zero dependencies';
+      cmdLabel.textContent = 'json';
+      compAgent.querySelector('.name').childNodes[0].textContent = 'agent.py ';
+    } else {
+      btnSentinel.classList.add('active');
+      btnAgent.classList.remove('active');
+      cardSentinel.classList.add('active-card');
+      cardAgent.classList.remove('active-card');
+      latencyBadge.textContent = '~1.5s';
+      latencyBadge.className = 'latency slow';
+      agentDesc.textContent = 'Per-command SSH, sentinel pattern detection, proc.kill()';
+      cmdLabel.textContent = 'bash';
+      compAgent.querySelector('.name').childNodes[0].textContent = 'Sentinel ';
+    }
+  }
+</script>
+
+</body>
+</html>

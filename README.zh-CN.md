@@ -15,6 +15,7 @@
 | [web-fetcher](skills/web-fetcher/) | 网页 → 干净 Markdown，5 层 fallback：Jina Reader → defuddle.md → markdown.new → OpenCLI（带登录态的平台适配） → 原始 HTML |
 | [init-project](skills/init-project/) | 初始化 Claude Code 项目配置 —— CLAUDE.md 骨架、Agent 模板、研究 profile |
 | [project-review](skills/project-review/) | 项目战略全景审视 —— 自动发现战略文档，生成五维分析快照（vision、roadmap、瓶颈、related work、下一步） |
+| [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，远程 ~0.1s 延迟执行命令，持久 SSH Agent 连接，集群健康巡检 |
 
 ## 安装
 
@@ -44,7 +45,8 @@ sjh_skills/
     ├── notion-lifeos/     # PARA 方法 + Make Time 日记，通过 Notion API
     ├── web-fetcher/       # 5 层 fallback 网页内容提取
     ├── init-project/      # Claude Code 项目初始化和骨架搭建
-    └── project-review/    # 五维战略审视快照
+    ├── project-review/    # 五维战略审视快照
+    └── remote-cluster-agent/ # 远程 GPU 集群操作，持久 SSH Agent
 ```
 
 每个 skill 都是独立的，包含 `SKILL.md`、`scripts/` 和 `references/`。可以单独安装，也可以作为合集安装。

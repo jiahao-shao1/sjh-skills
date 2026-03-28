@@ -13,7 +13,8 @@ sjh_skills/
 │   ├── notion-lifeos/     # PARA method + Make Time via Notion API
 │   ├── web-fetcher/       # 5-layer fallback web content extraction
 │   ├── init-project/      # Claude Code project initialization
-│   └── project-review/    # 5-dimension strategy review snapshot
+│   ├── project-review/    # 5-dimension strategy review snapshot
+│   └── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
 ├── CHANGELOG.md           # Version history (must be updated on every change)
 ├── README.md              # English
 └── README.zh-CN.md        # Chinese

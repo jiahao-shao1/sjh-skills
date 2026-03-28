@@ -4,6 +4,20 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [0.5.0] - 2026-03-28
+
+### remote-cluster-agent
+- **Added**: New skill — remote GPU cluster operations with ~0.1s command latency via persistent SSH agent connections
+- **Added**: Two-layer configuration (`~/.config/remote-cluster-agent/` — global infrastructure + per-project)
+- **Added**: Auto agent deployment detection and deployment on startup (no manual "deploy agent" step)
+- **Added**: Cluster health inspection — parallel GPU/disk/tmux/load scanning with smart node recommendation
+- **Added**: Unified `cluster` MCP server with `node` parameter routing (supports both Claude Code and Codex)
+- **Added**: SSH config auto-generation with best-practice settings (`StrictHostKeyChecking=accept-new`)
+- **Added**: "Read file vs run command" guidance — smart prompts to read Mutagen-synced files locally
+- **Changed**: Default Mutagen sync mode to `one-way-replica` (never conflicts, syncs `.git`)
+- **Added**: `reference/project.template.md` — project-level config template
+- **Added**: `reference/cluster-health.md` — health check procedure with recommendation algorithm
+
 ## [0.4.3] - 2026-03-28
 
 ### cmux
