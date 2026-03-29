@@ -52,6 +52,14 @@ if [[ "$CANONICAL" != "$OPS_ROOT/"* ]]; then
   exit 1
 fi
 
+# Final check: reject if target file is an existing symlink (could point outside ops/)
+if [ -L "$CANONICAL" ]; then
+  echo "ERROR: Zone violation — write blocked." >&2
+  echo "  Target:  $REL_PATH" >&2
+  echo "  Reason:  target is a symlink" >&2
+  exit 1
+fi
+
 # Write content
 printf '%s' "$CONTENT" > "$CANONICAL"
 echo "Written: $REL_PATH"

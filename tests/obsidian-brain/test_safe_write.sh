@@ -87,6 +87,11 @@ mkdir -p "$TEST_VAULT/opsx"
 assert_failure "opsx/ prefix bypass blocked" \
   "$SAFE_WRITE" "$TEST_VAULT" "opsx/hack.md" "injected content"
 
+# File-level symlink escape (file itself is a symlink to outside vault)
+ln -sf /tmp/outside-target "$TEST_VAULT/ops/drafts/symlink-file.md"
+assert_failure "file-level symlink escape blocked" \
+  "$SAFE_WRITE" "$TEST_VAULT" "ops/drafts/symlink-file.md" "injected content"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1
