@@ -18,6 +18,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 - Templates for all content types (note, task, project, resource, daily, meeting-transcript, context)
 - Reference docs: vault schema and command guide
 - Zone boundary tests with traversal/symlink attack coverage
+- Note creation script (`create-note.sh`) with slugified filenames, tags, wikilinks, and duplicate handling
 
 ## [0.6.0] - 2026-03-29
 
