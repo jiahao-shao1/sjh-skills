@@ -112,6 +112,22 @@ This is the core output. The structure follows a causal reasoning chain — each
 
 The causal chain matters because it exposes logical gaps: if the 解法 doesn't actually follow from the 归因, or if the 归因 doesn't fully explain the 现象, that's where the interesting analysis lives.
 
+### Step 4.5: Tri-dimensional Tagging
+
+If a taxonomy is configured (see `references/taxonomy.md`), add a tag line at the top of each paper's analysis, mapping it to the classification framework:
+
+```markdown
+### Paper-Name (arXiv-ID) — "大白话一句话概括"
+
+> 📍 诊断：[用什么方法发现的] | 归因：[为什么会这样] | 修复：[怎么修的/没修]
+```
+
+The tag line serves two purposes:
+1. **Reader navigation**: scanning 30+ papers by tags without reading each analysis
+2. **Gap detection**: if a category has no papers, that's an unexplored area
+
+If no taxonomy is configured, skip the tag line — Steps 1-4 already produce a complete analysis.
+
 ### Step 5: Research Framework Mapping and Reverse Challenge
 
 **Skip this step if** no research framework is configured (i.e., `references/hypothesis.md` doesn't exist or is empty). Steps 1-4 already produce a complete, standalone analysis.
@@ -136,6 +152,38 @@ If the user is building a body of related work, note:
 - **Contradictions**: Papers whose findings genuinely conflict (not just different interpretations)
 - **Methodology comparisons**: Differences in base model, training data, or evaluation that affect comparability
 
+## Writing Rules
+
+All output from this skill must follow these rules. The standard is: **a reader should understand every sentence without looking up the original paper.**
+
+### De-jargoning
+
+Always use plain language first, then note the paper's original term in parentheses for traceability.
+
+- ❌ "Visual Anchor Drifting 导致 dilution effect"
+- ✅ "推理越长越忘记看图（论文称 Visual Anchor Drifting），因为文字太多把图的注意力挤没了（论文称 dilution effect）"
+
+This applies to:
+- Paper-coined concept names (Language Shortcut, Tool Usage Homogenization, etc.)
+- Causal explanations (credit assignment failure → 训练信号分不清该奖励什么)
+- Method names when the name is opaque (Cold-Start SFT → 先 SFT 打底再 RL)
+
+Do NOT de-jargon universally understood ML terms (RL, SFT, GRPO, CoT, attention, loss, etc.) or proper nouns (benchmark names, model names).
+
+### Abbreviation Expansion
+
+Every abbreviation must be expanded on first use with a one-line explanation:
+
+- ❌ "基于 SCM 设计"
+- ✅ "基于 SCM（Structural Causal Model，结构因果模型——将变量间的因果关系建模为有向图）设计"
+
+### One-line Characterization
+
+The paper title's one-line characterization (after the em-dash) must be in plain language, not the paper's own jargon:
+
+- ❌ `#### GeoEyes — "Tool Usage Homogenization"`
+- ✅ `#### GeoEyes — "工具调用千篇一律：每题恰好一次 zoom 的机械行为"`
+
 ## Output Format
 
 The primary output is the three-part analysis (Step 4) plus hypothesis mapping (Step 5). This goes into the user's related work document.
@@ -151,16 +199,50 @@ For a complete analysis, produce:
 
 ### Research Framework (Optional)
 
-If the user has a research hypothesis, theoretical lens, or set of claims they're building evidence for, they can define it in `references/hypothesis.md`. This file is entirely user-defined — it could be a hypothesis, a taxonomy, open questions, or any structure that organizes related work.
+If the user has a research hypothesis, theoretical lens, or set of claims they're building evidence for, they can define it in `references/hypothesis.md`. This file is entirely user-defined — it could be a hypothesis, a set of open questions, or any high-level narrative that organizes related work.
 
 - If `references/hypothesis.md` exists → read it before analysis, apply Step 5
 - If it doesn't exist → Steps 1-4 produce a complete analysis on their own, no need to ask
 
+### Classification Taxonomy (Optional)
+
+`references/taxonomy.md` defines the multi-dimensional classification framework for the research area. Each paper gets "hung" into this framework via the tri-dimensional tag (Step 4.5).
+
+Example structure:
+
+```markdown
+# 分类体系
+
+## 诊断范式（论文用什么方法发现问题的）
+A. 破坏输入看影响
+B. 评估行为忠实性
+C. 对比通道贡献
+D. 移除模块看性能
+E. 观察行为退化
+
+## 归因层次（从表层到深层）
+A. 训练信号设计缺陷
+B. 模型能力不平衡
+C. 推理链与决策脱节
+D. 训练范式局限
+E. 本就不需要
+
+## 修复位置（修在哪里）
+A. RL reward 层面
+B. RL policy 层面
+C. 推理端修正
+D. 训练流程改进
+```
+
+- If `references/taxonomy.md` exists → apply Step 4.5 tagging
+- If it doesn't exist → skip tagging, the analysis is still complete
+- The taxonomy evolves as more papers are read — when a paper doesn't fit existing categories, propose a new category to the user
+
 ### NotebookLM
 
-This skill depends on the `notebooklm` skill (notebooklm-py CLI). Every paper analyzed gets added to NotebookLM as a source. The typical notebook organization is one notebook per research topic (e.g., "TWI: RL不起作用的分析逻辑"), with multiple papers as sources.
+This skill depends on the `notebooklm` skill (notebooklm-py CLI). Every paper analyzed gets added to NotebookLM as a source. The typical notebook organization is one notebook per research topic (e.g., "CoT Faithfulness Survey"), with multiple papers as sources.
 
-If the user has an existing notebook, they'll usually say something like "in notebook 9ef789c8" or "加到我的 TWI notebook 里". If not specified, ask which notebook to use or whether to create a new one.
+If the user has an existing notebook, they'll usually specify a notebook ID or name. If not specified, ask which notebook to use or whether to create a new one.
 
 ## Tips for Better Analysis
 
