@@ -172,15 +172,33 @@ skills/obsidian-brain/
 - **Notion Life OS**: Coexists during transition. New content goes to Obsidian; old Notion data stays until the user decides to migrate.
 - **Per-project docs**: Projects can optionally maintain their own `CLAUDE.md` and `docs/`, but the vault's `ops/<project>/` provides a centralized view across all projects.
 
+## Zone Enforcement
+
+Zone boundaries are enforced at two levels:
+
+1. **Script-level**: All write scripts (`capture.sh`, etc.) resolve the target path to its canonical absolute form (`realpath`) and validate it falls under `$VAULT_ROOT/ops/`. Symlink escapes and path traversal (e.g., `ops/../notes/`) are rejected. This is the hard boundary.
+2. **SKILL.md rules**: The skill definition explicitly instructs Claude Code never to write files outside `ops/`. This is a defense-in-depth layer on top of script enforcement.
+
+Obsidian CLI fallback: If `obsidian-cli` is unavailable, the skill falls back to `ripgrep` for parsing `[[wikilinks]]` from Markdown files. This ensures the skill works without a hard dependency on a single third-party tool.
+
+## Vault Version Control
+
+The vault is a git repository (`git init` at setup). This provides:
+- **Rollback**: Any batch operation can be undone via `git checkout`
+- **History**: Track how notes and links evolve over time
+- **Safety net**: Before AI writes to `ops/`, the skill can auto-commit to create a restore point
+
 ## Phasing
 
 ### Phase 1: Foundation
 
-- Set up Obsidian vault with dual-zone structure
-- Create templates for each content type
-- Install and configure Obsidian CLI
-- Build `obsidian-brain` skill with `/context`, `/capture`, `/today`
-- Establish zone enforcement rules in SKILL.md
+1. Set up Obsidian vault with dual-zone structure + `git init`
+2. Create templates for each content type
+3. Define deep context file conventions (context schema for `/context`)
+4. **Establish zone enforcement** — path allowlist in write scripts + SKILL.md rules
+5. Install and configure Obsidian CLI (with ripgrep fallback)
+6. Build `obsidian-brain` skill with `/context`, `/capture`, `/today`
+7. Add zone boundary tests (assert reflection commands never read `ops/`, write commands never touch human zone, path traversal/symlink escape attempts are rejected)
 
 ### Phase 2: Thinking Partner
 
@@ -188,7 +206,6 @@ skills/obsidian-brain/
 - Implement `/graduate` for idea promotion
 - Implement `/connect` for cross-domain discovery
 - Implement `/transcribe` for meeting recording processing
-- Build deep context file conventions
 
 ## Design Decisions
 
@@ -198,12 +215,14 @@ skills/obsidian-brain/
 | Vault structure | PARA-inspired folders + wikilinks | User already familiar with PARA from Notion; wikilinks add Obsidian's unique value |
 | GUI | Obsidian (existing) | Start with proven tool; custom web GUI deferred to future |
 | Reflection scope | Human zone only | Prevents AI from reading its own prior outputs as human patterns |
-| Migration strategy | Gradual — new content to Obsidian, Notion data stays | Low risk, no big-bang migration needed |
+| Migration strategy | Gradual — no migration timeline; consider migrating when all active projects/tasks live in Obsidian for 1+ month | Low risk, no big-bang migration needed |
 | Link strategy | Specific entities, not broad categories | Following Vin's validated approach for meaningful graph structure |
+| Obsidian CLI dependency | Required with ripgrep fallback | Avoids single point of failure while leveraging CLI when available |
+| Vault VCS | Git-managed vault | Enables rollback, history tracking, and safety snapshots before batch writes |
 
 ## Out of Scope (for now)
 
 - Custom web GUI (Notion-like interface) — deferred until workflow is proven
-- Notion data migration — user will decide when ready
+- Notion data migration — user will decide when ready (trigger: all active work in Obsidian for 1+ month)
 - Mobile access — Obsidian has mobile apps, but Claude Code integration is desktop-only
 - Multi-user / collaboration features
