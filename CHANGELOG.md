@@ -14,6 +14,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 - Zone-enforced safe-write script (realpath validation, path traversal protection)
 - Wikilink query script (ripgrep-based, obsidian-cli fallback ready)
 - Capture script for drafting user input to AI zone
+- Task query script with filtering (date/undone/tag/project) and sorted Markdown table output
 - Templates for all content types (note, task, project, resource, daily, meeting-transcript, context)
 - Reference docs: vault schema and command guide
 - Zone boundary tests with traversal/symlink attack coverage
