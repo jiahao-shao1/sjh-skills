@@ -27,12 +27,20 @@ if [[ "$REL_PATH" == /* ]] || [[ "$REL_PATH" == *..* ]]; then
   exit 1
 fi
 
-# Build target path and ensure parent directory exists
+# Pre-check: rel path must start with ops/ (fast reject before any filesystem ops)
+if [[ "$REL_PATH" != ops/* ]]; then
+  echo "ERROR: Zone violation — write blocked." >&2
+  echo "  Target:  $REL_PATH" >&2
+  echo "  Allowed:  ops/*" >&2
+  exit 1
+fi
+
+# Build target path and ensure parent directory exists (safe: already validated ops/ prefix)
 TARGET="$VAULT_ROOT/$REL_PATH"
 TARGET_DIR="$(dirname "$TARGET")"
 mkdir -p "$TARGET_DIR"
 
-# Resolve to canonical absolute path (follows symlinks)
+# Resolve to canonical absolute path (follows symlinks — catches symlink escapes)
 CANONICAL="$(cd "$TARGET_DIR" && pwd -P)/$(basename "$TARGET")"
 
 # Zone check: canonical path must be under ops root (trailing slash prevents opsx/ bypass)
