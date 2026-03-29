@@ -18,6 +18,7 @@
 | [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，远程 ~0.1s 延迟执行命令，持久 SSH Agent 连接，集群健康巡检 |
 | [codex-review](skills/codex-review/) | 跨模型审查 —— 将计划或代码 diff 发送给 OpenAI Codex 独立验证，Claude↔Codex 迭代反馈直到通过（最多 5 轮） |
 | [paper-analyzer](skills/paper-analyzer/) | 论文深度批判分析 —— 因果链方法论（现象→实验设置→归因→解法），NotebookLM 溯源阅读，可选研究框架映射 |
+| [obsidian-brain](skills/obsidian-brain/) | Obsidian 第二大脑 —— 双区 Vault 与 Claude Code 思考伙伴集成 |
 
 ## 安装
 

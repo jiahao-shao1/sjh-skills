@@ -18,6 +18,7 @@ English | [中文](README.zh-CN.md)
 | [remote-cluster-agent](skills/remote-cluster-agent/) | Remote GPU cluster operations — edit code locally, run commands remotely with ~0.1s latency via persistent SSH agent connections, cluster health inspection |
 | [codex-review](skills/codex-review/) | Cross-model review — send your plan or code diff to OpenAI Codex for independent verification, iterative Claude↔Codex feedback until approved (max 5 rounds) |
 | [paper-analyzer](skills/paper-analyzer/) | Deep critical paper analysis — causal chain methodology (现象→实验设置→归因→解法), NotebookLM-grounded reading, optional research framework mapping |
+| [obsidian-brain](skills/obsidian-brain/) | Obsidian Second Brain — dual-zone vault with Claude Code as thinking partner |
 
 ## Install
 
