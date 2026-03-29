@@ -20,14 +20,19 @@ shift
 TAGS=""
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --tags) TAGS="$2"; shift 2 ;;
+    --tags)
+      if [ -z "${2:-}" ]; then
+        echo "ERROR: --tags requires a value" >&2
+        exit 1
+      fi
+      TAGS="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
 
-# Generate filename from timestamp
+# Generate filename from timestamp + PID to avoid same-second collisions
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
-FILENAME="ops/drafts/capture-${TIMESTAMP}.md"
+FILENAME="ops/drafts/capture-${TIMESTAMP}-$$.md"
 
 # Build tags line
 TAGS_LINE="tags: []"

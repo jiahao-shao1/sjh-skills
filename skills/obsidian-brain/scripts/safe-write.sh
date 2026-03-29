@@ -19,6 +19,14 @@ CONTENT="$3"
 VAULT_ROOT="$(cd "$VAULT_ROOT" && pwd -P)"
 OPS_ROOT="$VAULT_ROOT/ops"
 
+# Reject obvious traversal/absolute paths before any side effects
+if [[ "$REL_PATH" == /* ]] || [[ "$REL_PATH" == *..* ]]; then
+  echo "ERROR: Zone violation — write blocked." >&2
+  echo "  Target:  $REL_PATH" >&2
+  echo "  Reason:  absolute or traversal path rejected" >&2
+  exit 1
+fi
+
 # Build target path and ensure parent directory exists
 TARGET="$VAULT_ROOT/$REL_PATH"
 TARGET_DIR="$(dirname "$TARGET")"
@@ -27,8 +35,8 @@ mkdir -p "$TARGET_DIR"
 # Resolve to canonical absolute path (follows symlinks)
 CANONICAL="$(cd "$TARGET_DIR" && pwd -P)/$(basename "$TARGET")"
 
-# Zone check: canonical path must start with ops root
-if [[ "$CANONICAL" != "$OPS_ROOT"* ]]; then
+# Zone check: canonical path must be under ops root (trailing slash prevents opsx/ bypass)
+if [[ "$CANONICAL" != "$OPS_ROOT/"* ]]; then
   echo "ERROR: Zone violation — write blocked." >&2
   echo "  Target:  $REL_PATH" >&2
   echo "  Resolved: $CANONICAL" >&2

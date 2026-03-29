@@ -43,6 +43,11 @@ fi
 cd "$VAULT_ROOT"
 if [ ! -d ".git" ]; then
   git init
+  # Ensure git identity is configured for the initial commit
+  if ! git config user.name >/dev/null 2>&1; then
+    git config user.name "Second Brain"
+    git config user.email "vault@local"
+  fi
   cat > .gitignore << 'GITIGNORE'
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json

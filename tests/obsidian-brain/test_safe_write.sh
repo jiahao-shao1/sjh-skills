@@ -82,6 +82,11 @@ ln -sf "$TEST_VAULT/notes" "$TEST_VAULT/ops/escape-link"
 assert_failure "symlink escape blocked" \
   "$SAFE_WRITE" "$TEST_VAULT" "ops/escape-link/hack.md" "injected content"
 
+# ops prefix bypass (opsx/ should not pass)
+mkdir -p "$TEST_VAULT/opsx"
+assert_failure "opsx/ prefix bypass blocked" \
+  "$SAFE_WRITE" "$TEST_VAULT" "opsx/hack.md" "injected content"
+
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1
