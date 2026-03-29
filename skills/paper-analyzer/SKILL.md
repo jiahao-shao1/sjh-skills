@@ -114,7 +114,7 @@ The causal chain matters because it exposes logical gaps: if the 解法 doesn't 
 
 ### Step 4.5: Tri-dimensional Tagging
 
-If a taxonomy is configured (see `references/taxonomy.md`), add a tag line at the top of each paper's analysis, mapping it to the classification framework:
+If a taxonomy is configured (i.e., `references/taxonomy.md` exists), add a tag line at the top of each paper's analysis, mapping it to the classification framework:
 
 ```markdown
 ### Paper-Name (arXiv-ID) — "大白话一句话概括"
@@ -130,7 +130,7 @@ If no taxonomy is configured, skip the tag line — Steps 1-4 already produce a 
 
 ### Step 5: Research Framework Mapping and Reverse Challenge
 
-**Skip this step if** no research framework is configured (i.e., `references/hypothesis.md` doesn't exist or is empty). Steps 1-4 already produce a complete, standalone analysis.
+**Skip this step if** no research framework is configured (i.e., `references/hypothesis.md` doesn't exist). Steps 1-4 already produce a complete, standalone analysis.
 
 If the user has defined a research framework — their own hypothesis, theoretical lens, or set of claims they're building evidence for — this step connects the paper's findings to that framework. The framework is stored in `references/hypothesis.md` and is entirely user-defined. It could be a hypothesis, a taxonomy, a set of open questions, or anything else that gives structure to a body of related work.
 
@@ -186,7 +186,7 @@ The paper title's one-line characterization (after the em-dash) must be in plain
 
 ## Output Format
 
-The primary output is the three-part analysis (Step 4) plus hypothesis mapping (Step 5). This goes into the user's related work document.
+The primary output is the causal chain analysis (Step 4), plus tri-dimensional tagging (Step 4.5) when a taxonomy is configured, plus research framework mapping (Step 5) when a hypothesis is configured. This goes into the user's related work document.
 
 For a complete analysis, produce:
 
@@ -199,40 +199,14 @@ For a complete analysis, produce:
 
 ### Research Framework (Optional)
 
-If the user has a research hypothesis, theoretical lens, or set of claims they're building evidence for, they can define it in `references/hypothesis.md`. This file is entirely user-defined — it could be a hypothesis, a set of open questions, or any high-level narrative that organizes related work.
+If the user has a research hypothesis, theoretical lens, or set of claims they're building evidence for, they can create `references/hypothesis.md` (see `references/hypothesis.example.md` for the expected format). This file is entirely user-defined — it could be a hypothesis, a set of open questions, or any high-level narrative that organizes related work.
 
 - If `references/hypothesis.md` exists → read it before analysis, apply Step 5
 - If it doesn't exist → Steps 1-4 produce a complete analysis on their own, no need to ask
 
 ### Classification Taxonomy (Optional)
 
-`references/taxonomy.md` defines the multi-dimensional classification framework for the research area. Each paper gets "hung" into this framework via the tri-dimensional tag (Step 4.5).
-
-Example structure:
-
-```markdown
-# 分类体系
-
-## 诊断范式（论文用什么方法发现问题的）
-A. 破坏输入看影响
-B. 评估行为忠实性
-C. 对比通道贡献
-D. 移除模块看性能
-E. 观察行为退化
-
-## 归因层次（从表层到深层）
-A. 训练信号设计缺陷
-B. 模型能力不平衡
-C. 推理链与决策脱节
-D. 训练范式局限
-E. 本就不需要
-
-## 修复位置（修在哪里）
-A. RL reward 层面
-B. RL policy 层面
-C. 推理端修正
-D. 训练流程改进
-```
+`references/taxonomy.md` defines the multi-dimensional classification framework for the research area. Each paper gets "hung" into this framework via the tri-dimensional tag (Step 4.5). See `references/taxonomy.example.md` for the expected format.
 
 - If `references/taxonomy.md` exists → apply Step 4.5 tagging
 - If it doesn't exist → skip tagging, the analysis is still complete

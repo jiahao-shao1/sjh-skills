@@ -38,5 +38,5 @@ Delete this file or leave it empty to skip tagging.
 ## Tag Format
 
 ```
-> 📍 Diagnosis: [method] | Attribution: [code + plain language] | Fix: [code + approach]
+> 📍 诊断：[用什么方法发现的] | 归因：[为什么会这样] | 修复：[怎么修的/没修]
 ```
