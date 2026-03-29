@@ -329,67 +329,68 @@ case "$MODE" in
       exit 0
     fi
 
-    # Step 2: Extract all [[wikilinks]] and count frequency
-    declare -A LINK_COUNT=()
+    # Temp file for raw wikilinks (one per line, may have duplicates)
+    _emerge_links=$(mktemp /tmp/emerge_links.XXXXXX)
+
+    # Step 2: Extract all [[wikilinks]] from scanned files
     while IFS= read -r rel_path; do
       [ -z "$rel_path" ] && continue
       local_file="$VAULT_ROOT/$rel_path"
-      # Extract wikilinks
-      local links=""
       if command -v rg >/dev/null 2>&1; then
-        links=$(rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null || true)
+        rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null >> "$_emerge_links" || true
       else
-        links=$(grep -oE '\[\[[^]|]+' "$local_file" | sed 's/\[\[//' || true)
+        grep -oE '\[\[[^]|]+' "$local_file" 2>/dev/null | sed 's/\[\[//' >> "$_emerge_links" || true
       fi
-      while IFS= read -r link; do
-        [ -z "$link" ] && continue
-        LINK_COUNT["$link"]=$(( ${LINK_COUNT["$link"]:-0} + 1 ))
-      done <<< "$links"
     done <<< "$FILES"
 
     # Output header
     echo "## Emerge Analysis (last ${DAYS} days)"
     echo ""
 
-    if [ ${#LINK_COUNT[@]} -eq 0 ]; then
+    # Count frequency: "count target" lines, sorted descending
+    _emerge_counted=$(mktemp /tmp/emerge_counted.XXXXXX)
+    if [ -s "$_emerge_links" ]; then
+      sort "$_emerge_links" | uniq -c | sort -rn | sed 's/^ *//' > "$_emerge_counted"
+    fi
+
+    if [ ! -s "$_emerge_counted" ]; then
       echo "No wikilinks found in scanned files."
+      rm -f "$_emerge_links" "$_emerge_counted"
       exit 0
     fi
 
-    # Step 3: Identify ghost links (no corresponding .md file in vault)
-    declare -A GHOST_LINKS=()
-    for target in "${!LINK_COUNT[@]}"; do
-      found=$(find "$VAULT_ROOT" -name "${target}.md" -type f 2>/dev/null | head -1)
-      if [ -z "$found" ]; then
-        GHOST_LINKS["$target"]="${LINK_COUNT[$target]}"
+    # Step 3: Ghost links — targets with no .md file in vault
+    _emerge_ghosts=$(mktemp /tmp/emerge_ghosts.XXXXXX)
+    while IFS= read -r line; do
+      count="${line%% *}"
+      target="${line#* }"
+      found_file=$(find "$VAULT_ROOT" -name "${target}.md" -type f 2>/dev/null | head -1)
+      if [ -z "$found_file" ]; then
+        echo "$line" >> "$_emerge_ghosts"
       fi
-    done
+    done < "$_emerge_counted"
 
-    # Ghost links sorted by frequency descending
     echo "### Ghost Links (mentioned but no file exists)"
-    if [ ${#GHOST_LINKS[@]} -eq 0 ]; then
+    if [ ! -s "$_emerge_ghosts" ]; then
       echo "None found."
     else
-      for target in "${!GHOST_LINKS[@]}"; do
-        echo "${GHOST_LINKS[$target]} [[${target}]]"
-      done | sort -rn | while IFS= read -r line; do
+      while IFS= read -r line; do
         count="${line%% *}"
-        rest="${line#* }"
-        echo "- ${rest} (${count} mentions)"
-      done
+        target="${line#* }"
+        echo "- [[${target}]] (${count} mentions)"
+      done < "$_emerge_ghosts"
     fi
     echo ""
 
-    # Frequent links: top 10 most-referenced, sorted by frequency
+    # Frequent links: top 10 most-referenced
     echo "### Frequent Links (most connected ideas)"
-    for target in "${!LINK_COUNT[@]}"; do
-      echo "${LINK_COUNT[$target]} [[${target}]]"
-    done | sort -rn | head -10 | while IFS= read -r line; do
+    head -10 "$_emerge_counted" | while IFS= read -r line; do
       count="${line%% *}"
-      rest="${line#* }"
-      echo "- ${rest} (${count} mentions)"
+      target="${line#* }"
+      echo "- [[${target}]] (${count} mentions)"
     done
 
+    rm -f "$_emerge_links" "$_emerge_counted" "$_emerge_ghosts"
     exit 0
     ;;
   connect)
@@ -403,7 +404,7 @@ case "$MODE" in
     TOPIC_A="${TOPICS%%,*}"
     TOPIC_B="${TOPICS#*,}"
 
-    # Validate: must have exactly 2 topics (no second comma, and they must differ from raw)
+    # Validate: must have exactly 2 topics
     if [ -z "$TOPIC_A" ] || [ -z "$TOPIC_B" ] || [ "$TOPIC_A" = "$TOPICS" ]; then
       echo "ERROR: --topics must contain exactly 2 comma-separated topics (e.g. \"topic-a,topic-b\")" >&2
       exit 1
@@ -415,11 +416,11 @@ case "$MODE" in
       exit 1
     fi
 
-    # Step 1 & 2: Find files related to each topic
-    # Search by keyword in body + wikilink matching across all human dirs
-    declare -A FILES_A=()
-    declare -A FILES_B=()
+    # Temp files for file lists (bash 3.2 compatible — no associative arrays)
+    _conn_files_a=$(mktemp /tmp/conn_files_a.XXXXXX)
+    _conn_files_b=$(mktemp /tmp/conn_files_b.XXXXXX)
 
+    # Step 1 & 2: Find files related to each topic
     for dir in "${HUMAN_DIRS[@]}"; do
       local_dir="$VAULT_ROOT/$dir"
       [ -d "$local_dir" ] || continue
@@ -428,107 +429,109 @@ case "$MODE" in
         body=$(extract_body "$f")
         relpath="${f#$VAULT_ROOT/}"
 
-        # Check topic A: keyword in body or wikilink
-        if echo "$body" | grep -qi "$TOPIC_A" || echo "$body" | grep -q "\[\[$TOPIC_A\]\]"; then
-          FILES_A["$relpath"]=1
+        if echo "$body" | grep -qi "$TOPIC_A"; then
+          echo "$relpath" >> "$_conn_files_a"
         fi
-
-        # Check topic B: keyword in body or wikilink
-        if echo "$body" | grep -qi "$TOPIC_B" || echo "$body" | grep -q "\[\[$TOPIC_B\]\]"; then
-          FILES_B["$relpath"]=1
+        if echo "$body" | grep -qi "$TOPIC_B"; then
+          echo "$relpath" >> "$_conn_files_b"
         fi
       done < <(find "$local_dir" -name '*.md' -type f 2>/dev/null)
     done
+
+    # Deduplicate and sort
+    _conn_a_sorted=$(mktemp /tmp/conn_a_sorted.XXXXXX)
+    _conn_b_sorted=$(mktemp /tmp/conn_b_sorted.XXXXXX)
+    sort -u "$_conn_files_a" > "$_conn_a_sorted" 2>/dev/null || true
+    sort -u "$_conn_files_b" > "$_conn_b_sorted" 2>/dev/null || true
+
+    # Handle empty files: wc -l on empty file may return "0" with whitespace
+    count_a=0
+    count_b=0
+    [ -s "$_conn_a_sorted" ] && count_a=$(wc -l < "$_conn_a_sorted" | tr -d ' ')
+    [ -s "$_conn_b_sorted" ] && count_b=$(wc -l < "$_conn_b_sorted" | tr -d ' ')
 
     echo "## Connect: ${TOPIC_A} ↔ ${TOPIC_B}"
     echo ""
 
     # Files mentioning topic A
-    echo "### Files mentioning \"${TOPIC_A}\" (${#FILES_A[@]} files)"
-    if [ ${#FILES_A[@]} -eq 0 ]; then
+    echo "### Files mentioning \"${TOPIC_A}\" (${count_a} files)"
+    if [ "$count_a" -eq 0 ]; then
       echo "No content found for: ${TOPIC_A}"
     else
-      for f in $(echo "${!FILES_A[@]}" | tr ' ' '\n' | sort); do
+      while IFS= read -r f; do
         echo "- $f"
-      done
+      done < "$_conn_a_sorted"
     fi
     echo ""
 
     # Files mentioning topic B
-    echo "### Files mentioning \"${TOPIC_B}\" (${#FILES_B[@]} files)"
-    if [ ${#FILES_B[@]} -eq 0 ]; then
+    echo "### Files mentioning \"${TOPIC_B}\" (${count_b} files)"
+    if [ "$count_b" -eq 0 ]; then
       echo "No content found for: ${TOPIC_B}"
     else
-      for f in $(echo "${!FILES_B[@]}" | tr ' ' '\n' | sort); do
+      while IFS= read -r f; do
         echo "- $f"
-      done
+      done < "$_conn_b_sorted"
     fi
     echo ""
 
-    # Step 3: Find bridge files (intersection)
+    # Step 3: Bridge files (intersection)
     echo "### Bridge Files (mention both)"
-    bridge_found=0
-    declare -A BRIDGE_FILES=()
-    for f in "${!FILES_A[@]}"; do
-      if [ -n "${FILES_B[$f]:-}" ]; then
-        BRIDGE_FILES["$f"]=1
-        bridge_found=1
-      fi
-    done
-    if [ "$bridge_found" -eq 0 ]; then
+    _conn_bridges=$(mktemp /tmp/conn_bridges.XXXXXX)
+    comm -12 "$_conn_a_sorted" "$_conn_b_sorted" > "$_conn_bridges" 2>/dev/null || true
+    if [ ! -s "$_conn_bridges" ]; then
       echo "No bridge files found between these topics."
     else
-      for f in $(echo "${!BRIDGE_FILES[@]}" | tr ' ' '\n' | sort); do
+      while IFS= read -r f; do
         echo "- $f"
-      done
+      done < "$_conn_bridges"
     fi
     echo ""
 
-    # Step 4: Extract shared [[wikilinks]] from both file sets
+    # Step 4: Shared [[wikilinks]] from both file sets
     echo "### Shared Links"
-    declare -A LINKS_A=()
-    declare -A LINKS_B=()
+    _conn_links_a=$(mktemp /tmp/conn_links_a.XXXXXX)
+    _conn_links_b=$(mktemp /tmp/conn_links_b.XXXXXX)
 
-    for f in "${!FILES_A[@]}"; do
+    while IFS= read -r f; do
+      [ -z "$f" ] && continue
       local_file="$VAULT_ROOT/$f"
-      local links=""
       if command -v rg >/dev/null 2>&1; then
-        links=$(rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null || true)
+        rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null >> "$_conn_links_a" || true
       else
-        links=$(grep -oE '\[\[[^]|]+' "$local_file" | sed 's/\[\[//' || true)
+        grep -oE '\[\[[^]|]+' "$local_file" 2>/dev/null | sed 's/\[\[//' >> "$_conn_links_a" || true
       fi
-      while IFS= read -r link; do
-        [ -z "$link" ] && continue
-        LINKS_A["$link"]=1
-      done <<< "$links"
-    done
+    done < "$_conn_a_sorted"
 
-    for f in "${!FILES_B[@]}"; do
+    while IFS= read -r f; do
+      [ -z "$f" ] && continue
       local_file="$VAULT_ROOT/$f"
-      local links=""
       if command -v rg >/dev/null 2>&1; then
-        links=$(rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null || true)
+        rg -oP '\[\[\K[^\]|]+' "$local_file" 2>/dev/null >> "$_conn_links_b" || true
       else
-        links=$(grep -oE '\[\[[^]|]+' "$local_file" | sed 's/\[\[//' || true)
+        grep -oE '\[\[[^]|]+' "$local_file" 2>/dev/null | sed 's/\[\[//' >> "$_conn_links_b" || true
       fi
-      while IFS= read -r link; do
-        [ -z "$link" ] && continue
-        LINKS_B["$link"]=1
-      done <<< "$links"
-    done
+    done < "$_conn_b_sorted"
 
-    shared_found=0
-    for link in "${!LINKS_A[@]}"; do
-      if [ -n "${LINKS_B[$link]:-}" ]; then
-        echo "- [[$link]]"
-        shared_found=1
-      fi
-    done | sort
+    # Find shared links via sorted intersection
+    _conn_la_s=$(mktemp /tmp/conn_la_s.XXXXXX)
+    _conn_lb_s=$(mktemp /tmp/conn_lb_s.XXXXXX)
+    _conn_shared=$(mktemp /tmp/conn_shared.XXXXXX)
+    sort -u "$_conn_links_a" > "$_conn_la_s" 2>/dev/null || true
+    sort -u "$_conn_links_b" > "$_conn_lb_s" 2>/dev/null || true
+    comm -12 "$_conn_la_s" "$_conn_lb_s" > "$_conn_shared" 2>/dev/null || true
 
-    if [ "$shared_found" -eq 0 ]; then
+    if [ ! -s "$_conn_shared" ]; then
       echo "None found."
+    else
+      while IFS= read -r link; do
+        echo "- [[$link]]"
+      done < "$_conn_shared"
     fi
 
+    rm -f "$_conn_files_a" "$_conn_files_b" "$_conn_a_sorted" "$_conn_b_sorted" \
+          "$_conn_bridges" "$_conn_links_a" "$_conn_links_b" \
+          "$_conn_la_s" "$_conn_lb_s" "$_conn_shared"
     exit 0
     ;;
   *)

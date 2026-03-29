@@ -222,15 +222,10 @@ assert_not_contains "excludes ops/ (not in human zone)" "ops/" "$KW"
 # ---------------------------------------------------------------------------
 echo ""
 echo "Test 7: mode routing (modes execute without crash)"
-# emerge and connect use declare -A (bash 4+) — skip on bash 3.x
-if bash -c 'declare -A x 2>/dev/null'; then
-  EMERGE_ROUTE=$("$ANALYZE" "$TEST_VAULT" --mode emerge --days 30 2>&1 || true)
-  assert_contains "emerge mode runs" "Emerge Analysis\|No content found" "$EMERGE_ROUTE"
-  CONNECT_ROUTE=$("$ANALYZE" "$TEST_VAULT" --mode connect --topics "alignment,safety" 2>&1 || true)
-  assert_contains "connect mode runs" "Connect:" "$CONNECT_ROUTE"
-else
-  echo "  SKIP: emerge/connect require bash 4+ (declare -A)"
-fi
+EMERGE_ROUTE=$("$ANALYZE" "$TEST_VAULT" --mode emerge --days 30 2>&1 || true)
+assert_contains "emerge mode runs" "Emerge Analysis\|No content found" "$EMERGE_ROUTE"
+CONNECT_ROUTE=$("$ANALYZE" "$TEST_VAULT" --mode connect --topics "alignment,safety" 2>&1 || true)
+assert_contains "connect mode runs" "Connect:" "$CONNECT_ROUTE"
 
 # ---------------------------------------------------------------------------
 # Test 8: challenge finds relevant paragraphs
@@ -400,10 +395,8 @@ assert_contains "shows no active projects message" "No active projects found." "
 rm -rf "$NO_ACTIVE_VAULT"
 
 # ---------------------------------------------------------------------------
-# Tests 16-23: emerge and connect modes (require bash 4+ for declare -A)
+# Tests 16-23: emerge and connect modes
 # ---------------------------------------------------------------------------
-
-if bash -c 'declare -A x 2>/dev/null'; then
 
 # Setup additional fixtures for emerge and connect tests
 cat > "$TEST_VAULT/notes/idea-gamma.md" << 'EOF'
@@ -511,11 +504,6 @@ echo ""
 echo "Test 23: connect with missing --topics shows error"
 CONNECT_ERR=$("$ANALYZE" "$TEST_VAULT" --mode connect 2>&1 || true)
 assert_contains "shows error about --topics" "ERROR: --topics is required" "$CONNECT_ERR"
-
-else
-  echo ""
-  echo "Tests 16-23: SKIP (emerge/connect require bash 4+ for declare -A)"
-fi
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
