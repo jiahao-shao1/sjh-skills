@@ -10,7 +10,9 @@ description: >
   and API access — you cannot interact with the user's LifeOS without it.
   Trigger phrases: 'add task', 'take a note', 'jot down', 'what do I need to do',
   'search my notes', 'unfinished tasks', 'create project', 'today was great',
-  'record this', '帮我记一下', '加个任务', '今天要做什么', '查笔记', '待办', '记录想法'.
+  'record this', 'challenge my belief', 'what patterns in my thinking', 'am I aligned',
+  '帮我记一下', '加个任务', '今天要做什么', '查笔记', '待办', '记录想法',
+  '反思', '挑战想法', '思维模式', '目标偏移'.
   NOT for: Notion API docs, pricing, workspace admin, schema design, productivity advice,
   or work summaries (use daily-summary for that).
 ---
@@ -64,6 +66,12 @@ Read these as needed — do NOT load them all upfront:
 | "Today's unfinished tasks" | Task | `scripts/query-tasks.sh --date today --undone` |
 | "Search notes about XX" | Notes | MCP `notion-search` |
 | "Add a resource/reference" | Resources | MCP / API |
+| "Query my recent thoughts" | Notes | `scripts/query-notes.sh --type Thoughts` |
+| "List active projects" | Projects | `scripts/query-projects.sh` |
+| "Tasks completed this month" | Task | `scripts/query-tasks.sh --done --since YYYY-MM-DD --by-edited` |
+| "/challenge X" | Notes | `scripts/query-notes.sh` + CC analysis (see Reflection Commands) |
+| "/emerge" | Notes | `scripts/query-notes.sh` + CC analysis (see Reflection Commands) |
+| "/drift" | Projects + Task + Git | `scripts/collect-drift-data.sh` + CC analysis (see Reflection Commands) |
 
 For Note Type selection and Make Time journal extraction logic, see [references/query-guide.md](./references/query-guide.md).
 For composite intents (multiple actions in one message), see [references/advanced.md](./references/advanced.md).
@@ -76,6 +84,44 @@ For composite intents (multiple actions in one message), see [references/advance
 4. **Date format**: ISO-8601 only (e.g., `2026-03-08`).
 5. **Relations**: Require target page ID — search for it first.
 6. **Post-op confirmation**: Always confirm results to the user.
+
+## Reflection Commands
+
+These commands use Notion data + Git history as input, with CC performing the analysis. Output is **terminal only** — never write to Notion.
+
+### /challenge \<topic\>
+
+Stress-test a current belief against past writing.
+
+1. Run `scripts/query-notes.sh --type Thoughts --days 90 --limit 50`
+2. Scan the returned **titles** for relevance to the topic
+3. Use MCP `notion-fetch` to read the **top 15-20** most relevant notes (do NOT fetch all 50 — context budget)
+4. Analyze: identify contradictions, weak assumptions, and evidence gaps
+5. Output in Chinese: "当前信念 → 矛盾证据 → 更强的替代假设"
+
+### /emerge
+
+Surface recurring themes and hidden patterns in recent thinking.
+
+1. Run `scripts/query-notes.sh --type Thoughts --days 30 --limit 50`
+2. Scan **titles** first — select top 15 most interesting/diverse
+3. Use MCP `notion-fetch` to read those 15 notes
+4. Identify: recurring themes, emotional patterns, unasked questions, connections the user hasn't made explicit
+5. Output in Chinese, grouped by theme, quoting original notes
+
+### /drift \[N days\]
+
+Detect gaps between stated goals and actual activity.
+
+1. Run `scripts/collect-drift-data.sh --days N` (default 30)
+2. Read `~/.claude/rules/personal-context.md` for project↔repo mapping hints
+3. Perform **semantic matching** (project names like "Thinking with Image" ≠ repo names like "agentic_umm" — match by meaning, not string)
+4. Analyze:
+   - Per-project: git commit count + completed task count
+   - **幽灵项目**: active in Notion but zero git/task activity
+   - **隐性工作**: heavy git activity in repos not mapped to any active project
+   - Time allocation distribution
+5. Output in Chinese: "项目活跃度矩阵" + "幽灵项目" + "隐性工作" + "建议"
 
 ## Gotchas (Common Pitfalls)
 

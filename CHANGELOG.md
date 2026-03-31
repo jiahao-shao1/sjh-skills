@@ -6,19 +6,45 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 
 ## [Unreleased]
 
-### obsidian-brain
+### notion-lifeos
+
+#### Added
+- `scripts/query-notes.sh` — query Notes DB with filters (Note Type, date range, tags)
+- `scripts/query-projects.sh` — query Projects DB by status
+- `scripts/collect-drift-data.sh` — aggregate active projects, git commits, and completed tasks for drift analysis
+- `/challenge` reflection command — stress-test beliefs against past Thoughts notes
+- `/emerge` reflection command — surface recurring themes from recent Thoughts
+- `/drift` command — detect gaps between stated goals (Notion projects) and actual activity (git + tasks)
+
+#### Changed
+- `scripts/query-tasks.sh` — added `--since`, `--until`, and `--by-edited` date range flags (backward compatible)
+- Updated `references/query-guide.md` with new script documentation
+
+### obsidian-brain (⏸️ On Hold)
+
+> Direction paused: reflection commands will be added to notion-lifeos instead.
+> Code preserved for potential future use (local-first Obsidian workflow).
 
 #### Added
 - New skill: Obsidian Second Brain — dual-zone vault integration with Claude Code
 - Vault initialization script with git version control
 - Zone-enforced safe-write script (realpath validation, path traversal protection)
+- Human-write script (`human-write.sh`) for user-dictated content to `tasks/` and `notes/` with `source: human` validation
 - Wikilink query script (ripgrep-based, obsidian-cli fallback ready)
 - Capture script for drafting user input to AI zone
-- Task query script with filtering (date/undone/tag/project) and sorted Markdown table output
-- Templates for all content types (note, task, project, resource, daily, meeting-transcript, context)
-- Reference docs: vault schema and command guide
-- Zone boundary tests with traversal/symlink attack coverage
+- Task creation script (`create-task.sh`) with due dates, tags, duplicate handling
+- Task query script (`query-tasks.sh`) with filtering (date/undone/tag/project) and sorted Markdown table output
+- Task completion script (`complete-task.sh`) with fuzzy matching
 - Note creation script (`create-note.sh`) with slugified filenames, tags, wikilinks, and duplicate handling
+- Phase 2 reflection engine (`analyze.sh`) with four modes:
+  - `/challenge` — stress-test beliefs against past writing
+  - `/drift` — detect intention vs. action gaps across daily notes
+  - `/emerge` — surface ghost links and recurring themes
+  - `/connect` — find hidden connections between topics
+- Templates for all content types (note, task, project, resource, daily, meeting-transcript, context)
+- Daily template enhanced with Make Time fields (highlight, energy, gratitude)
+- Reference docs: vault schema and command guide
+- 138 tests covering zone enforcement, CRUD, reflection, and security (traversal/symlink attacks)
 
 ## [0.6.0] - 2026-03-29
 

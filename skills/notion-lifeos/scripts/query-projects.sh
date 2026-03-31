@@ -46,7 +46,7 @@ done
 
 # Default: show Active if no filter specified
 if [ "$ALL" = false ] && [ -z "$STATUS" ]; then
-  STATUS="Active"
+  STATUS="WIP"
 fi
 
 # Read API key
@@ -74,7 +74,7 @@ fi
 
 # Build filter JSON
 if [ -n "$STATUS" ]; then
-  FILTER_JSON="\"filter\": {\"property\": \"Status\", \"select\": {\"equals\": \"$STATUS\"}},"
+  FILTER_JSON="\"filter\": {\"property\": \"Status (状态)\", \"select\": {\"equals\": \"$STATUS\"}},"
 else
   FILTER_JSON=""
 fi
@@ -114,7 +114,7 @@ for r in results:
     title_prop = props.get('Log name', {}).get('title', [])
     title = title_prop[0]['plain_text'] if title_prop else '(untitled)'
     # Status
-    status = props.get('Status', {}).get('select', {})
+    status = props.get('Status (状态)', {}).get('select', {})
     status_str = status.get('name', '—') if status else '—'
     # End Date
     end_date = props.get('End Date', {}).get('date')
