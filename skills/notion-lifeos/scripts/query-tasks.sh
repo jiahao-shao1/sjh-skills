@@ -9,6 +9,12 @@
 #   ./query-tasks.sh --done                 # All completed tasks
 #   ./query-tasks.sh --undone               # All incomplete tasks
 #   ./query-tasks.sh --limit 50             # Change result limit (default: 20)
+#   ./query-tasks.sh --since 2026-03-01     # Tasks due on or after a date
+#   ./query-tasks.sh --until 2026-03-31     # Tasks due on or before a date
+#   ./query-tasks.sh --since 2026-03-01 --until 2026-03-31  # Date range
+#   ./query-tasks.sh --since today --by-edited  # Edited today or later
+#
+# Note: --date and --since/--until are mutually exclusive.
 #
 # Requires: NOTION_KEY or ~/.config/notion/api_key
 # Requires: CONFIG.private.md in the skill directory
@@ -24,6 +30,9 @@ CONFIG_FILE="$HOME/.config/notion-lifeos/CONFIG.private.md"
 DATE=""
 DONE_FILTER=""
 LIMIT=20
+SINCE=""
+UNTIL=""
+BY_EDITED=false
 
 # Parse args
 while [[ $# -gt 0 ]]; do
@@ -51,6 +60,24 @@ while [[ $# -gt 0 ]]; do
       LIMIT="$2"
       shift 2
       ;;
+    --since)
+      SINCE="$2"
+      if [ "$SINCE" = "today" ]; then
+        SINCE=$(date +%Y-%m-%d)
+      fi
+      shift 2
+      ;;
+    --until)
+      UNTIL="$2"
+      if [ "$UNTIL" = "today" ]; then
+        UNTIL=$(date +%Y-%m-%d)
+      fi
+      shift 2
+      ;;
+    --by-edited)
+      BY_EDITED=true
+      shift
+      ;;
     *)
       echo "Unknown option: $1"
       exit 1
@@ -58,8 +85,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Mutual exclusion: --date vs --since/--until
+if [ -n "$DATE" ] && { [ -n "$SINCE" ] || [ -n "$UNTIL" ]; }; then
+  echo "ERROR: Cannot use --date with --since/--until. Use one or the other."
+  exit 1
+fi
+
 # Default: show undone if no filter specified
-if [ -z "$DATE" ] && [ -z "$DONE_FILTER" ]; then
+if [ -z "$DATE" ] && [ -z "$DONE_FILTER" ] && [ -z "$SINCE" ] && [ -z "$UNTIL" ]; then
   DONE_FILTER="false"
 fi
 
@@ -91,6 +124,22 @@ FILTERS=()
 
 if [ -n "$DATE" ]; then
   FILTERS+=("{\"property\": \"Due Date\", \"date\": {\"equals\": \"$DATE\"}}")
+fi
+
+if [ -n "$SINCE" ]; then
+  if $BY_EDITED; then
+    FILTERS+=("{\"timestamp\": \"last_edited_time\", \"last_edited_time\": {\"on_or_after\": \"$SINCE\"}}")
+  else
+    FILTERS+=("{\"property\": \"Due Date\", \"date\": {\"on_or_after\": \"$SINCE\"}}")
+  fi
+fi
+
+if [ -n "$UNTIL" ]; then
+  if $BY_EDITED; then
+    FILTERS+=("{\"timestamp\": \"last_edited_time\", \"last_edited_time\": {\"on_or_before\": \"$UNTIL\"}}")
+  else
+    FILTERS+=("{\"property\": \"Due Date\", \"date\": {\"on_or_before\": \"$UNTIL\"}}")
+  fi
 fi
 
 if [ -n "$DONE_FILTER" ]; then
