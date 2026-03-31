@@ -16,7 +16,7 @@ The vault has two zones with different AI permission levels:
 | `daily/` | Daily notes |
 | `people/` | People notes (collaborators, mentors) |
 
-**Rule:** AI must NEVER create or modify files in these directories. Output analysis to the terminal only.
+**Rule:** AI must NOT directly create files here. Exception: `scripts/human-write.sh` allows writing to `tasks/` and `notes/` for user-dictated content (always `source: human`). All other human zone directories remain fully read-only.
 
 ### AI Zone (AI: read-write)
 

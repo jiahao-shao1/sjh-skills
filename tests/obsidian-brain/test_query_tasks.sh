@@ -190,8 +190,15 @@ assert_contains "combined: templates (undone + migration)" "$OUT" "Setup vault t
 assert_not_contains "combined: excludes done review" "$OUT" "Review transformer paper"
 assert_not_contains "combined: excludes idea tag" "$OUT" "Explore useful Obsidian plugins"
 
-# Test 8: No matching tasks
-echo "--- Test 8: no matches ---"
+# Test 8: Filter by --project
+echo "--- Test 8: --project ---"
+OUT=$("$QUERY_TASKS" "$TEST_VAULT" --project obsidian-brain)
+assert_contains "project includes migrate" "$OUT" "把活跃项目迁移到 Obsidian"
+assert_contains "project includes plugins" "$OUT" "Explore useful Obsidian plugins"
+assert_not_contains "project excludes review (no wikilink)" "$OUT" "Review transformer paper"
+
+# Test 9: No matching tasks
+echo "--- Test 9: no matches ---"
 OUT=$("$QUERY_TASKS" "$TEST_VAULT" --tag nonexistent)
 assert_contains "no matches returns message" "$OUT" "No tasks found."
 

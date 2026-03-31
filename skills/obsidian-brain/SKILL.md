@@ -21,32 +21,113 @@ The vault path defaults to `~/second-brain`. Set `VAULT_ROOT` environment variab
 
 The vault has two zones. **You MUST respect these boundaries:**
 
-### Human Zone (read-only for AI)
+### Human Zone (read-only for AI, with exceptions)
 Directories: `notes/`, `projects/`, `tasks/`, `resources/`, `contexts/`, `daily/`, `people/`
 
-**NEVER create, modify, or delete files in these directories.** These contain the user's own thoughts and judgments. Output your analysis to the terminal only — the user decides what to record.
+**NEVER directly create or modify files in these directories** — unless using `scripts/human-write.sh` for user-dictated content (tasks, notes). Human-write validates the path is in `tasks/` or `notes/` AND the content has `source: human`.
 
 ### AI Zone (read-write for AI)
 Directory: `ops/` (and all subdirectories)
 
-All AI writes MUST go through `scripts/safe-write.sh` which validates paths via `realpath`. Direct file writes to the vault are forbidden.
+All AI-generated writes MUST go through `scripts/safe-write.sh` which validates paths via `realpath`. Direct file writes to the vault are forbidden.
 
 ## Commands
 
-### /context
+### CRUD Commands
+
+#### /capture
+Capture user's words as a draft. Run `scripts/capture.sh`.
+
+**Zone:** Writes to `ops/drafts/` only (via safe-write.sh).
+
+#### Create Task
+Create a task the user dictates. Run `scripts/create-task.sh`.
+
+```bash
+scripts/create-task.sh $VAULT_ROOT "Task title" --due 2026-04-01 --tags "work,urgent"
+```
+
+**Zone:** Writes to `tasks/` only (via human-write.sh, source: human).
+
+#### Create Note
+Create a note the user dictates. Run `scripts/create-note.sh`.
+
+```bash
+scripts/create-note.sh $VAULT_ROOT "Note title" "Content text" --tags "ai" --links "concept-a,concept-b"
+```
+
+**Zone:** Writes to `notes/` only (via human-write.sh, source: human).
+
+#### Query Tasks
+Query tasks with filtering. Run `scripts/query-tasks.sh`.
+
+```bash
+scripts/query-tasks.sh $VAULT_ROOT --undone --date today
+scripts/query-tasks.sh $VAULT_ROOT --tag migration --project obsidian-brain
+```
+
+**Zone:** Reads only.
+
+#### Complete Task
+Mark a task as done. Run `scripts/complete-task.sh`.
+
+```bash
+scripts/complete-task.sh $VAULT_ROOT "task keyword"
+```
+
+**Zone:** Modifies `done:` field in `tasks/` only.
+
+### Planning Commands
+
+#### /context
 Load project context from the vault. Read `references/command-guide.md` for details.
 
 **Zone:** Reads both zones. Never writes.
 
-### /capture
-Capture user's words as a draft. Run `scripts/capture.sh`.
-
-**Zone:** Writes to `ops/drafts/` only.
-
-### /today
+#### /today
 Morning planning. Read tasks, recent daily notes, and calendar.
 
 **Zone:** Reads both zones. Output to terminal only — never writes.
+
+### Reflection Commands (Phase 2)
+
+All reflection commands output to **terminal only** — they never write files.
+
+#### /challenge
+Stress-test a belief against your past writing.
+
+```bash
+scripts/analyze.sh $VAULT_ROOT --mode challenge --topic "some belief"
+```
+
+**Zone:** Reads human zone only.
+
+#### /drift
+Detect gaps between intended goals and actual activity.
+
+```bash
+scripts/analyze.sh $VAULT_ROOT --mode drift --days 60
+```
+
+**Zone:** Reads human zone only.
+
+#### /emerge
+Surface hidden ideas — ghost links and recurring themes.
+
+```bash
+scripts/analyze.sh $VAULT_ROOT --mode emerge --days 30
+```
+
+**Zone:** Reads human zone only.
+
+#### /connect
+Find hidden connections between two topics.
+
+```bash
+scripts/analyze.sh $VAULT_ROOT --mode connect --topics "topic-a,topic-b"
+```
+
+**Zone:** Reads human zone only.
 
 ## Wikilink Queries
 

@@ -107,7 +107,7 @@ parse_task() {
   # Check project filter (search entire file for [[PROJECT]] wikilink)
   local has_project="yes"
   if [ -n "$FILTER_PROJECT" ]; then
-    if ! grep -q "\[\[$FILTER_PROJECT\]\]" "$file" 2>/dev/null; then
+    if ! grep -qF "[[$FILTER_PROJECT]]" "$file" 2>/dev/null; then
       has_project="no"
     fi
   fi
@@ -198,7 +198,7 @@ for file in "$TASKS_DIR"/*.md; do
     sort_key="9999-99-99"
   fi
 
-  RESULTS+=("${sort_key}|${local_status}|${title}|${due}|${display_tags}")
+  RESULTS+=("$(printf '%s\t%s\t%s\t%s\t%s' "$sort_key" "$local_status" "$title" "$due" "$display_tags")")
 done
 
 if [ ${#RESULTS[@]} -eq 0 ]; then
@@ -206,18 +206,18 @@ if [ ${#RESULTS[@]} -eq 0 ]; then
   exit 0
 fi
 
-# Sort by due date
-IFS=$'\n' SORTED=($(printf '%s\n' "${RESULTS[@]}" | sort -t'|' -k1,1))
+# Sort by due date (tab-separated)
+IFS=$'\n' SORTED=($(printf '%s\n' "${RESULTS[@]}" | sort -t$'\t' -k1,1))
 unset IFS
 
 # Output markdown table
 echo "| Status | Title | Due | Tags |"
 echo "|--------|-------|-----|------|"
 for row in "${SORTED[@]}"; do
-  status=$(echo "$row" | cut -d'|' -f2)
-  title=$(echo "$row" | cut -d'|' -f3)
-  due=$(echo "$row" | cut -d'|' -f4)
-  tags=$(echo "$row" | cut -d'|' -f5)
+  status=$(echo "$row" | cut -d$'\t' -f2)
+  title=$(echo "$row" | cut -d$'\t' -f3)
+  due=$(echo "$row" | cut -d$'\t' -f4)
+  tags=$(echo "$row" | cut -d$'\t' -f5)
   echo "| $status | $title | $due | $tags |"
 done
 
