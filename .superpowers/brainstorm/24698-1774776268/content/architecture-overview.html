@@ -1,0 +1,201 @@
+<h2>Obsidian Second Brain — 整体架构</h2>
+<p class="subtitle">双区 Vault + Claude Code 思考伙伴</p>
+
+<div class="section">
+  <h3>核心理念</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+    <div style="padding:16px;background:rgba(107,153,187,0.15);border-radius:8px">
+      <div style="font-size:24px;margin-bottom:4px">🧠</div>
+      <strong>人类区</strong>
+      <div style="font-size:13px;color:#aaa;margin-top:4px">你的想法、判断、taste<br>AI 只读不写</div>
+    </div>
+    <div style="padding:16px;background:rgba(255,255,255,0.05);border-radius:8px">
+      <div style="font-size:24px;margin-bottom:4px">🔗</div>
+      <strong>Wikilink 桥</strong>
+      <div style="font-size:13px;color:#aaa;margin-top:4px">双向链接关联<br>不混淆、可追溯</div>
+    </div>
+    <div style="padding:16px;background:rgba(232,168,168,0.15);border-radius:8px">
+      <div style="font-size:24px;margin-bottom:4px">🤖</div>
+      <strong>AI 区</strong>
+      <div style="font-size:13px;color:#aaa;margin-top:4px">运维知识、会议纪要、Debug 日志<br>AI 可读可写</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Vault 目录结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">~/second-brain/ (Obsidian Vault)</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:2">
+      <div style="color:#6b9;font-weight:bold">── 人类区（AI 只读）──────────────────</div>
+      <div>&nbsp;&nbsp;notes/            <span style="color:#888">想法、反思、学习笔记</span></div>
+      <div>&nbsp;&nbsp;projects/         <span style="color:#888">项目描述、目标、进展</span></div>
+      <div>&nbsp;&nbsp;tasks/            <span style="color:#888">待办事项</span></div>
+      <div>&nbsp;&nbsp;resources/        <span style="color:#888">收藏的资源、文章、视频</span></div>
+      <div>&nbsp;&nbsp;contexts/         <span style="color:#888">深度上下文文件（项目/个人工作流）</span></div>
+      <div>&nbsp;&nbsp;daily/            <span style="color:#888">每日笔记</span></div>
+      <div>&nbsp;&nbsp;people/           <span style="color:#888">人物笔记（渊博、导师...）</span></div>
+      <div style="margin:8px 0"></div>
+      <div style="color:#e8a;font-weight:bold">── AI 区（AI 可读写）─────────────────</div>
+      <div>&nbsp;&nbsp;ops/              <span style="color:#888">AI 产出的运维/工程知识</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;sjh-skills/     <span style="color:#888">troubleshooting, decisions</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;robby-cluster/  <span style="color:#888">GPU debug, 集群笔记</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;meetings/       <span style="color:#888">AI 整理的会议纪要/转录</span></div>
+      <div>&nbsp;&nbsp;&nbsp;&nbsp;research/       <span style="color:#888">AI 帮你整理的资料</span></div>
+      <div style="margin:8px 0"></div>
+      <div style="color:#888;font-weight:bold">── 系统区 ──────────────────────────</div>
+      <div>&nbsp;&nbsp;templates/        <span style="color:#888">各类型模板</span></div>
+      <div>&nbsp;&nbsp;.obsidian/        <span style="color:#888">Obsidian 配置</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>命令权限矩阵</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead>
+      <tr style="border-bottom:2px solid rgba(255,255,255,0.2)">
+        <th style="text-align:left;padding:8px">命令</th>
+        <th style="text-align:left;padding:8px">功能</th>
+        <th style="text-align:center;padding:8px">读人类区</th>
+        <th style="text-align:center;padding:8px">读 AI 区</th>
+        <th style="text-align:center;padding:8px">写 AI 区</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/context</code></td>
+        <td style="padding:8px">加载项目全局上下文</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/capture</code></td>
+        <td style="padding:8px">捕获你说的话存为笔记草稿</td>
+        <td style="text-align:center;color:#666">—</td>
+        <td style="text-align:center;color:#666">—</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/transcribe</code></td>
+        <td style="padding:8px">会议录音→结构化纪要</td>
+        <td style="text-align:center;color:#666">—</td>
+        <td style="text-align:center;color:#666">—</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(107,153,187,0.05)">
+        <td style="padding:8px"><code>/challenge</code></td>
+        <td style="padding:8px">压力测试你的信念</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#f66">✗</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(107,153,187,0.05)">
+        <td style="padding:8px"><code>/drift</code></td>
+        <td style="padding:8px">知行对比（目标 vs 行为）</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#f66">✗</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1);background:rgba(107,153,187,0.05)">
+        <td style="padding:8px"><code>/emerge</code></td>
+        <td style="padding:8px">提取潜意识模式</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#f66">✗</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/trace</code></td>
+        <td style="padding:8px">追踪想法演变</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#f66">✗</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/connect</code></td>
+        <td style="padding:8px">发现跨域关联</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+        <td style="padding:8px"><code>/debug-log</code></td>
+        <td style="padding:8px">记录 troubleshooting 经验</td>
+        <td style="text-align:center;color:#666">—</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+      </tr>
+      <tr>
+        <td style="padding:8px"><code>/today</code></td>
+        <td style="padding:8px">晨间规划（日历+笔记+任务）</td>
+        <td style="text-align:center;color:#6b9">✓</td>
+        <td style="text-align:center;color:#e8a">✓</td>
+        <td style="text-align:center;color:#666">—</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:12px;color:#888">
+    高亮行 = 反思类命令，严格只读人类区，保护反馈回路纯净性
+  </div>
+</div>
+
+<div class="section">
+  <h3>数据流：会议场景示例</h3>
+  <div class="mockup">
+    <div class="mockup-header">从录音到双区笔记的完整流程</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start">
+        <div>
+          <div style="color:#6b9;font-weight:bold;margin-bottom:8px">① 你手写（人类区）</div>
+          <div style="padding:12px;background:rgba(107,153,187,0.1);border-radius:6px;font-size:12px">
+            <code>notes/yuanbo-agentic-um.md</code><br><br>
+            渊博说应该先做 XX。<br>
+            我同意，因为...<br>
+            <span style="color:#6b9">但我觉得 YY 也值得探索。</span><br><br>
+            完整记录：<span style="color:#88f">[[meeting-yuanbo-0329]]</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:24px;color:#555;padding-top:40px">⟷</div>
+        <div>
+          <div style="color:#e8a;font-weight:bold;margin-bottom:8px">② AI 整理（AI 区）</div>
+          <div style="padding:12px;background:rgba(232,168,168,0.1);border-radius:6px;font-size:12px">
+            <code>ops/meetings/meeting-yuanbo-0329.md</code><br><br>
+            <span style="color:#888">source: ai | speakers: 嘉豪, 渊博</span><br><br>
+            <strong>渊博：</strong>我觉得先把 XX...<br>
+            <strong>嘉豪：</strong>对，但 YY 呢...<br><br>
+            嘉豪的笔记：<span style="color:#88f">[[yuanbo-agentic-um]]</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:10px;background:rgba(255,255,255,0.05);border-radius:6px;text-align:center;font-size:12px">
+        <code>/emerge</code> 扫描时 → 只看到左边 →「嘉豪反复提到想探索 YY，这可能是一个未命名的方向」<br>
+        <code>/context</code> 加载时 → 两边都读 → 完整项目上下文
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>技术栈 & 分阶段</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="padding:16px;background:rgba(255,255,255,0.05);border-radius:8px">
+      <h4 style="margin:0 0 8px">Phase 1：基础搭建</h4>
+      <ul style="margin:0;padding-left:20px;line-height:1.8;font-size:13px">
+        <li><strong>Obsidian</strong> — Vault 管理 + GUI 浏览</li>
+        <li><strong>Obsidian CLI</strong> — 让 CC 理解链接关系</li>
+        <li><strong>Claude Code Skill</strong> — obsidian-brain skill</li>
+        <li>Vault 结构 + 模板 + /context /capture</li>
+      </ul>
+    </div>
+    <div style="padding:16px;background:rgba(255,255,255,0.05);border-radius:8px">
+      <h4 style="margin:0 0 8px">Phase 2：思考伙伴</h4>
+      <ul style="margin:0;padding-left:20px;line-height:1.8;font-size:13px">
+        <li>反思命令 /challenge /drift /emerge /trace</li>
+        <li>/transcribe 会议转录</li>
+        <li>/graduate 想法提炼</li>
+        <li>/connect 跨域发现</li>
+      </ul>
+    </div>
+  </div>
+</div>
