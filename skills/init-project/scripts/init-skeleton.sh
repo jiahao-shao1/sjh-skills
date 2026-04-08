@@ -73,6 +73,31 @@ fi'
 
 chmod +x ".claude/hooks/auto-format-python.sh" 2>/dev/null || true
 
+create_file ".claude/hooks/guard-critical-edit.sh" '#!/bin/bash
+# Claude Code PostToolUse hook: warn when editing critical directories
+# Customize CRITICAL_DIRS to match your project'"'"'s sensitive areas
+
+FILE_PATH=$(echo "$TOOL_INPUT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get('"'"'file_path'"'"', '"'"''"'"'))
+except:
+    print('"'"''"'"')
+" 2>/dev/null)
+
+# Define critical directories — edit this list per project
+CRITICAL_DIRS=("core/" "interfaces/")
+
+for dir in "${CRITICAL_DIRS[@]}"; do
+    if [[ "$FILE_PATH" == *"$dir"* ]]; then
+        echo "⚠️ Editing critical directory: $dir — check .claude/rules/ for constraints"
+        break
+    fi
+done'
+
+chmod +x ".claude/hooks/guard-critical-edit.sh" 2>/dev/null || true
+
 # ============================================================
 # 3. General-purpose agent definitions
 # ============================================================
@@ -200,7 +225,84 @@ Research by directory focus, using Glob, Grep, Read tools.
 - Always cite specific file paths and line numbers'
 
 # ============================================================
-# 4. Settings.json (project-level)
+# 4. Universal rule files
+# ============================================================
+create_file ".claude/rules/testing.md" '# Testing Rules
+
+## Test Structure
+
+- Follow Arrange-Act-Assert pattern
+- Naming: `test_<what>_<condition>_<expected>()`
+- Each test function includes a brief docstring explaining its purpose
+
+## Running Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Skip slow tests
+pytest tests/ -v -m "not slow"
+```
+
+## Pytest Markers
+
+- `@pytest.mark.slow` — tests over 10 seconds
+- `@pytest.mark.skipif()` — conditional skip (GPU, network, etc.)
+- `@pytest.mark.parametrize()` — parameterized tests'
+
+create_file ".claude/rules/knowledge-writing.md" '# Knowledge Writing Guide
+
+This rule applies to all experience records under `.claude/knowledge/`.
+
+## When to Write
+
+When a non-trivial problem is solved during a session (debugging, workaround, design trade-off, etc.), **write immediately** — do not wait until the session ends.
+
+## File Naming
+
+By domain topic: `api-integration.md`, `deployment.md`. Create new files for new domains.
+
+## Entry Format
+
+```markdown
+## YYYY-MM-DD: Brief Title
+
+**Problem**: what happened
+**Solution**: how it was resolved
+**Lesson**: what to watch for next time
+**Files**: code files involved
+**Commit**: related git commit hash
+```
+
+## What to Write
+
+- Bugs and root causes discovered during debugging
+- Non-obvious workarounds or API behaviors
+- Design decisions and their trade-offs
+- Parameter tuning experiences
+
+## What NOT to Write
+
+- Pure code change records (tracked by git log)
+- Content already in documentation
+- Temporary exploratory attempts with no conclusions
+
+## Capture Path
+
+```
+discovered in session → .claude/knowledge/ (hot experience)
+                                ↓ validated multiple times
+                         .claude/rules/ (hard rules)
+```'
+
+# ============================================================
+# 5. Scripts directory structure
+# ============================================================
+ensure_dir "scripts"
+
+# ============================================================
+# 6. Settings.json (project-level)
 # ============================================================
 create_file ".claude/settings.json" '{
   "hooks": {
@@ -208,6 +310,10 @@ create_file ".claude/settings.json" '{
       {
         "matcher": "Edit|Write",
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-critical-edit.sh"
+          },
           {
             "type": "command",
             "command": "bash .claude/hooks/auto-format-python.sh"
@@ -219,7 +325,7 @@ create_file ".claude/settings.json" '{
 }'
 
 # ============================================================
-# 5. CLAUDE.md skeleton
+# 7. CLAUDE.md skeleton
 # ============================================================
 create_file "CLAUDE.md" "# ${PROJECT_NAME} Project Guide
 
@@ -247,6 +353,9 @@ This project uses a phased workflow:
 | Small change (single file, bug fix) | Direct edit + \`code-verifier\` |
 
 <!-- init-project: add project-specific workflow stages here if needed -->
+
+## Models / Key Dependencies
+<!-- init-project: placeholder -->
 
 ## Dev Guide
 <!-- init-project: placeholder -->
@@ -344,6 +453,14 @@ The next session only needs to read \`HANDOFF.md\` to continue. Delete the file 
 <!-- init-project: examples below, modify per project needs -->
 <!-- - Modify immutable interface signatures -->
 <!-- - Guess cluster configuration or hardware topology -->
+
+## Knowledge Quick Reference
+
+When encountering the following scenarios, **read the corresponding knowledge file first** before taking action:
+
+| Scenario | File |
+|----------|------|
+<!-- init-project: placeholder — auto-generate from .claude/knowledge/ contents -->
 
 ## Progressive References
 <!-- init-project: placeholder -->

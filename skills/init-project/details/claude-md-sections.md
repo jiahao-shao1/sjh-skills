@@ -47,6 +47,37 @@ Core approach: {technical method}.
 
 ---
 
+## Section: Models / Key Dependencies
+
+### Auto-exploration
+
+```
+Scan: imports for model libraries (transformers, openai, anthropic, google.generativeai)
+Detect: API key references in .env, config files
+Read: model config files (yaml, json)
+```
+
+### AskUserQuestion
+
+```
+Here's a draft of key models/dependencies:
+
+---
+{draft: detected models, APIs, and external services}
+---
+
+Anything to add or change? Press Enter to confirm / type edits / "skip" to skip.
+```
+
+### Draft Template
+
+```markdown
+- **Model A** (size) — primary use case
+- **External API** — what it's used for
+```
+
+---
+
 ## Section: Directory Structure
 
 ### Auto-exploration
@@ -226,6 +257,35 @@ What **absolute don't-touch conventions** does your project have? For example:
 - Legacy code that must not be touched
 
 Press Enter to skip / type additional items.
+```
+
+---
+
+## Section: Knowledge Quick Reference
+
+### Auto-exploration
+
+```
+List: all .md files in .claude/knowledge/
+Read: first 5 lines of each to extract domain topic
+```
+
+### Processing
+
+This section is **auto-generated** without user interaction:
+1. Scan `.claude/knowledge/` for all `.md` files
+2. Read each file's title/first heading to determine the domain
+3. Generate a scenario→file mapping table
+4. Write directly to CLAUDE.md (no AskUserQuestion needed)
+
+If `.claude/knowledge/` is empty, write a placeholder comment.
+
+### Draft Template
+
+```markdown
+| Scenario | File |
+|----------|------|
+| {domain} issues | `.claude/knowledge/{filename}.md` |
 ```
 
 ---

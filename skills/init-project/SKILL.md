@@ -33,12 +33,14 @@ Automatically configure Claude Code best practices for new projects: directory s
 | Section | Auto-exploration | User prompt |
 |---------|-----------------|-------------|
 | Project overview | Read README, pyproject.toml, package.json | "One-line description of this project's core goal?" |
+| Models / Key dependencies | Detect imports, API keys, model configs | "What models or external services does this project depend on?" |
 | Directory structure | ls + read key file docstrings | "Does this directory layout look correct? Anything to adjust?" |
 | Dev workflow | Detect CI, Makefile, scripts/ | "Use the default brainstorming→plans→dev→verify flow?" |
 | Dev guide | Detect venv, .env, Dockerfile | "Any special environment setup steps?" |
 | Always Do (project-specific) | Read rules/, lint config | "Any cross-module consistency requirements?" |
 | Ask First | Scan core files (interfaces, config) | "Which files/dirs require confirmation before modifying?" |
 | Never Do | Detect third_party/, .env | "Any absolute don't-touch conventions?" |
+| Knowledge quick reference | Scan .claude/knowledge/ | Auto-generate scenario→file mapping table |
 | Progressive references | Scan docs/, skills, agents | "Any additional task→reference file mappings to add?" |
 
 ## Constraints

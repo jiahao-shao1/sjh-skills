@@ -28,14 +28,63 @@ ensure_dir() {
 }
 
 # ============================================================
-# 1. Report directories
+# 1. Report & strategy directories
 # ============================================================
 ensure_dir "docs/reports/weekly"
 ensure_dir "docs/reports/worktree"
 ensure_dir "docs/plans"
+ensure_dir "docs/strategy/decisions"
+ensure_dir "docs/strategy/meetings"
+ensure_dir "docs/strategy/related-work"
+
+create_file "docs/strategy/vision.md" '# Vision
+
+<!-- One-paragraph description of the project'"'"'s long-term vision -->
+'
+
+create_file "docs/strategy/roadmap.md" '# Roadmap
+
+## Current Phase
+
+<!-- What phase is the project in? -->
+
+## Milestones
+
+| Milestone | Target Date | Status |
+|-----------|------------|--------|
+<!-- Fill in milestones -->
+'
+
+create_file "docs/strategy/decisions/log.md" '# Decision Log
+
+Record key architectural and strategic decisions.
+
+## Format
+
+```markdown
+## YYYY-MM-DD: Decision Title
+
+**Context**: why this decision was needed
+**Decision**: what was decided
+**Alternatives considered**: what else was evaluated
+**Consequences**: what this implies going forward
+```
+
+---
+<!-- Append decisions below -->
+'
 
 # ============================================================
-# 2. Experiment registry
+# 2. Scripts subdirectory structure (research projects)
+# ============================================================
+ensure_dir "scripts/training"
+ensure_dir "scripts/benchmark"
+ensure_dir "scripts/data"
+ensure_dir "scripts/model"
+ensure_dir "scripts/infra"
+
+# ============================================================
+# 3. Experiment registry
 # ============================================================
 create_file ".claude/knowledge/experiments.md" '# Experiment Registry
 
@@ -63,7 +112,7 @@ Track all experiment configurations, paths, and key results.
 <!-- Append experiment entries below -->'
 
 # ============================================================
-# 3. Domain expert agent scaffold
+# 4. Domain expert agent scaffold
 # ============================================================
 create_file ".claude/agents/domain-expert.md" '---
 name: domain-expert
@@ -105,7 +154,7 @@ Output format follows the planner agent standard format.
 <!-- Fill in: key domain constraints, interface contracts, historical lessons -->'
 
 # ============================================================
-# 4. Append research-related content to CLAUDE.md
+# 5. Append research-related content to CLAUDE.md
 # ============================================================
 if [ -f "CLAUDE.md" ]; then
     # Check if research profile marker already exists
@@ -131,6 +180,20 @@ See `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/knowledge/`
 | File | Content |
 |------|---------|
 | `experiments.md` | **Experiment registry**: all experiment configs, paths, key results |
+
+### Project Strategy
+
+Strategy documents are maintained in `docs/strategy/`:
+
+| Document | Purpose |
+|----------|---------|
+| `vision.md` | Long-term project vision |
+| `roadmap.md` | Milestones and current phase |
+| `decisions/log.md` | Architectural and strategic decision records |
+| `meetings/` | Meeting notes (named `YYYY-MM-DD.md`) |
+| `related-work/` | Related work analysis and survey |
+
+Use `/project-review` to generate a project panorama snapshot.
 RESEARCH_EOF
         CREATED+=("CLAUDE.md (appended research profile)")
     else
