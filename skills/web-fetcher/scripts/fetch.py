@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""Fetch web page content as markdown/text with fallback chain.
+"""Fetch web page content as markdown/text with smart fallback chain.
 
-Priority:
-1. Jina Reader (https://r.jina.ai/)
-2. defuddle.md (https://defuddle.md/)
-3. markdown.new (https://markdown.new/)
-4. OpenCLI (platform-specific, requires browser extension)
-5. Raw HTML fetch
+Strategy:
+- Known platforms (zhihu, twitter, reddit, weibo, etc.) → OpenCLI first (deterministic, zero-token)
+- Other URLs → Jina Reader → defuddle.md → markdown.new → agent-browser → Raw HTML
 
 Usage:
     python3 fetch.py <url> [--output <file>]
@@ -23,7 +20,6 @@ import urllib.request
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
 # URL pattern → (opencli command, args extractor)
-# Each entry: (regex, opencli_subcommand_list_fn)
 OPENCLI_ROUTES = [
     # zhihu question: zhihu.com/question/12345
     (r"zhihu\.com/question/(\d+)", lambda m: ["zhihu", "question", m.group(1)]),
@@ -36,6 +32,22 @@ OPENCLI_ROUTES = [
     # weibo
     (r"weibo\.com/\d+/(\w+)", lambda m: ["weibo", "search", m.group(0)]),
 ]
+
+# Platforms where OpenCLI should be tried FIRST (login-required or anti-scraping)
+PLATFORM_PATTERNS = [
+    r"zhihu\.com",
+    r"zhuanlan\.zhihu\.com",
+    r"reddit\.com",
+    r"(twitter\.com|x\.com)",
+    r"weibo\.com",
+    r"xiaohongshu\.com",
+    r"bilibili\.com",
+]
+
+
+def is_known_platform(url: str) -> bool:
+    """Check if URL belongs to a platform where OpenCLI should be prioritized."""
+    return any(re.search(p, url) for p in PLATFORM_PATTERNS)
 
 
 def fetch_url(url: str, headers: dict | None = None, timeout: int = 30) -> str:
@@ -77,15 +89,47 @@ def fetch_via_opencli(target: str) -> str:
     raise RuntimeError(f"no opencli route for {target}")
 
 
+def fetch_via_agent_browser(target: str) -> str:
+    """Use agent-browser to render JS-heavy pages and extract text content."""
+    if not shutil.which("agent-browser"):
+        raise RuntimeError("agent-browser not installed")
+    # Open URL, then get text snapshot (accessibility tree → compact text)
+    result = subprocess.run(
+        ["agent-browser", "open", target],
+        capture_output=True, text=True, timeout=30,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or f"open failed: exit code {result.returncode}")
+    # Extract page content as text via eval
+    result = subprocess.run(
+        ["agent-browser", "eval", "document.body.innerText"],
+        capture_output=True, text=True, timeout=15,
+    )
+    if result.returncode == 0 and result.stdout.strip():
+        return result.stdout
+    raise RuntimeError(result.stderr.strip() or f"eval failed: exit code {result.returncode}")
+
+
 def fetch_raw(target: str) -> str:
     return fetch_url(target)
 
 
-STRATEGIES = [
+# Default fallback chain for generic URLs
+GENERIC_STRATEGIES = [
     ("Jina Reader", fetch_via_jina),
     ("defuddle.md", fetch_via_defuddle),
     ("markdown.new", fetch_via_markdown_new),
+    ("agent-browser", fetch_via_agent_browser),
+    ("Raw HTML", fetch_raw),
+]
+
+# For known platforms: try OpenCLI first, then fall back to generic chain
+PLATFORM_STRATEGIES = [
     ("OpenCLI", fetch_via_opencli),
+    ("Jina Reader", fetch_via_jina),
+    ("defuddle.md", fetch_via_defuddle),
+    ("markdown.new", fetch_via_markdown_new),
+    ("agent-browser", fetch_via_agent_browser),
     ("Raw HTML", fetch_raw),
 ]
 
@@ -94,8 +138,12 @@ MIN_CONTENT_LEN = 500  # skip results that are too short (likely error pages)
 
 
 def fetch(target: str) -> str:
+    strategies = PLATFORM_STRATEGIES if is_known_platform(target) else GENERIC_STRATEGIES
+    if is_known_platform(target):
+        print(f"[Router] Known platform detected, trying OpenCLI first", file=sys.stderr)
+
     errors = []
-    for name, fn in STRATEGIES:
+    for name, fn in strategies:
         try:
             print(f"[{name}] Fetching...", file=sys.stderr)
             content = fn(target)
