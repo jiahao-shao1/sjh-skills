@@ -1,0 +1,18 @@
+{
+  "name": "sjh-skills",
+  "description": "Personal skills: scholar-inbox, web-fetcher, cmux, codex-review, daily-summary, init-project, notion-lifeos, paper-analyzer, project-review",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jiahao Shao"
+  },
+  "homepage": "https://github.com/jiahao-shao1/sjh-skills",
+  "repository": "https://github.com/jiahao-shao1/sjh-skills",
+  "license": "MIT",
+  "keywords": [
+    "skills",
+    "scholar",
+    "web-fetcher",
+    "notion",
+    "paper-analyzer"
+  ]
+}

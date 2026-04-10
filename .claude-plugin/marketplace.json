@@ -1,0 +1,16 @@
+{
+  "name": "sjh-skills",
+  "description": "Personal skills collection: scholar-inbox, web-fetcher, cmux, daily-summary, notion-lifeos, and more",
+  "owner": {
+    "name": "Jiahao Shao",
+    "email": "jiahaoshao@outlook.com"
+  },
+  "plugins": [
+    {
+      "name": "sjh-skills",
+      "description": "Personal skills: scholar-inbox, web-fetcher, cmux, codex-review, daily-summary, init-project, notion-lifeos, paper-analyzer, project-review",
+      "version": "1.0.0",
+      "source": "./"
+    }
+  ]
+}
