@@ -60,6 +60,7 @@ Never use full `https://github.com/...` URLs or point to standalone repos that n
 
 - Read the existing SKILL.md before modifying a skill
 - Update `CHANGELOG.md` for every change — group entries under the skill name, use [Keep a Changelog](https://keepachangelog.com/) format
+- Bump `.claude-plugin/plugin.json` version on every skill change — minor for new features, patch for fixes/improvements
 - Keep install commands consistent across all READMEs (root, English, Chinese) when adding or renaming a skill
 - Update the skill table in both `README.md` and `README.zh-CN.md` when adding a new skill
 - Test skill triggering by reviewing the `description` field — it's the primary mechanism Claude uses to decide whether to invoke a skill
