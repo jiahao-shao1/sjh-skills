@@ -22,16 +22,26 @@ English | [中文](README.zh-CN.md)
 
 ## Install
 
-**Single skill** (recommended):
+### Claude Code Plugin (recommended)
+
+```bash
+/plugin marketplace add jiahao-shao1/sjh-skills
+/plugin install sjh-skills@sjh-skills
+/reload-plugins
+```
+
+Plugin auto-updates from GitHub on startup. No manual sync needed.
+
+### npx (alternative)
+
+For other coding agents (Cursor, Windsurf, Codex) or single skill install:
 
 ```bash
 npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
 npx skills add jiahao-shao1/sjh-skills --skill cmux
 ```
 
-This installs to both `~/.claude/skills/` and `~/.agents/skills/`, so all coding agents (Claude Code, Cursor, Windsurf, etc.) can use them.
-
-**All skills at once:**
+All skills at once:
 
 ```bash
 npx skills add jiahao-shao1/sjh-skills
