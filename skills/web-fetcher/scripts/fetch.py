@@ -3,7 +3,7 @@
 
 Strategy:
 - Known platforms (zhihu, twitter, reddit, weibo, etc.) → OpenCLI first (deterministic, zero-token)
-- Other URLs → Jina Reader → defuddle.md → markdown.new → agent-browser → Raw HTML
+- Other URLs → Jina Reader → defuddle.md → markdown.new → Raw HTML
 
 Usage:
     python3 fetch.py <url> [--output <file>]
@@ -89,27 +89,6 @@ def fetch_via_opencli(target: str) -> str:
     raise RuntimeError(f"no opencli route for {target}")
 
 
-def fetch_via_agent_browser(target: str) -> str:
-    """Use agent-browser to render JS-heavy pages and extract text content."""
-    if not shutil.which("agent-browser"):
-        raise RuntimeError("agent-browser not installed")
-    # Open URL, then get text snapshot (accessibility tree → compact text)
-    result = subprocess.run(
-        ["agent-browser", "open", target],
-        capture_output=True, text=True, timeout=30,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or f"open failed: exit code {result.returncode}")
-    # Extract page content as text via eval
-    result = subprocess.run(
-        ["agent-browser", "eval", "document.body.innerText"],
-        capture_output=True, text=True, timeout=15,
-    )
-    if result.returncode == 0 and result.stdout.strip():
-        return result.stdout
-    raise RuntimeError(result.stderr.strip() or f"eval failed: exit code {result.returncode}")
-
-
 def fetch_raw(target: str) -> str:
     return fetch_url(target)
 
@@ -119,7 +98,6 @@ GENERIC_STRATEGIES = [
     ("Jina Reader", fetch_via_jina),
     ("defuddle.md", fetch_via_defuddle),
     ("markdown.new", fetch_via_markdown_new),
-    ("agent-browser", fetch_via_agent_browser),
     ("Raw HTML", fetch_raw),
 ]
 
@@ -129,7 +107,6 @@ PLATFORM_STRATEGIES = [
     ("Jina Reader", fetch_via_jina),
     ("defuddle.md", fetch_via_defuddle),
     ("markdown.new", fetch_via_markdown_new),
-    ("agent-browser", fetch_via_agent_browser),
     ("Raw HTML", fetch_raw),
 ]
 
