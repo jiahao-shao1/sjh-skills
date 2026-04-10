@@ -76,7 +76,10 @@ def fetch_via_markdown_new(target: str) -> str:
 
 def fetch_via_opencli(target: str) -> str:
     if not shutil.which("opencli"):
-        raise RuntimeError("opencli not installed")
+        raise RuntimeError(
+            "opencli not installed. Install: npm i -g @jackwener/opencli "
+            "+ Browser Bridge extension from https://github.com/jackwener/opencli/releases"
+        )
     for pattern, args_fn in OPENCLI_ROUTES:
         m = re.search(pattern, target)
         if m:

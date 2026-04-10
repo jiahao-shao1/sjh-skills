@@ -54,6 +54,17 @@ When free services fail, OpenCLI auto-detects the platform from URL and routes t
 
 Requires: `npm i -g @jackwener/opencli` + Browser Bridge extension in Chrome/Arc.
 
+## OpenCLI Setup (if not installed)
+
+If the script output contains "opencli not installed", guide the user through setup:
+
+1. `npm i -g @jackwener/opencli`
+2. Download `opencli-extension.zip` from https://github.com/jackwener/opencli/releases
+3. Chrome → `chrome://extensions` → Enable Developer mode → Load unpacked → select unzipped folder
+4. Run `opencli doctor` to verify
+
+This is a one-time setup. After installation, known platform URLs will automatically use OpenCLI for fast, login-aware fetching.
+
 ## Limitations
 
 - WeChat articles (微信公众号) not supported by any strategy
