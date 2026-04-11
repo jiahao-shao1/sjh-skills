@@ -4,6 +4,18 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.2.0] - 2026-04-11
+
+### experiment-registry
+
+#### Added
+- New skill — ML experiment lifecycle management with structured YAML registry
+- `exp` CLI with commands: `init`, `list`, `show`, `register`, `add-benchmark`, `compare`, `update`
+- Config module with project-level discovery (`exp.config.yaml`)
+- Models module with load/save/validate for experiment YAML files
+- Query module with filter and compare across experiments
+- Pip-installable package (`pip install exp-registry`)
+
 ## [Unreleased]
 
 ### notion-lifeos

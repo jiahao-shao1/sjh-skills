@@ -18,6 +18,7 @@
 | [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，远程 ~0.1s 延迟执行命令，持久 SSH Agent 连接，集群健康巡检 |
 | [codex-review](skills/codex-review/) | 跨模型审查 —— 将计划或代码 diff 发送给 OpenAI Codex 独立验证，Claude↔Codex 迭代反馈直到通过（最多 5 轮） |
 | [paper-analyzer](skills/paper-analyzer/) | 论文深度批判分析 —— 因果链方法论（现象→实验设置→归因→解法），NotebookLM 溯源阅读，可选研究框架映射 |
+| [experiment-registry](skills/experiment-registry/) | ML 实验生命周期管理 —— 结构化 YAML 注册表 + CLI，支持实验注册、Benchmark 记录、跨实验对比、状态追踪 |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **暂停** — Obsidian 第二大脑，双区 Vault 设计。已转向在 notion-lifeos 中增加反思命令 |
 
 ## 安装
@@ -51,7 +52,8 @@ sjh_skills/
     ├── project-review/    # 五维战略审视快照
     ├── remote-cluster-agent/ # 远程 GPU 集群操作，持久 SSH Agent
     ├── codex-review/          # 跨模型计划/代码审查，OpenAI Codex
-    └── paper-analyzer/        # 论文深度批判分析，因果链方法论
+    ├── paper-analyzer/        # 论文深度批判分析，因果链方法论
+    └── experiment-registry/   # ML 实验注册表，YAML + CLI
 ```
 
 每个 skill 都是独立的，包含 `SKILL.md`、`scripts/` 和 `references/`。可以单独安装，也可以作为合集安装。

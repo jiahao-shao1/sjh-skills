@@ -18,6 +18,7 @@ English | [中文](README.zh-CN.md)
 | [remote-cluster-agent](skills/remote-cluster-agent/) | Remote GPU cluster operations — edit code locally, run commands remotely with ~0.1s latency via persistent SSH agent connections, cluster health inspection |
 | [codex-review](skills/codex-review/) | Cross-model review — send your plan or code diff to OpenAI Codex for independent verification, iterative Claude↔Codex feedback until approved (max 5 rounds) |
 | [paper-analyzer](skills/paper-analyzer/) | Deep critical paper analysis — causal chain methodology (现象→实验设置→归因→解法), NotebookLM-grounded reading, optional research framework mapping |
+| [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **On Hold** — Obsidian Second Brain with dual-zone vault. Paused in favor of enhancing notion-lifeos with reflection commands |
 
 ## Install
@@ -61,7 +62,8 @@ sjh_skills/
     ├── project-review/    # 5-dimension strategy review snapshot
     ├── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
     ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
-    └── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
+    ├── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
+    └── experiment-registry/   # ML experiment registry with YAML + CLI
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.
