@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.2.1] - 2026-04-11
+
+### experiment-registry
+
+#### Improved
+- Rewrote SKILL.md from CLI reference manual to Claude behavior guide — added decision flow, smart comparison logic, proactive context, and "why" explanations
+- Description field expanded for better triggering on edge cases (experiment management, "which is better", result tracking)
+
 ## [1.2.0] - 2026-04-11
 
 ### experiment-registry

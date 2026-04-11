@@ -1,46 +1,55 @@
 ---
 name: experiment-registry
-description: "Manage ML experiment lifecycle with structured YAML registry. Register experiments, record benchmark results, compare across runs, track status. Use when: 'register experiment', 'new experiment', 'compare experiments', 'experiment results', 'exp list', 'exp init', '注册实验', '查实验', '对比实验', '实验结果', '实验状态'. NOT for: training monitoring (use monitor-training), checkpoint management, or launching training jobs."
+description: "Manage ML experiment lifecycle with structured YAML registry. Register experiments, record benchmark results, compare across runs, track status. Use this skill whenever: user mentions experiments, benchmarks, or results tracking in ML context; asks 'which experiment performed best'; wants to record or compare results; says 'register experiment', 'new experiment', 'compare experiments', 'experiment results', 'exp list', 'exp init', '注册实验', '查实验', '对比实验', '实验结果', '实验状态', '哪个实验最好', '记录一下结果'. Also trigger when user discusses experiment management, tracking, or asks about experiment history in any ML project. NOT for: training monitoring, checkpoint management, launching training jobs, or experiment visualization."
 ---
 
 # Experiment Registry
 
-Structured YAML experiment registry for ML research. Track experiments, record benchmarks, compare results.
+Structured YAML experiment registry for ML research. YAML was chosen over databases or JSON because experiment files should be human-readable, git-diffable, and hand-editable — researchers often need to inspect or tweak entries directly.
 
-## Installation
+## Prerequisites
+
+The `exp` CLI must be installed:
 
 ```bash
 pip install exp-registry
 ```
 
-After installation, initialize in your project:
-```bash
-cd your-ml-project
-exp init
-```
+If `exp` is not found, install it first. If the project has no `exp.config.yaml`, run `exp init` before any other command.
 
-## Quick Setup
+## How to Think About Experiment Registry
 
-`exp init` creates:
-- `exp.config.yaml` — project configuration (path templates, defaults)
-- `experiments/` — directory for experiment YAML files
+This tool manages the **metadata layer** of experiments — what was run, with what config, and what results came out. It does NOT manage training code, checkpoints, or logs.
 
-Edit `exp.config.yaml` to customize for your project (see Project Configuration below).
+The mental model: each experiment gets a YAML file that serves as its "identity card." Over time, benchmark results accumulate in that file as the experiment progresses through training steps. When it's time to report or decide next steps, you compare across experiments.
 
-## When This Skill Activates
+### Decision Flow
 
-**Explicit:** `/experiment-registry`, `exp list`, `exp register`, `exp compare`
+When the user mentions experiments, follow this flow:
 
-**Intent detection:**
-- "注册实验" / "register experiment" / "new experiment"
-- "查实验" / "实验状态" / "what experiments are running"
-- "对比实验" / "compare experiments"
-- "记录结果" / "add benchmark results"
-- "实验结果" / "experiment results"
+1. **Check environment first.** Does `exp.config.yaml` exist? If not, ask if they want to initialize (`exp init`). Don't silently init — the user should confirm the project root.
 
-**NOT for:** training monitoring, checkpoint management, launching training, experiment visualization
+2. **Understand intent.** Map the user's request to the right action:
+   - "New experiment" / "register" → `exp register` (but first `exp list` to check for ID conflicts)
+   - "What's running" / "experiment status" → `exp list` (suggest filters if there are many)
+   - "Record results" / "add benchmark" → `exp add-benchmark` (ask for dataset and step if not provided)
+   - "Compare" / "which is better" → `exp compare` (auto-discover shared datasets from `exp show`)
+   - "What happened with exp07" → `exp show` first, then summarize findings
 
-## Quick Reference
+3. **Be proactive with context.** After any operation, offer useful next steps:
+   - After registering → "Ready to add benchmarks when results come in"
+   - After adding a benchmark → suggest comparing with related experiments if they exist
+   - After comparing → highlight the best performer and surface any findings
+
+### Smart Comparison
+
+When the user asks "compare experiments" or "which is better," don't just dump the table. First run `exp show` on each experiment to discover which datasets and eval_modes they share, then run `exp compare` on those shared dimensions. If experiments have no common benchmarks, tell the user — don't produce an empty comparison silently.
+
+### Series Grouping
+
+Experiment IDs like `exp07a`, `exp07b`, `exp07c` automatically group into series `exp07`. This lets you filter by series to see all variants of one experimental idea. When a user discusses "the exp07 experiments," use `exp list --series exp07` to get the full picture.
+
+## Command Reference
 
 | Task | Command |
 |------|---------|
@@ -57,21 +66,24 @@ Edit `exp.config.yaml` to customize for your project (see Project Configuration 
 | Update status | `exp update <id> --status completed` |
 | Add finding | `exp update <id> --finding "key insight"` |
 
-## Common Workflows
+All list/show/compare commands support `--json` for machine-readable output.
 
-### New Project Setup
-
-1. `exp init` — creates config + registry directory
-2. Edit `exp.config.yaml` to set path templates and defaults
-3. Start registering experiments
+## Typical Workflows
 
 ### Experiment Lifecycle
 
+```
+register → (train) → add-benchmark at step N → add-benchmark at step M → update status + finding
+```
+
+Example:
 1. `exp register exp01 --type rl --model Qwen3-VL-8B --reward reward_tool_strict`
-2. *(train the model)*
+2. *(user trains the model)*
 3. `exp add-benchmark exp01 --dataset zebra-cot --eval-mode agent --samples 50 --step 50 --extra text_only=0.42 with_tools=0.52`
 4. `exp add-benchmark exp01 --dataset zebra-cot --eval-mode agent --samples 50 --step 90 --extra text_only=0.44 with_tools=0.55`
 5. `exp update exp01 --status completed --finding "tool use improves reasoning"`
+
+Benchmarks are organized by step number within each dataset — this tracks how performance evolves during training, which is critical for deciding when to stop or which checkpoint to use.
 
 ### Compare for Meeting/Report
 
@@ -79,36 +91,23 @@ Edit `exp.config.yaml` to customize for your project (see Project Configuration 
 exp compare exp07a exp07b exp07c --dataset zebra-cot
 ```
 
-Outputs Markdown table — paste directly into docs or slides.
+Outputs a Markdown table — paste directly into docs or slides.
 
 ## Project Configuration
 
 `exp.config.yaml` at project root:
 
 ```yaml
-# Where experiment YAML files are stored (relative to project root)
-registry_dir: experiments/
-
-# Path templates — {id} is replaced with experiment ID
+registry_dir: experiments/           # where YAML files live
 paths_template:
-  local: outputs/{id}/
-  # Add project-specific paths:
-  # cluster: /data/outputs/{id}/
-  # oss: oss://bucket/outputs/{id}/
-
-# Defaults for `exp register`
+  local: outputs/{id}/               # {id} is replaced with experiment ID
 defaults:
-  type: rl
-  # model: Qwen3-VL-8B
-
-# Per-type recommended fields (shown as hints during register)
+  type: rl                           # default for `exp register`
 types:
   rl:
     fields: [model, config, script, reward]
   sft:
     fields: [model, config, script, base_model]
-  benchmark:
-    fields: [model, dataset, eval_mode]
 ```
 
 Config is discovered by walking up from CWD. No config = sensible defaults (`registry_dir: experiments/`).
@@ -119,11 +118,9 @@ Each experiment is one file in `<registry_dir>/<exp_id>.yaml`:
 
 **Required fields:** `id`, `name`, `type`, `series`, `date`, `status`
 
-**Auto-generated:** `series` (inferred from ID), `paths` (from template), `date` (today)
+**Auto-generated:** `series` (inferred from ID prefix), `paths` (from template), `date` (today)
 
-**Free-form:** `stages`, `findings`, and any custom fields your project needs
-
-**Structured:** `benchmarks` list:
+**Structured benchmarks:**
 ```yaml
 benchmarks:
   - dataset: string
@@ -133,21 +130,11 @@ benchmarks:
       <step_number>: { <metric>: <value>, ... }
 ```
 
-## Error Handling
+## Error Recovery
 
-| Error | Cause | Action |
-|-------|-------|--------|
-| "experiment already exists" | Duplicate ID | Use a different ID or `exp show` to check |
-| "experiment not found" | Wrong ID | Run `exp list` to see available IDs |
-| "No benchmark data found" | Wrong dataset in compare | Check `exp show <id>` for available datasets |
-| "Missing required fields" | Corrupted YAML | Fix the YAML file manually |
-
-## Output Formats
-
-All list/show/compare commands support `--json` for machine-readable output:
-
-```bash
-exp list --json              # Array of experiment objects
-exp show exp01 --json        # Single experiment object
-exp compare a b --dataset x --json  # {exp_ids, metrics, steps}
-```
+| Error | Cause | What to Do |
+|-------|-------|------------|
+| "experiment already exists" | Duplicate ID | `exp show <id>` to check, use a different ID |
+| "experiment not found" | Wrong ID | `exp list` to see available IDs |
+| "No benchmark data found" | Wrong dataset in compare | `exp show <id>` to check available datasets |
+| "Missing required fields" | Corrupted YAML | Inspect and fix the YAML file directly — it's designed to be human-editable |
