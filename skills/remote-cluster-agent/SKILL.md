@@ -1,6 +1,6 @@
 ---
 name: remote-cluster-agent
-description: Remote GPU cluster operations and health inspection. Use when the user mentions cluster, remote execution, GPU, training, code sync, mutagen, cluster status, or node inspection. Trigger words include but are not limited to: "connect to cluster", "sync code", "GPU occupancy", "run on cluster", "remote bash", "run training", "check logs", "tail log", "mutagen", "cluster status", "node status", "which node is free", "most idle node", "cluster health", "GPU usage", "连集群", "同步代码", "GPU 占用", "集群上跑", "在服务器上", "跑训练", "看日志", "集群状态", "节点状态", "哪个节点空", "最空闲节点", "集群巡检", "GPU 占用情况". Even if the user doesn't explicitly mention the cluster, trigger this skill whenever the task involves remote execution, training operations, or cluster status queries.
+description: "Remote GPU cluster operations and health inspection. Use when the user mentions cluster, remote execution, GPU, training, code sync, mutagen, cluster status, or node inspection. Trigger words include but are not limited to: connect to cluster, sync code, GPU occupancy, run on cluster, remote bash, run training, check logs, tail log, mutagen, cluster status, node status, which node is free, most idle node, cluster health, GPU usage, 连集群, 同步代码, GPU 占用, 集群上跑, 在服务器上, 跑训练, 看日志, 集群状态, 节点状态, 哪个节点空, 最空闲节点, 集群巡检, GPU 占用情况. Even if the user doesn't explicitly mention the cluster, trigger this skill whenever the task involves remote execution, training operations, or cluster status queries."
 ---
 
 # Remote Cluster Agent
