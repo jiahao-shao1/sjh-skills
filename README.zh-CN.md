@@ -23,16 +23,42 @@
 
 ## 安装
 
-**安装单个**（推荐）：
+### Claude Code Plugin（推荐）
+
+```bash
+/plugin marketplace add jiahao-shao1/sjh-skills
+/plugin install sjh-skills@sjh-skills
+/reload-plugins
+```
+
+### Codex
+
+让 Codex 执行：
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/jiahao-shao1/sjh-skills/refs/heads/main/.codex/INSTALL.md
+```
+
+或手动：
+
+```bash
+git clone https://github.com/jiahao-shao1/sjh-skills.git ~/.codex/sjh-skills
+mkdir -p ~/.agents/skills
+for skill in ~/.codex/sjh-skills/skills/*/; do
+  ln -sf "$skill" ~/.agents/skills/$(basename "$skill")
+done
+```
+
+详细文档：[.codex/INSTALL.md](.codex/INSTALL.md)
+
+### npx（Cursor、Windsurf 等）
 
 ```bash
 npx skills add jiahao-shao1/sjh-skills --skill scholar-agent
 npx skills add jiahao-shao1/sjh-skills --skill cmux
 ```
 
-会同时安装到 `~/.claude/skills/` 和 `~/.agents/skills/`，所有 coding agent（Claude Code、Cursor、Windsurf 等）都能使用。
-
-**安装全部：**
+安装全部：
 
 ```bash
 npx skills add jiahao-shao1/sjh-skills

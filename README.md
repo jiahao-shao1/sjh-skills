@@ -33,9 +33,27 @@ English | [中文](README.zh-CN.md)
 
 Plugin auto-updates from GitHub on startup. No manual sync needed.
 
-### npx (alternative)
+### Codex
 
-For other coding agents (Cursor, Windsurf, Codex) or single skill install:
+Tell Codex:
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/jiahao-shao1/sjh-skills/refs/heads/main/.codex/INSTALL.md
+```
+
+Or manually:
+
+```bash
+git clone https://github.com/jiahao-shao1/sjh-skills.git ~/.codex/sjh-skills
+mkdir -p ~/.agents/skills
+for skill in ~/.codex/sjh-skills/skills/*/; do
+  ln -sf "$skill" ~/.agents/skills/$(basename "$skill")
+done
+```
+
+Detailed docs: [.codex/INSTALL.md](.codex/INSTALL.md)
+
+### npx (Cursor, Windsurf, etc.)
 
 ```bash
 npx skills add jiahao-shao1/sjh-skills --skill scholar-agent

@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.5.0] - 2026-04-13
+
+### Repo-wide
+
+#### Added
+- Codex CLI native installation support — `.codex/INSTALL.md` with clone + symlink workflow
+- `AGENTS.md` symlinked to `CLAUDE.md` for Codex project instruction discovery
+- Codex install section in both `README.md` and `README.zh-CN.md`
+
 ## [1.4.0] - 2026-04-13
 
 ### hooks (new)
