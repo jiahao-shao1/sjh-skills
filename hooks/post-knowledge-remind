@@ -1,0 +1,107 @@
+#!/bin/bash
+# PostToolUse(Bash|MCP) hook: detect debug/env operations, remind to archive knowledge
+# Automatically detects project's knowledge directory or falls back to memory
+# Inspired by freemty/labmate's post-knowhow-remind
+
+STATE_FILE="/tmp/sjh_knowledge_remind_$$_state"
+# Use a per-project state file based on PWD hash to avoid cross-project interference
+PROJECT_HASH=$(echo "$PWD" | md5sum 2>/dev/null | cut -c1-8 || echo "$PWD" | md5 -q 2>/dev/null | cut -c1-8 || echo "default")
+STATE_FILE="/tmp/sjh_knowledge_remind_${PROJECT_HASH}"
+
+# --- Frequency control ---
+now=$(date +%s)
+
+count=0
+last_remind=0
+if [ -f "$STATE_FILE" ]; then
+    count=$(head -1 "$STATE_FILE" 2>/dev/null || echo 0)
+    last_remind=$(tail -1 "$STATE_FILE" 2>/dev/null || echo 0)
+fi
+
+# Max 3 reminders per session
+if [ "$count" -ge 3 ]; then exit 0; fi
+
+# At least 5 minutes between reminders
+elapsed=$((now - last_remind))
+if [ "$elapsed" -lt 300 ] && [ "$last_remind" -gt 0 ]; then exit 0; fi
+
+# --- Extract command and output ---
+INPUT=$(cat)
+
+COMMAND=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    # Works for both Bash (tool_input.command) and MCP tools (tool_input.command)
+    print(d.get('tool_input', {}).get('command', ''))
+except:
+    print('')
+" 2>/dev/null)
+
+if [ -z "$COMMAND" ]; then exit 0; fi
+
+# Skip trivial commands
+if echo "$COMMAND" | grep -qE '^(ls|cat|head|tail|pwd|cd|echo|wc|file|which|type|readlink|stat)( |$)|^git (log|status|diff|branch|show|stash)( |$)|^pytest |^python.*-m pytest'; then
+    exit 0
+fi
+
+MATCHED=0
+
+# Signal 1: environment config/install commands
+if echo "$COMMAND" | grep -qiE '(apt(-get)? install|pip install|conda install|docker (build|run|pull|push|compose)|ssh |scp |rsync |mount |umount |systemctl |nvidia-smi|chmod |chown |curl -[oOL]|wget |export [A-Z]|source.*activate|tmux.*new-session)'; then
+    MATCHED=1
+fi
+
+# Signal 2: cluster/training operations
+if [ "$MATCHED" -eq 0 ]; then
+    if echo "$COMMAND" | grep -qiE '(pkill|kill -|sglang|vllm|torchrun|deepspeed|verl|fsdp|nccl|checkpoint|slurm|sbatch|srun)'; then
+        MATCHED=1
+    fi
+fi
+
+# Signal 3: error keywords in output
+if [ "$MATCHED" -eq 0 ]; then
+    OUTPUT=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    out = d.get('tool_output', {})
+    if isinstance(out, dict):
+        stdout = out.get('stdout', '')
+        stderr = out.get('stderr', '')
+        print(str(stdout)[:2000])
+        print(str(stderr)[:2000])
+    else:
+        print(str(out)[:4000])
+except:
+    print('')
+" 2>/dev/null)
+    if echo "$OUTPUT" | grep -qiE '\b(error|failed|permission denied|not found|no such file|connection refused|timeout|OOM|out of memory|segfault|killed|errno)\b|CUDA error|NCCL error'; then
+        MATCHED=1
+    fi
+fi
+
+if [ "$MATCHED" -eq 0 ]; then exit 0; fi
+
+# --- Detect project knowledge directory ---
+TARGET=""
+if [ -d "docs/knowledge" ]; then
+    TARGET="docs/knowledge/"
+elif [ -d "docs/knowhow" ]; then
+    TARGET="docs/knowhow/"
+fi
+
+# --- Build reminder message ---
+if [ -n "$TARGET" ]; then
+    MSG="刚才的操作看起来包含值得记录的经验。要归档到 ${TARGET} 吗？"
+else
+    MSG="刚才的操作看起来包含值得记录的经验。当前项目没有 knowledge 目录，可以存到 memory 里。"
+fi
+
+# --- Update state and remind ---
+count=$((count + 1))
+echo "$count" > "$STATE_FILE"
+echo "$now" >> "$STATE_FILE"
+
+# PostToolUse hooks must output JSON with systemMessage
+printf '{"systemMessage": "<knowledge-hint>\\n%s\\n</knowledge-hint>"}\n' "$MSG"
