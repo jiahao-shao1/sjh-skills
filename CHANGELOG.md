@@ -9,7 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 ### codex-review
 
 #### Changed
-- Default model changed from `gpt-5.3-codex` to `gpt-5.4-high`
+- Default model changed from `gpt-5.3-codex` to `gpt-5.4`
 
 ## [1.5.1] - 2026-04-13
 
