@@ -4,6 +4,18 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.4.0] - 2026-04-13
+
+### hooks (new)
+
+#### Added
+- Plugin hooks system — first hook: `post-knowledge-remind` (PostToolUse)
+- Detects debug/env operations (pip install, docker, errors, cluster ops) and reminds to archive knowledge
+- Auto-detects project knowledge directory (`docs/knowledge/` or `docs/knowhow/`), falls back to memory
+- Supports Bash and `mcp__cluster__remote_bash` matchers
+- `run-hook.cmd` polyglot wrapper (required by CC plugin system for PostToolUse hooks)
+- Per-project state isolation, frequency control (max 3/session, 5min interval)
+
 ## [1.2.1] - 2026-04-11
 
 ### experiment-registry
