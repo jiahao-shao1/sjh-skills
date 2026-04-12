@@ -8,7 +8,6 @@
   "homepage": "https://github.com/jiahao-shao1/sjh-skills",
   "repository": "https://github.com/jiahao-shao1/sjh-skills",
   "license": "MIT",
-  "hooks": "./hooks/hooks.json",
   "keywords": [
     "skills",
     "scholar",
