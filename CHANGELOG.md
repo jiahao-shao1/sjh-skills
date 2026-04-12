@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.5.1] - 2026-04-13
+
+### notion-lifeos
+
+#### Fixed
+- Trim SKILL.md description to fit 1024-character limit (was 1198 chars)
+
 ## [1.5.0] - 2026-04-13
 
 ### Repo-wide
