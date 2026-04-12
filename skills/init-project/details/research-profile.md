@@ -25,7 +25,7 @@ The research profile adds research-project-specific structure on top of the base
 
 | Path | Content |
 |------|---------|
-| `.claude/knowledge/experiments.md` | Experiment registry template (date, config, three-tier paths, results) |
+| `docs/knowledge/experiments.md` | Experiment registry template (date, config, three-tier paths, results) |
 | `.claude/agents/domain-expert.md` | Domain expert agent scaffold (user fills in expertise) |
 | `docs/strategy/vision.md` | Project vision template |
 | `docs/strategy/roadmap.md` | Milestones and phases template |
@@ -40,7 +40,7 @@ Appends an "Extended Configuration" section to the end of CLAUDE.md:
 
 ## Experiment Registry Format
 
-Append an entry to `.claude/knowledge/experiments.md` for each new experiment:
+Append an entry to `docs/knowledge/experiments.md` for each new experiment:
 
 ```markdown
 ## Experiment Name

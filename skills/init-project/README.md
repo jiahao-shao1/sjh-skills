@@ -37,7 +37,7 @@ Runs `scripts/init-skeleton.sh` to create the directory structure and boilerplat
 | Path | Purpose |
 |------|---------|
 | `.claude/rules/` | Hard rules (distilled from validated experience) |
-| `.claude/knowledge/` | Hot experience (debug findings, workarounds) |
+| `docs/knowledge/` | Hot experience (debug findings, workarounds) |
 | `.claude/hooks/` | PostToolUse automation hooks |
 | `.claude/agents/` | Agent definitions (domain experts, quality checks) |
 | `.claude/worktrees/` | Worktree tracking |
@@ -82,7 +82,7 @@ Optionally layer additional project-type-specific structure on top of the base s
 
 The research profile adds:
 - `docs/reports/weekly/`, `docs/reports/worktree/`, `docs/plans/` directories
-- `.claude/knowledge/experiments.md` — experiment registry (date, config, three-tier paths, results)
+- `docs/knowledge/experiments.md` — experiment registry (date, config, three-tier paths, results)
 - `.claude/agents/domain-expert.md` — domain expert agent scaffold
 - Research-specific sections appended to CLAUDE.md
 

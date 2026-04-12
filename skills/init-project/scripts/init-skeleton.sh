@@ -37,7 +37,7 @@ PROJECT_NAME=$(basename "$(pwd)")
 # 1. Directory structure
 # ============================================================
 ensure_dir ".claude/rules"
-ensure_dir ".claude/knowledge"
+ensure_dir "docs/knowledge"
 ensure_dir ".claude/hooks"
 ensure_dir ".claude/agents"
 ensure_dir ".claude/worktrees"
@@ -253,7 +253,7 @@ pytest tests/ -v -m "not slow"
 
 create_file ".claude/rules/knowledge-writing.md" '# Knowledge Writing Guide
 
-This rule applies to all experience records under `.claude/knowledge/`.
+This rule applies to all experience records under `docs/knowledge/`.
 
 ## When to Write
 
@@ -291,7 +291,7 @@ By domain topic: `api-integration.md`, `deployment.md`. Create new files for new
 ## Capture Path
 
 ```
-discovered in session → .claude/knowledge/ (hot experience)
+discovered in session → docs/knowledge/ (hot experience)
                                 ↓ validated multiple times
                          .claude/rules/ (hard rules)
 ```'
@@ -362,7 +362,7 @@ This project uses a phased workflow:
 
 ## Experience Capture
 
-When a non-trivial problem is solved during a session (debugging, workaround, design trade-off, etc.), **immediately** write the experience to the corresponding domain file in \`.claude/knowledge/\` — don't wait until the session ends.
+When a non-trivial problem is solved during a session (debugging, workaround, design trade-off, etc.), **immediately** write the experience to the corresponding domain file in \`docs/knowledge/\` — don't wait until the session ends.
 
 ### Writing Guidelines
 
@@ -395,7 +395,7 @@ When a non-trivial problem is solved during a session (debugging, workaround, de
 ### Capture Path
 
 \`\`\`
-discovered in session → .claude/knowledge/ (hot experience)
+discovered in session → docs/knowledge/ (hot experience)
                                 ↓ validated multiple times
                          .claude/rules/ (hard rules)
 \`\`\`
@@ -460,7 +460,7 @@ When encountering the following scenarios, **read the corresponding knowledge fi
 
 | Scenario | File |
 |----------|------|
-<!-- init-project: placeholder — auto-generate from .claude/knowledge/ contents -->
+<!-- init-project: placeholder — auto-generate from docs/knowledge/ contents -->
 
 ## Progressive References
 <!-- init-project: placeholder -->

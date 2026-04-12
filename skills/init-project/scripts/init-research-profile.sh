@@ -86,7 +86,7 @@ ensure_dir "scripts/infra"
 # ============================================================
 # 3. Experiment registry
 # ============================================================
-create_file ".claude/knowledge/experiments.md" '# Experiment Registry
+create_file "docs/knowledge/experiments.md" '# Experiment Registry
 
 Track all experiment configurations, paths, and key results.
 
@@ -165,7 +165,7 @@ if [ -f "CLAUDE.md" ]; then
 
 ## Extended Configuration
 
-See `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `.claude/knowledge/` for specialized guidance.
+See `.claude/agents/`, `.claude/skills/`, `.claude/rules/`, `docs/knowledge/` for specialized guidance.
 
 ### Agents
 

@@ -266,26 +266,26 @@ Press Enter to skip / type additional items.
 ### Auto-exploration
 
 ```
-List: all .md files in .claude/knowledge/
+List: all .md files in docs/knowledge/
 Read: first 5 lines of each to extract domain topic
 ```
 
 ### Processing
 
 This section is **auto-generated** without user interaction:
-1. Scan `.claude/knowledge/` for all `.md` files
+1. Scan `docs/knowledge/` for all `.md` files
 2. Read each file's title/first heading to determine the domain
 3. Generate a scenario→file mapping table
 4. Write directly to CLAUDE.md (no AskUserQuestion needed)
 
-If `.claude/knowledge/` is empty, write a placeholder comment.
+If `docs/knowledge/` is empty, write a placeholder comment.
 
 ### Draft Template
 
 ```markdown
 | Scenario | File |
 |----------|------|
-| {domain} issues | `.claude/knowledge/{filename}.md` |
+| {domain} issues | `docs/knowledge/{filename}.md` |
 ```
 
 ---

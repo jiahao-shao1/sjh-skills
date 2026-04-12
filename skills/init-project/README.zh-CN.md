@@ -37,7 +37,7 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 | 路径 | 用途 |
 |------|------|
 | `.claude/rules/` | 硬性规则（经验多次验证后提炼） |
-| `.claude/knowledge/` | 热经验沉淀（调试发现、workaround） |
+| `docs/knowledge/` | 热经验沉淀（调试发现、workaround） |
 | `.claude/hooks/` | PostToolUse 等自动化钩子 |
 | `.claude/agents/` | Agent 定义（领域专家、质量检查） |
 | `.claude/worktrees/` | Worktree 追踪 |
@@ -82,7 +82,7 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 
 Research profile 额外添加：
 - `docs/reports/weekly/`、`docs/reports/worktree/`、`docs/plans/` 目录
-- `.claude/knowledge/experiments.md` — 实验注册表（日期、配置、三级路径、结果）
+- `docs/knowledge/experiments.md` — 实验注册表（日期、配置、三级路径、结果）
 - `.claude/agents/domain-expert.md` — 领域专家 Agent 骨架
 - CLAUDE.md 追加研究相关 section
 
