@@ -16,6 +16,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 - `run-hook.cmd` polyglot wrapper (required by CC plugin system for PostToolUse hooks)
 - Per-project state isolation, frequency control (max 3/session, 5min interval)
 
+### init-project
+
+#### Changed
+- Migrated knowledge path from `.claude/knowledge/` to `docs/knowledge/` across all templates, scripts, and documentation
+- Updated `init-skeleton.sh`, `init-research-profile.sh`, `claude-md-sections.md`, `skeleton-manifest.md`, `research-profile.md`
+
+### remote-cluster-agent
+
+#### Fixed
+- Quoted YAML `description` field to fix `npx skills` discovery parsing
+
+### Repo-wide
+
+#### Changed
+- Removed duplicate `description` field from `marketplace.json`
+- Removed `hooks` field from `plugin.json` (hooks now loaded via `hooks.json` directly)
+- Synced `marketplace.json` version to 1.4.0
+
 ## [1.2.1] - 2026-04-11
 
 ### experiment-registry
