@@ -16,6 +16,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 - `run-hook.cmd` polyglot wrapper (required by CC plugin system for PostToolUse hooks)
 - Per-project state isolation, frequency control (max 3/session, 5min interval)
 
+## [1.4.1] - 2026-04-13
+
 ### init-project
 
 #### Changed
@@ -32,7 +34,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 #### Changed
 - Removed duplicate `description` field from `marketplace.json`
 - Removed `hooks` field from `plugin.json` (hooks now loaded via `hooks.json` directly)
-- Synced `marketplace.json` version to 1.4.0
 
 ## [1.2.1] - 2026-04-11
 
