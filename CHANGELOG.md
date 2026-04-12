@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.5.2] - 2026-04-13
+
+### codex-review
+
+#### Changed
+- Default model changed from `gpt-5.3-codex` to `gpt-5.4-high`
+
 ## [1.5.1] - 2026-04-13
 
 ### notion-lifeos

@@ -91,7 +91,7 @@ The review prompt differs by mode because plans and code need different lenses.
 ```bash
 export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 && \
 codex exec \
-  -m gpt-5.3-codex \
+  -m gpt-5.4-high \
   -s read-only \
   -o /tmp/codex-review-output-${REVIEW_ID}.md \
   "Review the implementation plan in /tmp/codex-review-input-${REVIEW_ID}.md.
@@ -116,7 +116,7 @@ VERDICT: REVISE (if changes are needed — list what needs to change)" 2>/dev/nu
 ```bash
 export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890 && \
 codex exec \
-  -m gpt-5.3-codex \
+  -m gpt-5.4-high \
   -s read-only \
   -o /tmp/codex-review-output-${REVIEW_ID}.md \
   "Review the code changes in /tmp/codex-review-input-${REVIEW_ID}.md.
@@ -140,7 +140,7 @@ VERDICT: REVISE (if changes are needed — list what needs to change)" 2>/dev/nu
 **Capture the Codex session ID** from stdout (the line containing `session id: <uuid>`). Store as `CODEX_SESSION_ID` for subsequent rounds.
 
 **CLI notes:**
-- Default model: `gpt-5.3-codex` (fast, good for most reviews). For complex architecture reviews, `gpt-5.4` is more thorough.
+- Default model: `gpt-5.4-high` (thorough, good balance of quality and speed).
 - Always use `-s read-only` — Codex should never modify files.
 - `2>/dev/null` suppresses thinking tokens that would bloat context.
 
@@ -149,7 +149,7 @@ VERDICT: REVISE (if changes are needed — list what needs to change)" 2>/dev/nu
 Read `/tmp/codex-review-output-${REVIEW_ID}.md` and present to the user:
 
 ```
-## Codex Review — Round N [Plan/Code] (gpt-5.3-codex)
+## Codex Review — Round N [Plan/Code] (gpt-5.4-high)
 
 [Codex's feedback, preserving its structure]
 
@@ -212,7 +212,7 @@ Return to Step 4.
 
 ### If approved:
 ```
-## Codex Review — Final [Plan/Code] (gpt-5.3-codex)
+## Codex Review — Final [Plan/Code] (gpt-5.4-high)
 
 **Status:** APPROVED after N round(s)
 
@@ -231,7 +231,7 @@ For code review, if there were proposed fixes along the way, list them:
 
 ### If max rounds reached:
 ```
-## Codex Review — Final [Plan/Code] (gpt-5.3-codex)
+## Codex Review — Final [Plan/Code] (gpt-5.4-high)
 
 **Status:** 5 rounds reached — not fully approved
 
@@ -256,5 +256,5 @@ rm -f /tmp/codex-review-input-${REVIEW_ID}.md /tmp/codex-review-output-${REVIEW_
 - **Show every round** to the user so they can follow the conversation and intervene
 - In code review mode, **don't apply fixes** until the user approves — just propose them
 - If Codex CLI isn't installed or fails, tell the user: `npm install -g @openai/codex`
-- Default model: `gpt-5.3-codex`. User can override via arguments (e.g., `/codex-review gpt-5.4`)
+- Default model: `gpt-5.4-high`. User can override via arguments (e.g., `/codex-review gpt-5.3-codex`)
 - UUID-scoped temp files support concurrent sessions safely
