@@ -467,6 +467,16 @@ When encountering the following scenarios, **read the corresponding knowledge fi
 "
 
 # ============================================================
+# 8. AGENTS.md symlink (for Codex native discovery)
+# ============================================================
+if [ -f "CLAUDE.md" ] && [ ! -e "AGENTS.md" ]; then
+    ln -s CLAUDE.md AGENTS.md
+    CREATED+=("AGENTS.md -> CLAUDE.md")
+elif [ -e "AGENTS.md" ]; then
+    SKIPPED+=("AGENTS.md")
+fi
+
+# ============================================================
 # Output summary
 # ============================================================
 echo ""

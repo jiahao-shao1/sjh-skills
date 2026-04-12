@@ -13,6 +13,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 - `AGENTS.md` symlinked to `CLAUDE.md` for Codex project instruction discovery
 - Codex install section in both `README.md` and `README.zh-CN.md`
 
+### init-project
+
+#### Added
+- `AGENTS.md` → `CLAUDE.md` symlink creation in `init-skeleton.sh` for Codex compatibility
+- `AGENTS.md` entry in `skeleton-manifest.md`
+
 ## [1.4.0] - 2026-04-13
 
 ### hooks (new)
