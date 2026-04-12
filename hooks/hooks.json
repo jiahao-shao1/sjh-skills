@@ -1,0 +1,27 @@
+{
+  "description": "sjh-skills plugin hooks: knowledge archival reminders",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-knowledge-remind.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__cluster__remote_bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-knowledge-remind.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
