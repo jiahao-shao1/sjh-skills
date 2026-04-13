@@ -4,6 +4,16 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.6.1] - 2026-04-14
+
+### web-fetcher
+
+#### Changed
+- Replaced `fetch.py` script with pure SKILL.md guide — skill now operates entirely through instructions, no external scripts
+
+#### Removed
+- `scripts/fetch.py` — no longer needed
+
 ## [1.6.0] - 2026-04-14
 
 ### handoff (new)

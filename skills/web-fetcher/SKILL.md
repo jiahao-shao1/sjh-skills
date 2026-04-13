@@ -1,80 +1,77 @@
 ---
 name: web-fetcher
-description: "Fetch any URL as clean markdown. ALWAYS use this skill instead of the WebFetch tool when you need to read a URL's content — it has smart routing (known platforms → OpenCLI first, others → Jina Reader → defuddle.md → markdown.new → raw HTML) that produces better results and handles JS-rendered pages (Twitter/X, SPAs), login-required platforms (zhihu, reddit, weibo, xiaohongshu, bilibili), and complex web pages that WebFetch cannot parse. Invoke whenever the user provides a URL and wants to read, extract, summarize, analyze, or convert its content to markdown. Keywords: 'fetch page', 'read URL', 'grab content from', 'summarize article', 'extract text from webpage', '抓取网页', '读链接', '网页转 markdown'. NOT for: web search without URL, file downloads, screenshots, form filling, or accessibility checks."
+description: "Fetch any URL as clean markdown. Use instead of WebFetch for JS-rendered pages, login-required platforms (Twitter/X, zhihu, reddit, weibo, xiaohongshu, bilibili, etc.), and complex pages. Routes known platforms through OpenCLI (browser login state), others through Jina Reader / defuddle.md / markdown.new. Invoke when the user provides a URL to read, extract, summarize, or convert to markdown."
 ---
 
 # Web Fetcher
 
-Extract web page content as clean text/markdown from a given URL using a fallback chain of free services.
+Fetch any URL as clean markdown. Two paths: known platforms go through OpenCLI (uses browser login state), everything else falls back through a chain of free markdown services.
 
-## Usage
+## Strategy Overview
+
+1. **Known platforms** (Twitter/X, zhihu, reddit, weibo, xiaohongshu, bilibili, etc.) → OpenCLI first. It uses the user's browser login state, is deterministic, and costs zero LLM tokens.
+2. **Generic URLs** (blogs, docs, articles) → Jina Reader > defuddle.md > markdown.new > WebFetch.
+
+These are soft priorities — skip obviously wrong strategies (e.g., don't try OpenCLI for a random blog post, don't try Jina for a login-walled zhihu page).
+
+## Known Platform → OpenCLI Commands
+
+| URL Pattern | Command | Notes |
+|-------------|---------|-------|
+| `x.com/.../status/<id>` | `opencli twitter thread <id>` | Tweet threads |
+| `x.com/.../article/<id>` or `x.com/i/article/<id>` | `opencli twitter article <id>` | X Article long-form |
+| `zhihu.com/question/<id>` | `opencli zhihu question <id>` | |
+| `zhuanlan.zhihu.com/p/<id>` | `opencli zhihu download <full-url>` | |
+| `reddit.com/r/.../comments/...` | `opencli reddit read <full-url>` | |
+| `weibo.com/...` | `opencli weibo search <query>` | |
+| `xiaohongshu.com/...` | `opencli xiaohongshu download <id>` | |
+| `bilibili.com/video/BV...` | `opencli bilibili download <bvid>` | |
+
+## Dynamic Discovery
+
+The table above covers high-frequency platforms. OpenCLI supports 80+ platforms. For anything not listed:
 
 ```bash
-python3 <skill-path>/scripts/fetch.py <url>
+# See all supported platforms
+opencli --help
+
+# See subcommands for a specific platform
+opencli <platform> --help
 ```
 
-Save to file:
+## Generic Fallback Tools
 
-```bash
-python3 <skill-path>/scripts/fetch.py <url> -o output.md
-```
+For URLs that don't match a known platform, try these in order:
 
-## Smart Routing
+| Tool | How to Use | Strengths | Weaknesses |
+|------|-----------|-----------|------------|
+| Jina Reader | `curl -s -H "Accept: text/markdown" "https://r.jina.ai/<url>"` | Best markdown quality, JS support | 20 req/min free limit |
+| defuddle.md | `curl -s "https://defuddle.md/<url>"` | Good quality, by Obsidian creator | Undocumented limits |
+| markdown.new | `curl -s "https://markdown.new/<url>"` | Browser rendering fallback | 500 req/day |
+| WebFetch | Built-in tool, no curl needed | No setup needed | No JS rendering, poor on complex pages |
 
-The script detects known platforms and chooses the optimal strategy:
+## Decision Guide
 
-**Known platforms** (zhihu, twitter/x, reddit, weibo, xiaohongshu, bilibili):
-1. **OpenCLI** — deterministic commands with browser login state, zero LLM token cost
-2. Falls back to generic chain below if OpenCLI fails
+- **Known platform with login** → OpenCLI first
+- **Static article/blog** → Jina Reader first
+- **If a tool returns too-short content** (<500 chars) → likely an error page, try next tool in chain
+- **If Jina fails or is rate-limited** → defuddle → markdown.new → WebFetch
+- **If OpenCLI fails** → fall back to the generic chain above
 
-**Generic URLs**:
-1. **Jina Reader** (`r.jina.ai/{url}`) — best markdown quality, supports JS-rendered pages
-2. **defuddle.md** (`defuddle.md/{url}`) — by Obsidian creator @kepano
-3. **markdown.new** (`markdown.new/{url}`) — 3-layer strategy with browser rendering fallback
-4. **Raw HTML** — direct fetch as last resort
+## OpenCLI Setup
 
-## When to Use
-
-- JS-rendered pages that WebFetch can't handle (Twitter/X, SPAs)
-- Login-required pages on supported platforms (zhihu, reddit, twitter, weibo, xiaohongshu)
-- Bulk content extraction
-- When you need clean markdown instead of summarized content
-
-## OpenCLI Supported Platforms
-
-When free services fail, OpenCLI auto-detects the platform from URL and routes to the right command:
-
-| URL Pattern | OpenCLI Command |
-|-------------|----------------|
-| `zhihu.com/question/xxx` | `opencli zhihu question` |
-| `zhuanlan.zhihu.com/p/xxx` | `opencli zhihu download` |
-| `reddit.com/r/.../comments/...` | `opencli reddit read` |
-| `twitter.com/x.com/.../status/xxx` | `opencli twitter thread` |
-| `weibo.com/...` | `opencli weibo search` |
-
-Requires: `npm i -g @jackwener/opencli` + Browser Bridge extension in Chrome/Arc.
-
-## OpenCLI Setup (if not installed)
-
-If the script output contains "opencli not installed", guide the user through setup:
+If `opencli` is not installed:
 
 1. `npm i -g @jackwener/opencli`
-2. Download `opencli-extension.zip` from https://github.com/jackwener/opencli/releases
-3. Chrome → `chrome://extensions` → Enable Developer mode → Load unpacked → select unzipped folder
-4. Run `opencli doctor` to verify
+2. Download browser extension from https://github.com/jackwener/opencli/releases
+3. Chrome → `chrome://extensions` → Developer mode → Load unpacked → select unzipped folder
+4. `opencli doctor` to verify
 
-This is a one-time setup. After installation, known platform URLs will automatically use OpenCLI for fast, login-aware fetching.
+One-time setup. After installation, known platform URLs automatically use browser login state.
 
 ## Limitations
 
-- WeChat articles (微信公众号) not supported by any strategy
+- WeChat articles partially supported via `opencli weixin`; proxy may be needed for some URLs behind GFW
 - OpenCLI requires browser extension setup (one-time)
-
-## Rate Limits
-
-| Service | Limit |
-|---------|-------|
-| Jina Reader | 20 req/min (free), 10M token key available at jina.ai/reader |
-| markdown.new | 500 req/day/IP |
-| defuddle.md | Not documented |
-| OpenCLI | No documented limits (uses browser session) |
+- Jina Reader free tier: 20 req/min
+- markdown.new: 500 req/day/IP
