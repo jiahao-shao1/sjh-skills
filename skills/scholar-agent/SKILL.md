@@ -181,7 +181,14 @@ scholar-inbox status             # check if session is valid
 
 #### Phase A: Collect + Filter + Ingest [Dispatch Subagent in Background]
 
-Dispatch a subagent to execute the following steps, returning filtered results and ingestion status:
+Dispatch a subagent with **incremental output** — subagent must write results to a temp file after each step, so partial work survives if killed.
+
+**Subagent prompt must include:**
+```
+将每一步的结果增量写入 /tmp/scholar_inbox_results.json。
+每处理完一篇论文就更新文件，确保文件随时是有效 JSON。
+格式：{"papers": [...], "status": "in_progress|done", "last_updated": "ISO8601"}
+```
 
 **Step A1: Fetch Papers from Scholar Inbox (REST API)**
 
@@ -228,6 +235,8 @@ notebooklm source list  # check all sources are "ready" before asking questions
 ```
 
 Subagent returns: filtered paper list + classifications + ingestion status
+
+**If subagent is killed**: Read `/tmp/scholar_inbox_results.json` for partial results. Continue from where it stopped — don't restart from scratch.
 
 #### Phase B: Deep Reading [Main Context]
 
@@ -316,6 +325,23 @@ scholar-inbox rate-batch down 111 222    # batch downvote
 - Notebooks accumulate knowledge across sessions — papers added today can be queried tomorrow
 - Source limit: 50/notebook. Check with `notebooklm source list`. At 40+, warn user; at 50, create "Topic v2"
 - Process at most 10 new papers per run
+
+## Resilient Parallel Research
+
+当需要多 agent 并行调研（如文献综述、领域调研）时，遵循以下模式防止全军覆没：
+
+1. **最多 2-3 个并行 agent**，不要 5+（越多越容易被 kill）
+2. **每个 agent 必须增量写文件**：`/tmp/research_{agent_name}.md`，每处理完一个 source 就更新
+3. **文件随时可用**：写入的 markdown 必须是完整的（不是半截 JSON），即使中断也能直接读
+4. **merge step 兼容 partial**：最终合并时读所有 `/tmp/research_*.md`，有多少用多少
+5. **记录缺口**：如果某个 agent 没产出，在报告中标注"未覆盖：XXX 方向"
+
+示例 agent prompt：
+```
+研究 [方向]。每分析完一篇论文，立即追加到 /tmp/research_[方向].md。
+文件格式：每篇论文一个 ## 标题，包含要点和相关性评估。
+确保文件随时是完整可读的 markdown。
+```
 
 ## Constraints
 

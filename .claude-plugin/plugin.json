@@ -1,7 +1,7 @@
 {
   "name": "sjh-skills",
-  "description": "Personal skills: scholar-inbox, web-fetcher, cmux, codex-review, daily-summary, init-project, notion-lifeos, paper-analyzer, project-review, experiment-registry",
-  "version": "1.5.2",
+  "description": "Personal skills: scholar-agent, web-fetcher, cmux, codex-review, daily-summary, init-project, notion-lifeos, paper-analyzer, project-review, experiment-registry, handoff, sync-docs",
+  "version": "1.6.0",
   "author": {
     "name": "Jiahao Shao"
   },

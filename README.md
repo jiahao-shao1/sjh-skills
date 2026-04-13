@@ -19,6 +19,8 @@ English | [中文](README.zh-CN.md)
 | [codex-review](skills/codex-review/) | Cross-model review — send your plan or code diff to OpenAI Codex for independent verification, iterative Claude↔Codex feedback until approved (max 5 rounds) |
 | [paper-analyzer](skills/paper-analyzer/) | Deep critical paper analysis — causal chain methodology (现象→实验设置→归因→解法), NotebookLM-grounded reading, optional research framework mapping |
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
+| [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
+| [sync-docs](skills/sync-docs/) | Documentation sync checker — scans recent code changes and reports which docs (knowledge base, registry, CLAUDE.md, rules, README) need updating. Report only, no auto-modify |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **On Hold** — Obsidian Second Brain with dual-zone vault. Paused in favor of enhancing notion-lifeos with reflection commands |
 
 ## Install
@@ -81,7 +83,9 @@ sjh_skills/
     ├── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
     ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
     ├── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
-    └── experiment-registry/   # ML experiment registry with YAML + CLI
+    ├── experiment-registry/   # ML experiment registry with YAML + CLI
+    ├── handoff/               # Session handoff summary for context continuity
+    └── sync-docs/             # Documentation sync checker (report only)
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.

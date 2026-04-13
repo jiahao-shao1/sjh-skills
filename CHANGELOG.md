@@ -4,6 +4,24 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.6.0] - 2026-04-14
+
+### handoff (new)
+
+#### Added
+- Session handoff summary skill — prints structured context (status, decisions, pitfalls, next steps) directly in conversation for seamless session continuity
+
+### sync-docs (new)
+
+#### Added
+- Documentation sync checker — scans recent code changes and reports which docs need updating (knowledge base, experiment registry, CLAUDE.md, rules, README). Report only, no auto-modify
+
+### scholar-agent
+
+#### Added
+- Phase A subagent incremental write to `/tmp/scholar_inbox_results.json` — each paper updates the file immediately, ensuring valid JSON at all times
+- "Resilient Parallel Research" pattern — 2-3 parallel agents with incremental file writes, merge step compatible with partial results, coverage gap reporting
+
 ## [1.5.2] - 2026-04-13
 
 ### codex-review
