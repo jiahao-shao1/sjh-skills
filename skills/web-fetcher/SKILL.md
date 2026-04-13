@@ -18,7 +18,7 @@ These are soft priorities — skip obviously wrong strategies (e.g., don't try O
 
 | URL Pattern | Command | Notes |
 |-------------|---------|-------|
-| `x.com/.../status/<id>` | `opencli twitter thread <id>` | Tweet threads |
+| `x.com/.../status/<id>` | `opencli twitter thread <id>` | Tweet threads. If the result is just a t.co link (very short text), the tweet likely links to an X Article — retry with `opencli twitter article <same-id>` |
 | `x.com/.../article/<id>` or `x.com/i/article/<id>` | `opencli twitter article <id>` | X Article long-form |
 | `zhihu.com/question/<id>` | `opencli zhihu question <id>` | |
 | `zhuanlan.zhihu.com/p/<id>` | `opencli zhihu download <full-url>` | |
