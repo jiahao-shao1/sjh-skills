@@ -103,5 +103,5 @@ count=$((count + 1))
 echo "$count" > "$STATE_FILE"
 echo "$now" >> "$STATE_FILE"
 
-# PostToolUse hooks must output JSON with systemMessage
-printf '{"systemMessage": "<knowledge-hint>\\n%s\\n</knowledge-hint>"}\n' "$MSG"
+# PostToolUse hooks must output JSON with action + systemMessage
+printf '{"action": "allow", "systemMessage": "<knowledge-hint>\\n%s\\n</knowledge-hint>"}\n' "$MSG"

@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.6.2] - 2026-04-14
+
+### hooks
+
+#### Fixed
+- `post-knowledge-remind`: add missing `"action": "allow"` field to PostToolUse hook JSON output
+
 ## [1.6.1] - 2026-04-14
 
 ### web-fetcher
