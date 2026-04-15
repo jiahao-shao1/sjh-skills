@@ -12,5 +12,6 @@ Checklist items (detect based on directories that actually exist in the project)
 3. **Project instructions** — Does the `CLAUDE.md` index table cover all knowledge files?
 4. **Rules** — Are there new hard constraints to codify in `.claude/rules/`?
 5. **README** — Does the project README match the current code structure?
+6. **Strategy docs** *(only if `docs/strategy/` exists)* — Do vision, roadmap, or paper-outline reflect recent changes? Compare `git log` activity against strategy doc last-modified dates. Flag docs that haven't been updated in 5+ commits of relevant code changes. Pair with `/project-review` for full strategic analysis.
 
 Output a checklist marking each item as "needs update" or "up to date". Report only — do NOT auto-modify.

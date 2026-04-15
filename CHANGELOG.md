@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.6.3] - 2026-04-15
+
+### sync-docs
+
+#### Added
+- Strategy docs checklist item — when `docs/strategy/` exists, checks if vision/roadmap/paper-outline are stale relative to recent commits. Suggests pairing with `/project-review` for full analysis
+
 ## [1.6.2] - 2026-04-14
 
 ### hooks
