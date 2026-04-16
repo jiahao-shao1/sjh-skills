@@ -128,3 +128,51 @@ class TestUpdate:
         assert result.exit_code == 0
         exp = yaml.safe_load((tmp_path / "experiments" / "exp01.yaml").read_text())
         assert "works great" in exp["findings"]
+
+
+class TestValidate:
+    def test_validate_clean_registry(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(app, ["validate"])
+        assert result.exit_code == 0
+        assert "OK" in result.stdout or "all experiments valid" in result.stdout
+
+    def test_validate_detects_missing_eval_mode(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bad = yaml.safe_load((tmp_path / "experiments" / "exp01.yaml").read_text())
+        bad["benchmarks"] = [{"dataset": "mmlu", "steps": {0: {"acc": 0.5}}}]
+        (tmp_path / "experiments" / "exp01.yaml").write_text(yaml.dump(bad))
+        result = runner.invoke(app, ["validate"])
+        assert result.exit_code == 0
+        assert "missing eval_mode" in result.stdout
+
+    def test_validate_detects_filename_mismatch(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bad = yaml.safe_load((tmp_path / "experiments" / "exp01.yaml").read_text())
+        bad["id"] = "wrong_id"
+        (tmp_path / "experiments" / "exp01.yaml").write_text(yaml.dump(bad))
+        result = runner.invoke(app, ["validate"])
+        assert "!= id" in result.stdout
+
+    def test_validate_strict_exits_nonzero(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bad = yaml.safe_load((tmp_path / "experiments" / "exp01.yaml").read_text())
+        bad["status"] = "weird_status"
+        (tmp_path / "experiments" / "exp01.yaml").write_text(yaml.dump(bad))
+        result = runner.invoke(app, ["validate", "--strict"])
+        assert result.exit_code == 1
+
+    def test_validate_json_output(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        bad = yaml.safe_load((tmp_path / "experiments" / "exp01.yaml").read_text())
+        bad["benchmarks"] = [{"dataset": "mmlu"}]
+        (tmp_path / "experiments" / "exp01.yaml").write_text(yaml.dump(bad))
+        result = runner.invoke(app, ["validate", "--json"])
+        assert result.exit_code == 0
+        report = json.loads(result.stdout)
+        assert any(e["id"] == "exp01" for e in report)

@@ -4,6 +4,17 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.7.0] - 2026-04-17
+
+### experiment-registry
+
+#### Added
+- `exp validate` command — checks filename/id consistency, required fields, known statuses/types, series prefix, date format, and benchmark dataset/eval_mode/steps shape. Supports `--strict` (non-zero exit on issues) and `--json` for CI integration
+- Tests covering clean registry, missing `eval_mode`, filename mismatch, strict exit, and JSON output
+
+#### Changed
+- Bumped `exp-registry` package version to 0.2.0
+
 ## [1.6.4] - 2026-04-17
 
 ### experiment-registry

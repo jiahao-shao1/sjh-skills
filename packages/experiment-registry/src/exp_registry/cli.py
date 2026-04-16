@@ -312,5 +312,90 @@ def update(
     console.print(f"Updated: [cyan]{out_path}[/cyan]")
 
 
+@app.command()
+def validate(
+    strict: bool = typer.Option(False, "--strict", help="Exit non-zero on any issue"),
+    json_output: bool = typer.Option(False, "--json", help="JSON output"),
+):
+    """Validate all experiments against schema conventions.
+
+    Checks:
+    - filename matches id
+    - required fields present (id, name, type, series, date, status)
+    - status / type in known sets
+    - series matches id prefix
+    - date is YYYY-MM-DD
+    - benchmarks have required dataset + eval_mode
+    - benchmarks.steps is a dict
+    """
+    import re
+    from exp_registry.models import KNOWN_STATUSES, REQUIRED_FIELDS
+
+    registry_dir = _get_registry_dir()
+    known_types = {"rl", "sft", "benchmark", "data"}
+    report = []
+    for fname in sorted(os.listdir(registry_dir)):
+        if not fname.endswith((".yaml", ".yml")):
+            continue
+        path = os.path.join(registry_dir, fname)
+        stem = os.path.splitext(fname)[0]
+        issues = []
+        try:
+            with open(path) as fh:
+                data = yaml.safe_load(fh)
+        except Exception as e:
+            report.append({"id": stem, "issues": [f"YAML parse error: {e}"]})
+            continue
+        if not isinstance(data, dict):
+            report.append({"id": stem, "issues": ["not a dict"]})
+            continue
+
+        eid = data.get("id", stem)
+        if eid != stem:
+            issues.append(f"filename '{stem}' != id '{eid}'")
+        missing = [k for k in REQUIRED_FIELDS if not data.get(k)]
+        if missing:
+            issues.append(f"missing required fields: {missing}")
+        if data.get("status") and data["status"] not in KNOWN_STATUSES:
+            issues.append(f"unknown status: {data['status']}")
+        if data.get("type") and data["type"] not in known_types:
+            issues.append(f"unknown type: {data['type']}")
+        m = re.match(r"(exp\d+)", eid)
+        inferred_series = m.group(1) if m else None
+        if inferred_series and data.get("series") and data["series"] != inferred_series:
+            issues.append(f"series '{data['series']}' != inferred '{inferred_series}'")
+        d = data.get("date")
+        if d and not re.match(r"^\d{4}-\d{2}-\d{2}$", str(d)):
+            issues.append(f"bad date format: {d}")
+        for i, b in enumerate(data.get("benchmarks") or []):
+            if not isinstance(b, dict):
+                issues.append(f"benchmarks[{i}] not a dict")
+                continue
+            if "dataset" not in b:
+                issues.append(f"benchmarks[{i}] missing dataset")
+            if "eval_mode" not in b:
+                issues.append(f"benchmarks[{i}] missing eval_mode")
+            steps = b.get("steps")
+            if steps is not None and not isinstance(steps, dict):
+                issues.append(f"benchmarks[{i}].steps not a dict")
+        if issues:
+            report.append({"id": eid, "issues": issues})
+
+    if json_output:
+        typer.echo(json.dumps(report, ensure_ascii=False, indent=2, default=str))
+    else:
+        if not report:
+            console.print("[green]OK[/green] — all experiments valid.")
+        else:
+            for entry in report:
+                console.print(f"\n[red]●[/red] {entry['id']}")
+                for issue in entry["issues"]:
+                    console.print(f"   - {issue}")
+            console.print(f"\n[yellow]{len(report)}[/yellow] experiment(s) with issues.")
+
+    if report and strict:
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
