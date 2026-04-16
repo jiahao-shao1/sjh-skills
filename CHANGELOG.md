@@ -4,6 +4,16 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.6.4] - 2026-04-17
+
+### experiment-registry
+
+#### Added
+- `data_ready` as a known status in `KNOWN_STATUSES`, for experiments whose data is generated but not yet benchmarked
+
+#### Changed
+- Bumped `exp-registry` package version to 0.1.1
+
 ## [1.6.3] - 2026-04-15
 
 ### sync-docs

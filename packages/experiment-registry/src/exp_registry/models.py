@@ -8,7 +8,7 @@ import yaml
 
 
 REQUIRED_FIELDS = {"id", "name", "type", "series", "date", "status"}
-KNOWN_STATUSES = {"running", "completed", "failed", "abandoned"}
+KNOWN_STATUSES = {"running", "completed", "failed", "abandoned", "data_ready"}
 
 
 def infer_series(exp_id: str) -> str:
