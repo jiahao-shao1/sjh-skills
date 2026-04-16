@@ -60,7 +60,7 @@ Remove symlinks:
 
 ```bash
 for skill in ~/.agents/skills/*; do
-  [ "$(readlink "$skill")" = *"sjh-skills"* ] && rm "$skill"
+  case "$(readlink "$skill")" in *sjh-skills*) rm "$skill" ;; esac
 done
 ```
 
