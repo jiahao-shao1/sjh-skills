@@ -2,7 +2,7 @@
 
 ## Probe Commands
 
-Issue **1** `remote_bash` call per node, concatenating all probes with separator markers. Call all nodes in parallel within a single message to maximize throughput.
+Issue **1** `rca exec` call per node, concatenating all probes with separator markers. Call all nodes in parallel within a single message to maximize throughput.
 
 ```bash
 echo '===GPU==='; nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null || echo 'NVIDIA_ERROR'; echo '===DISK==='; df -h / /home 2>/dev/null | grep -vE 'tmpfs|Filesystem' ; echo '===TMUX==='; tmux list-sessions 2>/dev/null || echo 'NO_SESSIONS'; echo '===PROCS==='; nvidia-smi --query-compute-apps=pid,used_memory,name --format=csv,noheader,nounits 2>/dev/null || echo 'NO_PROCESSES'; echo '===LOAD==='; uptime
@@ -82,7 +82,7 @@ Highest score wins. On tie, prefer the node with more free disk. If all nodes ar
 
 | Situation | Action |
 |-----------|--------|
-| `remote_bash` timeout | Mark node as `UNREACHABLE`, continue scanning others |
+| `rca exec` timeout | Mark node as `UNREACHABLE`, continue scanning others |
 | `NVIDIA_ERROR` | GPU info marked `N/A`, exclude from recommendation |
 | Disk > 90% | Add warning marker to disk column |
 | All nodes full | Recommendation says "No idle nodes, suggest waiting or freeing resources" |

@@ -1,3 +1,11 @@
+# Local state (never commit)
 reference/context.local.md
+
+# Python legacy (pre-0.4.0)
 .venv/
 __pycache__/
+
+# Go build artifacts
+/rca
+*.test
+*.out

@@ -4,6 +4,42 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.8.1] - 2026-04-18
+
+### remote-cluster-agent
+
+**File transfer & agent deploy bug fixes** (bumps skill VERSION `0.4.0` → `0.4.1`)
+
+#### Fixed
+- `rca cp` now resolves relative local paths against the user's shell cwd before sending to the daemon. Previously the daemon's own cwd was used, causing `open xxx: no such file or directory` for any relative path.
+- `rca cp` success messages (`uploaded ...`, `downloaded ...`) now end with a newline, so subsequent command output no longer concatenates onto the same line.
+- `rca agent deploy` no longer hangs on active nodes under tunneled SSH. When the agent is reachable through the daemon, the deploy now uploads via the existing agent channel (`/exec` mkdir + `/transfer` + `/exec` chmod +x) instead of spawning an SSH subprocess. SSH remains as a fallback for brand-new nodes and is bounded by context timeouts (30s mkdir / 60s write) so dead or wedged nodes can't block the rest of the deploy.
+
+## [1.8.0] - 2026-04-18
+
+### remote-cluster-agent
+
+**Architecture: MCP server → Go daemon + `rca` CLI** (bumps skill VERSION `0.3.0` → `0.4.0`)
+
+#### Breaking
+- Python MCP server replaced with a local Go daemon + `rca` CLI. Tool rename: `remote_bash(node, cmd)` → `rca exec -n <node> "<cmd>"`; `remote_bash_batch` → `rca batch`.
+- Config moved from two-layer markdown (`~/.config/remote-cluster-agent/context.local.md` + `<project>.md`) to a single TOML (`~/.config/rca/config.toml`). `rca config init` auto-detects and migrates the legacy markdown.
+- Removed: `mcp-server/`, `reference/context.template.md`, `reference/project.template.md`.
+
+#### Added
+- `cmd/rca/` + `internal/` — Go daemon with lazy-start, connection pool, Unix socket HTTP server, node health monitor.
+- `rca exec` / `rca batch` / `rca cp` / `rca nodes` / `rca connect` / `rca disconnect` / `rca agent check|deploy` / `rca daemon start|stop|status|logs|register` / `rca config init|show|edit`.
+- `rca cp` — file transfer via the agent's JSON-Lines channel (base64, 50 MB/file). Works with any SSH transport.
+- `rca nodes --check` / `--health` — deep latency probe and per-node latency history.
+- Node health monitor — daemon periodically pings connected nodes (default 30s), tracks latency in a ring buffer (60 samples), flags degradation (>200ms absolute or >3× median), optional auto-reconnect.
+- `rca daemon register` — optional launchd auto-start on macOS.
+- Agent protocol v2.1 (`cluster-agent/agent.py` bumped `1.0.0` → `2.1.0`): streaming output, command cancellation, batch execution, file read/write through the agent channel.
+- Mutagen troubleshooting: container-restart recovery (`~/.mutagen` symlink fix for `server magic number incorrect`).
+
+#### Fixed
+- MCP stdio drops eliminated entirely — the AI agent interacts with the daemon through CLI invocations, so there are no more MCP progress-notification races.
+- Multi-session SSH explosion — N agent sessions × M nodes collapses to 1 daemon × M persistent connections.
+
 ## [1.7.0] - 2026-04-17
 
 ### experiment-registry
