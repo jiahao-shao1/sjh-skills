@@ -15,7 +15,7 @@
 | [web-fetcher](skills/web-fetcher/) | 网页 → 干净 Markdown，5 层 fallback：Jina Reader → defuddle.md → markdown.new → OpenCLI（带登录态的平台适配） → 原始 HTML |
 | [init-project](skills/init-project/) | 初始化 Claude Code 项目配置 —— CLAUDE.md 骨架、Agent 模板、研究 profile |
 | [project-review](skills/project-review/) | 项目战略全景审视 —— 自动发现战略文档，生成五维分析快照（vision、roadmap、瓶颈、related work、下一步） |
-| [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，远程 ~0.1s 延迟执行命令，持久 SSH Agent 连接，集群健康巡检 |
+| [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，通过 Go daemon + `rca` CLI（exec / batch / cp / nodes）远程执行，持久 SSH 连接池，节点健康监控 |
 | [codex-review](skills/codex-review/) | 跨模型审查 —— 将计划或代码 diff 发送给 OpenAI Codex 独立验证，Claude↔Codex 迭代反馈直到通过（最多 5 轮） |
 | [paper-analyzer](skills/paper-analyzer/) | 论文深度批判分析 —— 因果链方法论（现象→实验设置→归因→解法），NotebookLM 溯源阅读，可选研究框架映射 |
 | [experiment-registry](skills/experiment-registry/) | ML 实验生命周期管理 —— 结构化 YAML 注册表 + CLI，支持实验注册、Benchmark 记录、跨实验对比、状态追踪 |
@@ -78,7 +78,7 @@ sjh_skills/
     ├── web-fetcher/       # 5 层 fallback 网页内容提取
     ├── init-project/      # Claude Code 项目初始化和骨架搭建
     ├── project-review/    # 五维战略审视快照
-    ├── remote-cluster-agent/ # 远程 GPU 集群操作，持久 SSH Agent
+    ├── remote-cluster-agent/ # 远程 GPU 集群操作，Go daemon + rca CLI
     ├── codex-review/          # 跨模型计划/代码审查，OpenAI Codex
     ├── paper-analyzer/        # 论文深度批判分析，因果链方法论
     ├── experiment-registry/   # ML 实验注册表，YAML + CLI

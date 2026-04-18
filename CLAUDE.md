@@ -7,19 +7,27 @@ A collection of Claude Code skills for research workflow automation. Each skill 
 ```
 sjh_skills/
 ├── skills/
-│   ├── scholar-agent/     # Scholar Inbox + NotebookLM deep reading
-│   ├── cmux/              # Ghostty terminal orchestration + multi-agent
-│   ├── daily-summary/     # Git + Claude sessions + Notion aggregation
-│   ├── notion-lifeos/     # PARA method + Make Time via Notion API
-│   ├── web-fetcher/       # 5-layer fallback web content extraction
-│   ├── init-project/      # Claude Code project initialization
-│   ├── project-review/    # 5-dimension strategy review snapshot
-│   ├── remote-cluster-agent/ # Remote GPU cluster ops via persistent SSH agent
-│   ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
-│   └── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
-├── CHANGELOG.md           # Version history (must be updated on every change)
-├── README.md              # English
-└── README.zh-CN.md        # Chinese
+│   ├── scholar-agent/        # Scholar Inbox + NotebookLM deep reading
+│   ├── cmux/                 # Ghostty terminal orchestration + multi-agent
+│   ├── daily-summary/        # Git + Claude sessions + Notion aggregation
+│   ├── notion-lifeos/        # PARA method + Make Time via Notion API
+│   ├── web-fetcher/          # 5-layer fallback web content extraction
+│   ├── init-project/         # Claude Code project initialization
+│   ├── project-review/       # 5-dimension strategy review snapshot
+│   ├── remote-cluster-agent/ # Remote GPU cluster ops via Go daemon + rca CLI
+│   ├── codex-review/         # Cross-model plan/code review via OpenAI Codex
+│   ├── paper-analyzer/       # Deep critical paper analysis with causal chain methodology
+│   ├── experiment-registry/  # ML experiment registry with YAML + CLI
+│   ├── handoff/              # Session handoff summary for context continuity
+│   ├── sync-docs/            # Documentation sync checker (report only)
+│   └── obsidian-brain/       # ⏸️ On hold — Obsidian dual-zone vault
+├── packages/                 # Pip-installable packages (e.g. exp-registry)
+├── hooks/                    # Plugin PostToolUse hooks (e.g. post-knowledge-remind)
+├── .claude-plugin/           # Plugin manifest and marketplace config
+├── .codex/                   # Codex CLI install instructions
+├── CHANGELOG.md              # Version history (must be updated on every change)
+├── README.md                 # English
+└── README.zh-CN.md           # Chinese
 ```
 
 ## Conventions
