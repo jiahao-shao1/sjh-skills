@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.9.0] - 2026-04-19
+
+### context-audit
+
+#### Added
+- New skill that audits the three-layer context architecture (`CLAUDE.md` / `.claude/rules/` / `docs/knowledge/`) for progressive disclosure compliance
+- Cross-references knowledge files against rule files to detect orphaned knowledge, stale references, and CLAUDE.md index leakage
+- Read-only report output with coverage summary, orphan list, stale-reference table, and optional fix suggestions — never auto-applies changes
+
 ## [1.8.1] - 2026-04-18
 
 ### remote-cluster-agent

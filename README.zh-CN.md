@@ -21,6 +21,7 @@
 | [experiment-registry](skills/experiment-registry/) | ML 实验生命周期管理 —— 结构化 YAML 注册表 + CLI，支持实验注册、Benchmark 记录、跨实验对比、状态追踪 |
 | [handoff](skills/handoff/) | Session 交接摘要 —— 在对话中直接打印结构化上下文摘要（状态、决策、坑、下一步），无缝衔接下个 session |
 | [sync-docs](skills/sync-docs/) | 文档同步检查 —— 扫描近期代码变更，报告哪些文档（知识库、注册表、CLAUDE.md、规则、README）需要更新。只报告，不自动改 |
+| [context-audit](skills/context-audit/) | Context 管理体检 —— 审计三层架构（CLAUDE.md / rules / knowledge）的渐进式披露合规性，检测孤立的 knowledge 文件、失效引用、CLAUDE.md 索引泄漏。只读 |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **暂停** — Obsidian 第二大脑，双区 Vault 设计。已转向在 notion-lifeos 中增加反思命令 |
 
 ## 安装
@@ -83,7 +84,8 @@ sjh_skills/
     ├── paper-analyzer/        # 论文深度批判分析，因果链方法论
     ├── experiment-registry/   # ML 实验注册表，YAML + CLI
     ├── handoff/               # Session 交接摘要，上下文无缝衔接
-    └── sync-docs/             # 文档同步检查（只报告）
+    ├── sync-docs/             # 文档同步检查（只报告）
+    └── context-audit/         # 渐进式披露合规审计（CLAUDE.md / rules / knowledge）
 ```
 
 每个 skill 都是独立的，包含 `SKILL.md`、`scripts/` 和 `references/`。可以单独安装，也可以作为合集安装。

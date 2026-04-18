@@ -20,6 +20,7 @@ sjh_skills/
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
 │   ├── sync-docs/            # Documentation sync checker (report only)
+│   ├── context-audit/        # Progressive disclosure compliance audit
 │   └── obsidian-brain/       # ⏸️ On hold — Obsidian dual-zone vault
 ├── packages/                 # Pip-installable packages (e.g. exp-registry)
 ├── hooks/                    # Plugin PostToolUse hooks (e.g. post-knowledge-remind)
