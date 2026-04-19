@@ -4,6 +4,29 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.10.1] - 2026-04-19
+
+### remote-cluster-agent
+
+#### Fixed
+- `SKILL.md` frontmatter failed YAML parsing in Codex (`mapping values are not allowed in this context at line 2 column 319`). The unquoted `description` contained `: ` sequences such as `Trigger words: cluster`, which YAML interpreted as nested mappings. Wrapped the description in double quotes and replaced inner `: ` with ` — `, matching `scholar-agent`'s convention
+
+## [1.10.0] - 2026-04-19
+
+### init-project
+
+#### Added
+- `post-knowledge-remind.sh` — new PostToolUse hook (Bash matcher) that nudges capturing debugging experience into `docs/knowledge/` when a command exits non-zero. Frequency-limited (max 3 per session, 5-minute cooldown) and outputs `systemMessage` JSON
+- Agent frontmatter fields documented and applied to generated agents: `memory` (`project` / `session`), `permissionMode` (`bypassPermissions` / `plan` / `default`), `maxTurns` (bounded execution)
+- Chain-hints pattern in `details/agent-templates.md` — upstream agents can point at downstream agents in their `## Notes` section so the orchestrator routes output correctly
+
+#### Changed
+- Progressive disclosure redesign — dropped the centralized "Knowledge Quick Reference" and "Progressive References" tables in `CLAUDE.md` in favor of inline references inside each `.claude/rules/` file, so knowledge surfaces at the point of need instead of being buried in a lookup table
+- Experiment registry switched from markdown `docs/knowledge/experiments.md` to YAML `docs/experiment-registry/registry/*.yaml` managed by the `exp-registry` CLI (`pip install exp-registry`)
+- HANDOFF mode now points users at the `/handoff` skill (in-conversation summary) instead of writing a `HANDOFF.md` file
+- Generated agents ship with explicit permission modes: `code-verifier` → `permissionMode: bypassPermissions` + `maxTurns: 15`; `planner` and `domain-expert` → `permissionMode: plan`; `domain-expert` also gets `memory: project`
+- `.claude/settings.json` now registers a `Bash`-matcher PostToolUse hook for knowledge reminders alongside the existing `Edit|Write` matchers
+
 ## [1.9.0] - 2026-04-19
 
 ### context-audit

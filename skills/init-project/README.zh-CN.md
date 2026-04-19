@@ -48,9 +48,11 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 | 文件 | 说明 |
 |------|------|
 | `.claude/hooks/auto-format-python.sh` | 编辑 `.py` 后自动 `ruff format` + `ruff check --fix` |
-| `.claude/agents/code-verifier.md` | 提交前质量关卡 — ruff lint/format + pytest |
-| `.claude/agents/planner.md` | 代码库研究，用于 brainstorming/planning 阶段 |
-| `.claude/settings.json` | PostToolUse hook 注册 |
+| `.claude/hooks/guard-critical-edit.sh` | 修改关键目录时告警（目录列表可定制） |
+| `.claude/hooks/post-knowledge-remind.sh` | Bash 命令非 0 退出时提醒沉淀调试经验（频率受限） |
+| `.claude/agents/code-verifier.md` | 提交前质量关卡 — ruff lint/format + pytest（`permissionMode: bypassPermissions`, `maxTurns: 15`） |
+| `.claude/agents/planner.md` | 代码库研究，用于 brainstorming/planning 阶段（`permissionMode: plan`） |
+| `.claude/settings.json` | PostToolUse hook 注册（`Edit`/`Write` + `Bash` matcher） |
 | `CLAUDE.md` | 项目说明骨架（含占位符待填充） |
 
 ### Phase 2: 交互式填充 CLAUDE.md
@@ -70,7 +72,7 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 | Always Do（项目特定） | 读已有 rules/、lint 配置 | "有哪些跨模块一致性要求？" |
 | Ask First | 扫描核心文件（接口、配置） | "哪些文件/目录修改前必须先确认？" |
 | Never Do | 检测 third_party/、.env | "有哪些绝对不能碰的约定？" |
-| 渐进式参考 | 扫描 docs/、skills、agents | "还有需要补充的任务→参考文件映射吗？" |
+| 渐进式披露 | 扫描 docs/knowledge/ + .claude/rules/ | "是否有 knowledge 文件缺对应的 rule？是否需要补充内联引用？" |
 
 用户可回复 **"skip"** 跳过任意 section，保留占位符。
 
@@ -82,8 +84,8 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 
 Research profile 额外添加：
 - `docs/reports/weekly/`、`docs/reports/worktree/`、`docs/plans/` 目录
-- `docs/knowledge/experiments.md` — 实验注册表（日期、配置、三级路径、结果）
-- `.claude/agents/domain-expert.md` — 领域专家 Agent 骨架
+- `docs/experiment-registry/registry/` — 基于 YAML 的实验注册表，由 `exp-registry` CLI 管理（`pip install exp-registry`）
+- `.claude/agents/domain-expert.md` — 领域专家 Agent 骨架（`memory: project`、`permissionMode: plan`）
 - CLAUDE.md 追加研究相关 section
 
 新 profile 通过 `scripts/init-<profile>-profile.sh` + `details/<profile>-profile.md` 添加。
@@ -98,11 +100,11 @@ Research profile 额外添加：
 
 ### code-verifier (haiku)
 
-提交前质量检查。识别变更的 `.py` 文件，运行 `ruff check --fix` + `ruff format`，然后 `pytest`。以结构化表格报告结果，**不会**自行修复测试失败。
+提交前质量检查。识别变更的 `.py` 文件，运行 `ruff check --fix` + `ruff format`，然后 `pytest`。以结构化表格报告结果，**不会**自行修复测试失败。使用 `permissionMode: bypassPermissions` + `maxTurns: 15`，无需人工确认即可自动执行。
 
 ### planner (opus)
 
-只读的代码库研究工具，服务于 `/brainstorming` 和 `/writing-plans` 工作流。系统性搜索代码，输出结构化发现（相关文件、现有模式、建议、风险点）。
+只读的代码库研究工具，服务于 `/brainstorming` 和 `/writing-plans` 工作流。系统性搜索代码，输出结构化发现（相关文件、现有模式、建议、风险点）。使用 `permissionMode: plan`（只读，不会修改代码）。
 
 ## 约束
 

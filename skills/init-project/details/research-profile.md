@@ -25,8 +25,9 @@ The research profile adds research-project-specific structure on top of the base
 
 | Path | Content |
 |------|---------|
-| `docs/knowledge/experiments.md` | Experiment registry template (date, config, three-tier paths, results) |
-| `.claude/agents/domain-expert.md` | Domain expert agent scaffold (user fills in expertise) |
+| `docs/experiment-registry/README.md` | Experiment registry guide (YAML-based, managed by `exp-registry` CLI) |
+| `docs/experiment-registry/registry/` | Directory for per-experiment YAML files |
+| `.claude/agents/domain-expert.md` | Domain expert agent scaffold (`memory: project`, `permissionMode: plan`) |
 | `docs/strategy/vision.md` | Project vision template |
 | `docs/strategy/roadmap.md` | Milestones and phases template |
 | `docs/strategy/decisions/log.md` | Decision log format and template |
@@ -34,39 +35,38 @@ The research profile adds research-project-specific structure on top of the base
 ### CLAUDE.md Appended Content
 
 Appends an "Extended Configuration" section to the end of CLAUDE.md:
-- Agent listing table
-- Knowledge file listing table
+- Agent listing table (with permissionMode column)
+- Experiment registry pointer (YAML-based, `exp-registry` CLI)
 - Project Strategy document listing with `docs/strategy/` pointers
 
-## Experiment Registry Format
+## Experiment Registry
 
-Append an entry to `docs/knowledge/experiments.md` for each new experiment:
+Experiments are managed via the `exp-registry` CLI tool (`pip install exp-registry`), not manual markdown.
 
-```markdown
-## Experiment Name
+```bash
+# Register a new experiment
+exp register --name exp01a --hypothesis "..." --config "..."
 
-- **Date**: YYYY-MM-DD ~ YYYY-MM-DD
-- **Config**: Brief config summary
-- **Paths**:
-  - Cluster: /path/on/cluster
-  - OSS: oss://bucket/path
-  - Local: outputs/path
-- **Key Results**:
-  - Metric 1: value
-  - Metric 2: value
-- **Conclusion**: One-line summary
+# List all experiments
+exp list
+
+# Update status
+exp update exp01a --status completed --results "metric=value"
 ```
 
-The three-tier paths (cluster/OSS/local) track data location for easy sync and lookup.
+YAML files are stored in `docs/experiment-registry/registry/`, one per experiment.
 
 ## Domain Expert Agent
 
 `domain-expert.md` is a scaffold that users fill in per project:
 
 - `description`: Domain expertise description
+- `memory: project`: Retains cross-session diagnostic context
+- `permissionMode: plan`: Read-only research, no code modifications
 - When to use: Trigger scenarios
 - Focus directories: Code locations to research
 - Domain knowledge: Key constraints, interface contracts, historical lessons
+- Chain hints: If output feeds another agent, note the downstream agent
 
 Typically a research project has 1–3 domain expert agents (e.g., rl-training-expert, data-pipeline-expert).
 

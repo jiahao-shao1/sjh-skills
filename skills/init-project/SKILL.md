@@ -40,8 +40,7 @@ Automatically configure Claude Code best practices for new projects: directory s
 | Always Do (project-specific) | Read rules/, lint config | "Any cross-module consistency requirements?" |
 | Ask First | Scan core files (interfaces, config) | "Which files/dirs require confirmation before modifying?" |
 | Never Do | Detect third_party/, .env | "Any absolute don't-touch conventions?" |
-| Knowledge quick reference | Scan docs/knowledge/ | Auto-generate scenario→file mapping table |
-| Progressive references | Scan docs/, skills, agents | "Any additional task→reference file mappings to add?" |
+| Progressive disclosure setup | Scan docs/knowledge/ + .claude/rules/ | Ensure rules reference knowledge files inline; ask about missing refs |
 
 ## Constraints
 

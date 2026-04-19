@@ -261,55 +261,39 @@ Press Enter to skip / type additional items.
 
 ---
 
-## Section: Knowledge Quick Reference
+## Section: Progressive Disclosure Setup
 
 ### Auto-exploration
 
 ```
 List: all .md files in docs/knowledge/
-Read: first 5 lines of each to extract domain topic
+List: all .md files in .claude/rules/
+Map: which knowledge files are already referenced by which rules
 ```
 
 ### Processing
 
-This section is **auto-generated** without user interaction:
-1. Scan `docs/knowledge/` for all `.md` files
-2. Read each file's title/first heading to determine the domain
-3. Generate a scenario→file mapping table
-4. Write directly to CLAUDE.md (no AskUserQuestion needed)
-
-If `docs/knowledge/` is empty, write a placeholder comment.
-
-### Draft Template
+For each knowledge file in `docs/knowledge/`, ensure the corresponding rule file in `.claude/rules/` contains an inline reference:
 
 ```markdown
-| Scenario | File |
-|----------|------|
-| {domain} issues | `docs/knowledge/{filename}.md` |
+# In .claude/rules/some-domain.md
+> Detailed debugging experience: `docs/knowledge/some-domain.md`
 ```
 
----
-
-## Section: Progressive References
-
-### Auto-exploration
-
-```
-Scan: docs under docs/
-List: agents in .claude/agents/
-List: skills in .agents/skills/
-```
+If a knowledge file has no matching rule, either:
+1. Create a minimal rule file that references it, or
+2. Add the reference to the closest existing rule
 
 ### AskUserQuestion
 
 ```
-Based on codebase scan, here's a generated reference table:
+Found the following knowledge files and their rule references:
 
-| Task | Reference file |
-|------|---------------|
+| Knowledge File | Referenced By |
+|---------------|--------------|
 {auto-generated mappings}
 
-Any additional task→reference file mappings to add?
+Any knowledge files that need a new rule file? Any additional inline references to add to existing rules?
 ```
 
 ---

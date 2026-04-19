@@ -98,6 +98,51 @@ done'
 
 chmod +x ".claude/hooks/guard-critical-edit.sh" 2>/dev/null || true
 
+create_file ".claude/hooks/post-knowledge-remind.sh" '#!/bin/bash
+# Claude Code PostToolUse hook (Bash matcher): remind to capture debugging experience
+# Triggers when a command exits with an error — nudges writing to docs/knowledge/
+# Frequency-limited: max 3 reminders per session, 5-minute cooldown between reminders
+# Output: JSON systemMessage injected into the conversation
+
+EXIT_CODE=$(echo "$TOOL_RESULT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get('"'"'exitCode'"'"', 0))
+except:
+    print(0)
+" 2>/dev/null)
+
+# Only trigger on non-zero exit codes
+if [[ "$EXIT_CODE" == "0" ]]; then
+    exit 0
+fi
+
+# Frequency control: max 3 per session, 5-min cooldown
+STATE_FILE="/tmp/.knowledge-remind-state-$$"
+if [ ! -f "$STATE_FILE" ]; then
+    echo "0 0" > "$STATE_FILE"
+fi
+read COUNT LAST_TIME < "$STATE_FILE"
+NOW=$(date +%s)
+COOLDOWN=300
+
+if [ "$COUNT" -ge 3 ]; then
+    exit 0
+fi
+if [ "$LAST_TIME" -gt 0 ] && [ $((NOW - LAST_TIME)) -lt $COOLDOWN ]; then
+    exit 0
+fi
+
+echo "$((COUNT + 1)) $NOW" > "$STATE_FILE"
+
+# Output as systemMessage JSON (injected into conversation context)
+cat << '"'"'REMIND_EOF'"'"'
+{"systemMessage": "If you just resolved a non-trivial debugging issue, consider capturing the experience in docs/knowledge/ (see .claude/rules/knowledge-writing.md for format)."}
+REMIND_EOF'
+
+chmod +x ".claude/hooks/post-knowledge-remind.sh" 2>/dev/null || true
+
 # ============================================================
 # 3. General-purpose agent definitions
 # ============================================================
@@ -105,6 +150,8 @@ create_file ".claude/agents/code-verifier.md" '---
 name: code-verifier
 description: Code quality check. Proactively runs ruff lint/format and pytest after code changes, before commit. Auto-fixes formatting issues and reports results.
 model: haiku
+permissionMode: bypassPermissions
+maxTurns: 15
 tools:
   - Read
   - Grep
@@ -169,6 +216,7 @@ create_file ".claude/agents/planner.md" '---
 name: planner
 description: Codebase researcher. Use during brainstorming or writing-plans phases when deep understanding of code structure is needed. Researches code and outputs findings and suggestions.
 model: opus
+permissionMode: plan
 tools:
   - Read
   - Grep
@@ -288,6 +336,17 @@ By domain topic: `api-integration.md`, `deployment.md`. Create new files for new
 - Content already in documentation
 - Temporary exploratory attempts with no conclusions
 
+## Progressive Disclosure
+
+Rules in `.claude/rules/` should reference knowledge files **inline** where relevant, not in a centralized table:
+
+```markdown
+# In .claude/rules/some-domain.md
+> Detailed debugging experience: `docs/knowledge/some-domain.md`
+```
+
+This way, relevant knowledge surfaces when the rule is triggered, not buried in a lookup table.
+
 ## Capture Path
 
 ```
@@ -317,6 +376,15 @@ create_file ".claude/settings.json" '{
           {
             "type": "command",
             "command": "bash .claude/hooks/auto-format-python.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-knowledge-remind.sh"
           }
         ]
       }
@@ -413,14 +481,7 @@ When context is compressed (/compact or auto-triggered), the following **must be
 
 ### HANDOFF Mode
 
-When a long session is ending or context is near its limit, proactively write a \`HANDOFF.md\` to the project root:
-\`\`\`markdown
-## Current Progress
-## What Was Tried (worked / didn't work)
-## Next Steps
-## Key Decisions and Constraints
-\`\`\`
-The next session only needs to read \`HANDOFF.md\` to continue. Delete the file when done.
+When a long session is ending or context is near its limit, use \`/handoff\` to generate a structured handoff summary. The summary is printed directly in the conversation — no file is created. Copy it to the first message of the next session to continue.
 
 ### Context Hygiene
 
@@ -454,16 +515,18 @@ The next session only needs to read \`HANDOFF.md\` to continue. Delete the file 
 <!-- - Modify immutable interface signatures -->
 <!-- - Guess cluster configuration or hardware topology -->
 
-## Knowledge Quick Reference
+## Knowledge Discovery
 
-When encountering the following scenarios, **read the corresponding knowledge file first** before taking action:
+Experience records live in \`docs/knowledge/\`. Rather than maintaining a centralized lookup table here, each rule file in \`.claude/rules/\` references relevant knowledge files inline:
 
-| Scenario | File |
-|----------|------|
-<!-- init-project: placeholder — auto-generate from docs/knowledge/ contents -->
+\`\`\`
+# In .claude/rules/some-domain.md
+> Detailed debugging experience: docs/knowledge/some-domain.md
+\`\`\`
 
-## Progressive References
-<!-- init-project: placeholder -->
+This progressive disclosure ensures knowledge surfaces at the point of need, not buried in a table.
+
+<!-- init-project: placeholder — rules will be populated with inline refs during Phase 2 -->
 "
 
 # ============================================================
