@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.10.2] - 2026-04-21
+
+### remote-cluster-agent
+
+#### Fixed
+- Agent handshake error paths now reap the child subprocess, preventing a zombie leak in the daemon. `Connection.Connect()` killed the child on handshake timeout / read error / unexpected handshake without a matching `Wait()`, so every failed dial left a `<defunct>` child. With auto-reconnect retrying dead nodes every 150s × 3 retries per dial, this could exhaust the per-user process limit within ~2 hours and hang the whole shell session. Fix mirrors `closeLocked()` — `Kill()` + `Process.Wait()` on every error exit from `Connect()`.
+
 ## [1.10.1] - 2026-04-19
 
 ### remote-cluster-agent

@@ -103,13 +103,16 @@ func (c *Connection) Connect(handshakeTimeout time.Duration) error {
 	select {
 	case <-time.After(handshakeTimeout):
 		_ = proc.Process.Kill()
+		_, _ = proc.Process.Wait()
 		return errors.New("agent handshake timeout")
 	case err := <-readyErr:
 		_ = proc.Process.Kill()
+		_, _ = proc.Process.Wait()
 		return fmt.Errorf("read ready: %w", err)
 	case m := <-readyCh:
 		if m.Type != "ready" {
 			_ = proc.Process.Kill()
+			_, _ = proc.Process.Wait()
 			return fmt.Errorf("unexpected handshake: %+v", m)
 		}
 		c.version = m.Version
