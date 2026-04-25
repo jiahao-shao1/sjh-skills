@@ -4,6 +4,18 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.12.0] - 2026-04-25
+
+### context-audit
+
+#### Added
+- **Phase 6 — Rule Slimming Methodology**: when an audit reveals bloated always-loaded rules, recommend a three-tier split (whole-file migration / in-file split / index extraction). Methodology validated on `agentic_umm` 2026-04-25 (8 rules / ~830 lines → 6 rules / 469 lines, -43%). Includes decision rules for hard constraint vs how-to vs flat index
+- **Indirect coverage detection** (Phase 2): a knowledge file cited from a rule-referenced `*-index.md` is now classified as *indirectly covered* instead of orphaned, formalising the legal two-tier index pattern
+- **Placeholder reference filter** (Phase 2): refs that look like syntax illustrations (`docs/knowledge/xxx.md`, `<filename>.md`, `foo.md`) inside example/format sections are no longer counted as stale references
+
+#### Changed
+- Coverage summary now reports `directly covered`, `indirectly covered`, `orphaned`, `deprecated` separately, and notes that placeholders are excluded from the stale-reference count
+
 ## [1.11.1] - 2026-04-25
 
 ### all skills

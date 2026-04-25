@@ -22,6 +22,7 @@ English | [中文](README.zh-CN.md)
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
 | [sync-docs](skills/sync-docs/) | Documentation sync checker — scans recent code changes and reports which docs (knowledge base, registry, CLAUDE.md, rules, README) need updating. Report only, no auto-modify |
 | [context-audit](skills/context-audit/) | Context management hygiene — audits the three-layer architecture (CLAUDE.md / rules / knowledge) for progressive disclosure compliance. Detects orphaned knowledge, stale references, and CLAUDE.md index leakage. Read-only |
+| [bibtex-fetch](skills/bibtex-fetch/) | Fetch correct BibTeX entries from arXiv (by ID) or Semantic Scholar (by title search). Batch fetch, custom bibkeys, exponential backoff. Zero dependencies (Python stdlib only) |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **On Hold** — Obsidian Second Brain with dual-zone vault. Paused in favor of enhancing notion-lifeos with reflection commands |
 
 ## Install
@@ -87,7 +88,8 @@ sjh_skills/
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
     ├── sync-docs/             # Documentation sync checker (report only)
-    └── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)
+    ├── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)
+    └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX fetcher (Python stdlib only)
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.
