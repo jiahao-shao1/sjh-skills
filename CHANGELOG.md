@@ -4,6 +4,24 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.11.1] - 2026-04-25
+
+### all skills
+
+#### Improved
+- Compressed `description` frontmatter across 10 skills (`cmux`, `codex-review`, `daily-summary`, `experiment-registry`, `notion-lifeos`, `obsidian-brain`, `paper-analyzer`, `project-review`, `remote-cluster-agent`, `scholar-agent`). Removed filler ("Use this skill whenever", "MUST invoke", redundant rationale) and trimmed near-duplicate trigger phrases while preserving every distinct English/中文 trigger keyword. Reduces always-loaded metadata context by roughly 50% with no expected change in trigger behaviour. `daily-summary` and `notion-lifeos` also converted from YAML folded scalar (`>`) to inline strings for consistency
+
+## [1.11.0] - 2026-04-21
+
+### bibtex-fetch
+
+#### Added
+- New skill: fetch correct BibTeX entries from arXiv API (by ID) and Semantic Scholar API (by title search)
+- `fetch` subcommand: given arXiv IDs, returns verified BibTeX with correct title, authors, year
+- `search` subcommand: title-based search via Semantic Scholar, auto-generates BibTeX for results with arXiv IDs
+- Supports batch fetch (up to 20 IDs per request), custom bibkeys, URL input, exponential backoff on rate limits
+- Zero dependencies — Python stdlib only
+
 ## [1.10.2] - 2026-04-21
 
 ### remote-cluster-agent

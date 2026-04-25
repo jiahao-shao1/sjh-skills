@@ -1,6 +1,6 @@
 ---
 name: remote-cluster-agent
-description: "Remote GPU cluster operations and health inspection via the `rca` CLI — run commands, transfer files, check GPU occupancy. Trigger whenever the task involves remote execution, training, GPU, cluster status, node inspection, or mutagen sync, even if the user doesn't explicitly say 'cluster'. Trigger words — cluster, GPU, rca, training, node, remote execution, sync code, tail log, mutagen, cluster status, which node is free, cluster health, GPU usage, 集群, 节点, 远程执行, 同步代码, 跑训练, 看日志, 集群状态, GPU 占用."
+description: "Remote GPU cluster ops via `rca` CLI — run commands, transfer files, GPU/node inspection, mutagen sync. Trigger for any remote execution, training, GPU, cluster status, sync, or tail-log task even when 'cluster' isn't said. Triggers: cluster, GPU, rca, training, node, sync code, tail log, 集群, 节点, 远程执行, 同步代码, 跑训练, 看日志, GPU 占用."
 ---
 
 # remote-cluster-agent

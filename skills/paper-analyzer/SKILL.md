@@ -1,6 +1,6 @@
 ---
 name: paper-analyzer
-description: "Deep critical analysis of academic papers with structured methodology. Use this skill whenever the user wants to analyze a specific paper in depth — not just summarize it, but dissect its experimental setup, extract key numbers, evaluate its claims against a research hypothesis, and identify what the paper inadvertently proves. Triggers: 'analyze this paper', 'deep dive into', '分析这篇论文', '论文深度分析', arXiv ID with analysis intent, 'what does this paper really show', '这篇论文说明了什么', 'break down this paper', 'critical reading'. Also triggers when discussing related work and the user asks to look at a specific paper in detail. NOT for: paper discovery/filtering (use scholar-agent), quick summaries, literature surveys across many papers, or adding papers to NotebookLM."
+description: "Deep critical analysis of one specific paper — dissect experimental setup, extract numbers, evaluate claims against a hypothesis. Triggers: 'analyze this paper', 'deep dive into', '分析这篇论文', '论文深度分析', 'what does this paper really show', '这篇论文说明了什么', arXiv ID with analysis intent. Not for paper discovery (use scholar-agent), quick summaries, or literature surveys."
 ---
 
 # Paper Analyzer

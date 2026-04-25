@@ -1,6 +1,6 @@
 ---
 name: project-review
-description: "Strategic project review — automatically discovers and reads strategy documents (vision, roadmap, decisions, meeting notes, experiments), then generates a five-dimension analysis snapshot. Use when the user wants to review project direction, check strategic alignment, assess milestone progress, or get a quick overview before a team meeting. Triggers: 'project review', 'review the project', 'strategic review', 'where is the project at', 'project status overview', '项目全景', '审视战略', '战略 review', '项目现在什么状态', 'review 一下方向'. NOT for: code review, PR review, or any code-level review — this skill is about strategy, not code."
+description: "Strategic project review — auto-discovers strategy docs (vision, roadmap, decisions, notes), produces five-dimension snapshot. Use for direction review, alignment check, milestone status, pre-meeting overview. Triggers: 'project review', 'strategic review', 'where is the project at', '项目全景', '审视战略', '项目现在什么状态'. Not for code/PR review."
 ---
 
 # Project Review

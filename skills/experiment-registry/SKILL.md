@@ -1,6 +1,6 @@
 ---
 name: experiment-registry
-description: "Manage ML experiment lifecycle with structured YAML registry. Register experiments, record benchmark results, compare across runs, track status. Use this skill whenever: user mentions experiments, benchmarks, or results tracking in ML context; asks 'which experiment performed best'; wants to record or compare results; says 'register experiment', 'new experiment', 'compare experiments', 'experiment results', 'exp list', 'exp init', '注册实验', '查实验', '对比实验', '实验结果', '实验状态', '哪个实验最好', '记录一下结果'. Also trigger when user discusses experiment management, tracking, or asks about experiment history in any ML project. NOT for: training monitoring, checkpoint management, launching training jobs, or experiment visualization."
+description: "Manage ML experiment lifecycle via structured YAML registry — register, record results, compare runs, track status. Triggers: 'register experiment', 'compare experiments', 'experiment results', 'exp init', 'exp list', '注册实验', '对比实验', '查实验', '哪个实验最好', '记录结果'. Not for training monitoring, checkpoints, or launching jobs."
 ---
 
 # Experiment Registry

@@ -1,17 +1,6 @@
 ---
 name: notion-lifeos
-description: >
-  Use this skill whenever the user wants to interact with their personal Notion LifeOS system —
-  a PARA-based life management system with tasks, notes, projects, and Make Time journals.
-  MUST invoke for: adding tasks or todos, taking quick notes, jotting down ideas, recording
-  thoughts or journal reflections, checking what needs to be done today, querying unfinished
-  tasks, searching personal notes, creating new projects, or any personal data storage/retrieval.
-  This skill has pre-configured Notion database IDs and API access — you cannot interact with
-  the user's LifeOS without it.
-  Triggers: 'add task', 'take a note', 'jot down', 'what do I need to do', 'search my notes',
-  'unfinished tasks', 'create project', 'record this', 'challenge my belief', 'am I aligned',
-  '帮我记一下', '加个任务', '今天要做什么', '查笔记', '待办', '记录想法', '反思', '目标偏移'.
-  NOT for: Notion API docs, pricing, workspace admin, schema design, or work summaries.
+description: "User's personal Notion LifeOS (PARA: tasks, notes, projects, Make Time journals) with pre-configured DB IDs + API access — required for any LifeOS interaction. Use for adding tasks, taking notes, journaling, querying todos, searching notes, creating projects, reflection. Triggers: 'add task', 'take a note', 'what do I need to do', 'search my notes', '加个任务', '查笔记', '待办', '记录想法', '反思', '目标偏移'. Not for Notion API docs or workspace admin."
 ---
 
 # Notion LifeOS Skill

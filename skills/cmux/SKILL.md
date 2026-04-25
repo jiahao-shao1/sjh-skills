@@ -1,6 +1,6 @@
 ---
 name: cmux
-description: "Use this skill for ANY multi-pane or multi-agent terminal orchestration in cmux. Required when the user wants to: run things in parallel in separate terminal panes, split the terminal, spawn a sub-agent (Claude Code, Codex) in another pane, fan out tasks across splits, send keystrokes or text to another pane (including ctrl-c), read terminal output from another pane, update sidebar status or progress bar, open a URL in cmux's built-in browser pane, or display markdown preview alongside the terminal. The cmux CLI is the ONLY way to do these things — Bash cannot split panes or spawn agents. Trigger phrases: 'in parallel', 'split pane', 'spawn agent', 'fan out', 'new pane', 'browser pane', 'sidebar', 'send to pane', 'read from pane', 'show the plan', 'ctrl-c to', '分屏', '并行', '开个 pane'. NOT for: single command execution, basic bash operations, or questions about tmux."
+description: "cmux multi-pane / multi-agent terminal orchestration via cmux CLI (Bash cannot split panes or spawn agents). Use for parallel panes, splits, spawning Claude/Codex sub-agents, sending keys (incl. ctrl-c) between panes, reading pane output, sidebar updates, browser/markdown panes. Triggers: 'in parallel', 'split pane', 'spawn agent', 'fan out', 'browser pane', 'sidebar', '分屏', '并行', '开个 pane'. Not for plain bash or generic tmux."
 ---
 
 # cmux Orchestration

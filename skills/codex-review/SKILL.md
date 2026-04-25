@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: "Get a second opinion from OpenAI Codex on your plan or code changes. Automatically detects whether to do a plan review or code review based on context. Claude and Codex iterate back-and-forth until Codex approves (max 5 rounds). Use whenever you want cross-model verification before implementing a plan or merging code — especially for architecture decisions, non-trivial refactors, config changes in critical systems, or when you're unsure about an approach. Triggers: '/codex-review', 'codex review', 'second opinion', 'let codex check', 'cross-check this', '让 codex 看看', '交叉审查', 'review with codex'. NOT for: trivial one-line fixes, formatting-only changes, or when user explicitly declines review."
+description: "Cross-model second opinion from OpenAI Codex on plans or code. Auto-detects plan vs code review, iterates up to 5 rounds. Use for architecture decisions, non-trivial refactors, critical config changes. Triggers: '/codex-review', 'codex review', 'second opinion', 'cross-check', '让 codex 看看', '交叉审查'. Not for trivial fixes or formatting."
 user_invocable: true
 ---
 

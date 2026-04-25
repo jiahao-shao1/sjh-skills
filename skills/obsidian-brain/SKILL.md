@@ -1,6 +1,6 @@
 ---
 name: obsidian-brain
-description: "Obsidian Second Brain — Claude Code integration for a dual-zone Obsidian vault. Invoke for: loading project context from Obsidian notes, capturing thoughts and ideas, morning planning, querying linked notes, working with your second brain. Keywords: 'obsidian', 'second brain', 'vault', 'capture thought', 'load context', 'today plan', 'my notes', '笔记', '第二大脑', '今日计划', '记录想法'. NOT for: Notion operations (use notion-lifeos), web fetching (use web-fetcher), academic papers (use scholar-inbox)."
+description: "Obsidian Second Brain (dual-zone vault) Claude Code integration. Use for loading project context, capturing thoughts, morning planning, querying linked notes. Triggers: 'obsidian', 'second brain', 'vault', 'capture thought', 'today plan', '第二大脑', '今日计划', '记录想法'. Not for Notion (use notion-lifeos) or papers (use scholar-agent)."
 ---
 
 # Obsidian Brain
