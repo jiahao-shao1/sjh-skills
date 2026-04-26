@@ -393,9 +393,9 @@ create_file ".claude/settings.json" '{
 }'
 
 # ============================================================
-# 7. CLAUDE.md skeleton
+# 7. AGENTS.md skeleton (single source of truth)
 # ============================================================
-create_file "CLAUDE.md" "# ${PROJECT_NAME} Project Guide
+create_file "AGENTS.md" "# ${PROJECT_NAME} Project Guide
 
 ## Project Overview
 <!-- init-project: placeholder -->
@@ -530,14 +530,14 @@ This progressive disclosure ensures knowledge surfaces at the point of need, not
 "
 
 # ============================================================
-# 8. AGENTS.md symlink (for Codex native discovery)
+# 8. CLAUDE.md stub (imports AGENTS.md + write-routing rule)
 # ============================================================
-if [ -f "CLAUDE.md" ] && [ ! -e "AGENTS.md" ]; then
-    ln -s CLAUDE.md AGENTS.md
-    CREATED+=("AGENTS.md -> CLAUDE.md")
-elif [ -e "AGENTS.md" ]; then
-    SKIPPED+=("AGENTS.md")
-fi
+create_file "CLAUDE.md" "@AGENTS.md
+
+# Rule
+
+1. 当你要写入内容到 CLAUDE.md 时，写入对象变为 AGENTS.md。
+"
 
 # ============================================================
 # Output summary
@@ -564,4 +564,4 @@ if [ ${#SKIPPED[@]} -gt 0 ]; then
 fi
 
 echo ""
-echo "Next: run Phase 2 to interactively fill CLAUDE.md"
+echo "Next: run Phase 2 to interactively fill AGENTS.md"

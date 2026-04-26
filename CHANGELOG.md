@@ -4,6 +4,21 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.13.0] - 2026-04-26
+
+### init-project
+
+#### Changed
+- **AGENTS.md is now the single source of truth** (was: CLAUDE.md). `init-skeleton.sh` writes the full project guide skeleton to `AGENTS.md` and generates a thin `CLAUDE.md` stub containing `@AGENTS.md` import + a write-routing rule that redirects future writes back to AGENTS.md. This replaces the previous `AGENTS.md → CLAUDE.md` symlink, which was fragile under some git tooling and Windows checkouts, and aligns with the multi-agent ecosystem convention (Codex, Cursor, etc.) where AGENTS.md is the canonical filename
+- Renamed `details/claude-md-sections.md` → `details/agents-md-sections.md`; all in-file references updated (Phase 2 now fills AGENTS.md)
+- Updated `details/skeleton-manifest.md` table: AGENTS.md = Guide, CLAUDE.md = Stub
+- Updated `SKILL.md` description, Phase 2 name, and references to reflect the new layout
+
+### repo
+
+#### Changed
+- Flipped repo-root `CLAUDE.md` / `AGENTS.md` to match the new convention: AGENTS.md now contains the actual project guide; CLAUDE.md is a thin `@AGENTS.md` stub with the write-routing rule
+
 ## [1.12.0] - 2026-04-25
 
 ### context-audit

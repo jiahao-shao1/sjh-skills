@@ -1,9 +1,9 @@
-# CLAUDE.md Section-by-Section Fill Guide
+# AGENTS.md Section-by-Section Fill Guide
 
 In Phase 2, process each `<!-- init-project: 待填充 -->` placeholder. Per-section flow:
 
 ```
-Read codebase (auto) → Generate draft (auto) → AskUserQuestion to confirm → Write to CLAUDE.md
+Read codebase (auto) → Generate draft (auto) → AskUserQuestion to confirm → Write to AGENTS.md
 ```
 
 User can reply "skip" to skip any section and keep the placeholder.
@@ -139,7 +139,7 @@ Detect: CI/CD presence, pre-commit hooks
 ```
 Detected the following dev tools: {tool list}
 
-CLAUDE.md already includes the default brainstorming→plans→dev→verify flow.
+AGENTS.md already includes the default brainstorming→plans→dev→verify flow.
 Does your project have additional workflow stages? (e.g., deployment, release, data processing)
 
 Press Enter to skip / type additions.
@@ -192,7 +192,7 @@ Scan: multi-module configs that need consistency
 ### AskUserQuestion
 
 ```
-CLAUDE.md already includes 3 generic Always Do rules:
+AGENTS.md already includes 3 generic Always Do rules:
 - Read related files before modifying code
 - Run related unit tests after modifications
 - Follow the same module's code style
@@ -303,7 +303,7 @@ Any knowledge files that need a new rule file? Any additional inline references 
 Once all sections are processed, output a summary:
 
 ```
-## CLAUDE.md Fill Complete
+## AGENTS.md Fill Complete
 
 | Section | Status |
 |---------|--------|
@@ -312,5 +312,5 @@ Once all sections are processed, output a summary:
 | Dev workflow | ⊘ Skipped |
 | ...     | ... |
 
-Next step: review CLAUDE.md content, then git add + commit.
+Next step: review AGENTS.md content, then git add + commit.
 ```
