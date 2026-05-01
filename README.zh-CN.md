@@ -17,6 +17,7 @@
 | [project-review](skills/project-review/) | 项目战略全景审视 —— 自动发现战略文档，生成五维分析快照（vision、roadmap、瓶颈、related work、下一步） |
 | [remote-cluster-agent](skills/remote-cluster-agent/) | 远程 GPU 集群操作 —— 本地编辑代码，通过 Go daemon + `rca` CLI（exec / batch / cp / nodes）远程执行，持久 SSH 连接池，节点健康监控 |
 | [codex-review](skills/codex-review/) | 跨模型审查 —— 将计划或代码 diff 发送给 OpenAI Codex 独立验证，Claude↔Codex 迭代反馈直到通过（最多 5 轮） |
+| [codex-task](skills/codex-task/) | 把编码任务（debug / 实现 / 重构）直接外包给 OpenAI Codex CLI。单次 `codex exec`，默认 `gpt-5.5` + xhigh effort + 完整沙箱 bypass；Claude 事后验收 diff。比 `codex:rescue` 更快（跳过 Node companion runtime） |
 | [paper-analyzer](skills/paper-analyzer/) | 论文深度批判分析 —— 因果链方法论（现象→实验设置→归因→解法），NotebookLM 溯源阅读，可选研究框架映射 |
 | [experiment-registry](skills/experiment-registry/) | ML 实验生命周期管理 —— 结构化 YAML 注册表 + CLI，支持实验注册、Benchmark 记录、跨实验对比、状态追踪 |
 | [handoff](skills/handoff/) | Session 交接摘要 —— 在对话中直接打印结构化上下文摘要（状态、决策、坑、下一步），无缝衔接下个 session |
@@ -82,6 +83,7 @@ sjh_skills/
     ├── project-review/    # 五维战略审视快照
     ├── remote-cluster-agent/ # 远程 GPU 集群操作，Go daemon + rca CLI
     ├── codex-review/          # 跨模型计划/代码审查，OpenAI Codex
+    ├── codex-task/            # 把编码任务直接外包给 Codex CLI（单次 codex exec）
     ├── paper-analyzer/        # 论文深度批判分析，因果链方法论
     ├── experiment-registry/   # ML 实验注册表，YAML + CLI
     ├── handoff/               # Session 交接摘要，上下文无缝衔接

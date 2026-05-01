@@ -4,6 +4,22 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.14.0] - 2026-05-01
+
+### codex-task
+
+#### Added
+- **New skill** that delegates coding tasks (debug, implement, refactor) directly to the OpenAI Codex CLI via `codex exec`. Single-shot foreground invocation — Claude prepares the task, Codex writes the code, Claude verifies the resulting diff. Designed as a faster alternative to the `codex:rescue` agent for straightforward tasks (skips the ~1000-line Node companion runtime, saving ~10s per call)
+- **Defaults**: `-m gpt-5.5`, `-c model_reasoning_effort="xhigh"`, `--ephemeral`, and `--dangerously-bypass-approvals-and-sandbox` so Codex can install packages, hit external APIs, and modify files outside cwd. Routing flags `--read-only` / `--safe` opt down; `--model` and `--effort` override defaults; `-C <dir>` switches cwd
+- **Safe prompt invocation**: user task text is fed via single-quoted heredoc on stdin, preventing `$()`/backtick injection under the permissive default sandbox
+- **Preflight + verification**: snapshots `git status --short` before invoking, warns when not in a git repo or worktree is dirty, captures stderr to a per-task error log, and surfaces failed exit codes / empty output instead of silently swallowing them
+- **Safe revert guidance**: avoids blanket `git checkout -- <file>` (which can destroy unrelated user edits); recommends pre-status comparison and reverse patches when files were already dirty
+
+### codex-review
+
+#### Changed
+- Default model bumped from `gpt-5.4` → `gpt-5.5`; added `-c 'model_reasoning_effort="xhigh"'` to both Plan Review and Code Review prompts. All in-file references and example outputs updated
+
 ## [1.13.0] - 2026-04-26
 
 ### init-project

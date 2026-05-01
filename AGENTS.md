@@ -16,6 +16,7 @@ sjh_skills/
 │   ├── project-review/       # 5-dimension strategy review snapshot
 │   ├── remote-cluster-agent/ # Remote GPU cluster ops via Go daemon + rca CLI
 │   ├── codex-review/         # Cross-model plan/code review via OpenAI Codex
+│   ├── codex-task/           # Delegate coding tasks directly to Codex CLI (single-shot codex exec)
 │   ├── paper-analyzer/       # Deep critical paper analysis with causal chain methodology
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity

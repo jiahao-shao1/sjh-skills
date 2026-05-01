@@ -17,6 +17,7 @@ English | [中文](README.zh-CN.md)
 | [project-review](skills/project-review/) | Project strategy panoramic review — auto-discover strategy docs and generate a 5-dimension snapshot (vision, roadmap, blockers, related work, next steps) |
 | [remote-cluster-agent](skills/remote-cluster-agent/) | Remote GPU cluster operations — edit code locally, run commands remotely via Go daemon + `rca` CLI (exec / batch / cp / nodes), persistent SSH connection pool, node health monitoring |
 | [codex-review](skills/codex-review/) | Cross-model review — send your plan or code diff to OpenAI Codex for independent verification, iterative Claude↔Codex feedback until approved (max 5 rounds) |
+| [codex-task](skills/codex-task/) | Delegate a coding task (debug / implement / refactor) directly to OpenAI Codex CLI. Single-shot `codex exec` with `gpt-5.5` + xhigh effort and full sandbox bypass by default; Claude verifies the diff after. Faster than `codex:rescue` (skips the Node companion runtime) |
 | [paper-analyzer](skills/paper-analyzer/) | Deep critical paper analysis — causal chain methodology (现象→实验设置→归因→解法), NotebookLM-grounded reading, optional research framework mapping |
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
@@ -84,6 +85,7 @@ sjh_skills/
     ├── project-review/    # 5-dimension strategy review snapshot
     ├── remote-cluster-agent/ # Remote GPU cluster ops via Go daemon + rca CLI
     ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
+    ├── codex-task/            # Delegate coding tasks directly to Codex CLI (single-shot codex exec)
     ├── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
