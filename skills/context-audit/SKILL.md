@@ -166,6 +166,74 @@ If a rule contains a long flat table indexing many knowledge files (e.g., 20+ ro
 - Long flat index of knowledge files → dedicated index knowledge file
 - Cross-tool agents (e.g., Codex) that don't load `.claude/rules/` → may need direct knowledge refs in AGENTS.md; this is acceptable cross-tool-compat redundancy, not a violation
 
+### Phase 7: Change Impact Matrix (forward audit, opt-in)
+
+Phases 1-6 are **reverse** audits — start from existing files, check structural compliance. Phase 7 is the **forward** audit — start from recent changes, check whether the knowledge they introduced actually landed in every place it should.
+
+This phase is opt-in: trigger it when the user supplies a change summary, or when the audit follows a sizable session (feature shipped, refactor done, bug fixed). Skip silently if there's nothing to forward-audit.
+
+**Inputs**
+
+Collect "new facts" introduced by recent work. Sources, in order of preference:
+1. User-supplied change summary (most reliable)
+2. `git log --since="<session start>" --oneline` + `git diff` of touched files
+3. Recent conversation context (least reliable — confirm with user before acting on it)
+
+A "new fact" is anything that, if the next session reads stale docs, would mislead the agent. Examples: dependency swap (SQLite → PostgreSQL), new env var, renamed CLI flag, deprecated module, new invariant ("never call X directly"), new directory convention.
+
+**Mapping rules — fact type → expected locations**
+
+| Fact type | Should appear in |
+|-----------|-----------------|
+| Tech stack swap (DB, framework, runtime) | CLAUDE.md tech section + relevant rule + setup docs/README |
+| New env var / config key | runbook + CLAUDE.md (if always-needed) + .env.example |
+| New hard constraint ("never X") | a rule (always-loaded), not knowledge |
+| New how-to / command recipe | knowledge file + index reference from rule |
+| Deprecated feature/file | `[DEPRECATED]` marker + rule reference removed + replacement noted |
+| Renamed module/function | grep-replace across all docs + CLAUDE.md if mentioned |
+| New directory or file convention | a rule + CLAUDE.md repository structure section |
+
+**Procedure**
+
+For each new fact:
+1. Determine fact type from the table above
+2. Enumerate expected locations
+3. For each expected location, grep for evidence the fact landed:
+   - ✅ **Updated**: location contains the new fact
+   - ❌ **Missing**: location exists but still describes the old state, or the fact is absent entirely
+   - ⚠️ **Conflict**: location partially updated — old and new state coexist (often worse than fully stale, since it confuses the reader)
+4. Cross-project check: if this repo is depended on by another (monorepo sibling, paired client/server, etc.), flag whether the dependent's docs may need the same update
+
+**Output**
+
+Append to the Phase 4 report:
+
+```
+## Change Impact Matrix
+
+Source: [user-supplied | git diff | conversation]
+Window: <commit range or session start>
+
+### Fact 1: <one-line description, e.g. "DB switched from SQLite to PostgreSQL">
+
+| Expected location | Status | Evidence |
+|-------------------|--------|----------|
+| CLAUDE.md "Tech Stack" | ❌ Missing | line 42 still reads "SQLite" |
+| docs/knowledge/db-schema.md | ⚠️ Conflict | lines 10-30 use Postgres, line 88 still has `sqlite3` import |
+| .claude/rules/data-access.md | ✅ Updated | — |
+| README.md install steps | ❌ Missing | step 3 still says "create sqlite db" |
+
+Cross-project: agentic_umm-cli depends on this repo's DB schema → flag for review
+
+### Fact 2: ...
+```
+
+**Constraints**
+
+- Phase 7 is **still read-only** — emit the matrix, don't apply edits
+- If no facts are supplied and no recent commits exist, skip silently rather than fabricate
+- Conflicts (⚠️) are higher priority than misses (❌) — call them out first
+
 ## Constraints
 
 - **Read-only** — never modify files. This is an audit tool, not an auto-fixer.

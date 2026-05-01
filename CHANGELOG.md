@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.15.0] - 2026-05-01
+
+### context-audit
+
+#### Added
+- **Phase 7: Change Impact Matrix (forward audit)** — complements the existing reverse audit (Phases 1-6) by starting from recent changes and checking whether each new fact landed in every place it should. Maps fact types (tech stack swap, new env var, hard constraint, deprecation, rename, convention) to expected locations, then grep-verifies each location and tags ✅ Updated / ❌ Missing / ⚠️ Conflict. Includes cross-project dependency check. Opt-in: triggers when user supplies a change summary or after a sizable session; skips silently otherwise. Remains read-only — emits the matrix, does not apply edits. Inspired by the "change impact" idea from 卡兹克's `/neat` skill, adapted to the read-only audit philosophy
+
 ## [1.14.0] - 2026-05-01
 
 ### codex-task
