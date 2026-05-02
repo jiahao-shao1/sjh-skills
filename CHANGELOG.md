@@ -4,6 +4,16 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.15.1] - 2026-05-02
+
+### plugin hooks
+
+#### Removed
+- Disabled the plugin-level `PostToolUse` knowledge reminder hook for Bash and remote Bash calls. Knowledge capture should now be invoked explicitly through project guidance instead of being injected after tool use.
+
+#### Changed
+- Updated the repository structure note to make clear that `hooks/` contains optional helpers, not auto-registered plugin hooks.
+
 ## [1.15.0] - 2026-05-01
 
 ### context-audit

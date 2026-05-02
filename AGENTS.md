@@ -24,7 +24,7 @@ sjh_skills/
 │   ├── context-audit/        # Progressive disclosure compliance audit
 │   └── obsidian-brain/       # ⏸️ On hold — Obsidian dual-zone vault
 ├── packages/                 # Pip-installable packages (e.g. exp-registry)
-├── hooks/                    # Plugin PostToolUse hooks (e.g. post-knowledge-remind)
+├── hooks/                    # Optional hook helpers; no plugin hooks are auto-registered by default
 ├── .claude-plugin/           # Plugin manifest and marketplace config
 ├── .codex/                   # Codex CLI install instructions
 ├── CHANGELOG.md              # Version history (must be updated on every change)
