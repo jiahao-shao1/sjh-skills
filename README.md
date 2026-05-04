@@ -19,6 +19,7 @@ English | [中文](README.zh-CN.md)
 | [codex-review](skills/codex-review/) | Cross-model review — send your plan or code diff to OpenAI Codex for independent verification, iterative Claude↔Codex feedback until approved (max 5 rounds) |
 | [codex-task](skills/codex-task/) | Delegate a coding task (debug / implement / refactor) directly to OpenAI Codex CLI. Single-shot `codex exec` with `gpt-5.5` + xhigh effort and full sandbox bypass by default; Claude verifies the diff after. Faster than `codex:rescue` (skips the Node companion runtime) |
 | [paper-analyzer](skills/paper-analyzer/) | Deep critical paper analysis — causal chain methodology (现象→实验设置→归因→解法), NotebookLM-grounded reading, optional research framework mapping |
+| [paper-self-review](skills/paper-self-review/) | Paper paragraph self-review — three-axis check (logic jumps / repetition / premature method detail), v1 → v2 deterministic iteration |
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
 | [sync-docs](skills/sync-docs/) | Documentation sync checker — scans recent code changes and reports which docs (knowledge base, registry, CLAUDE.md, rules, README) need updating. Report only, no auto-modify |
@@ -87,6 +88,7 @@ sjh_skills/
     ├── codex-review/          # Cross-model plan/code review via OpenAI Codex
     ├── codex-task/            # Delegate coding tasks directly to Codex CLI (single-shot codex exec)
     ├── paper-analyzer/        # Deep critical paper analysis with causal chain methodology
+    ├── paper-self-review/     # Paper paragraph self-review (logic / repetition / detail leakage)
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
     ├── sync-docs/             # Documentation sync checker (report only)

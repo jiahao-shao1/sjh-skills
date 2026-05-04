@@ -18,6 +18,7 @@ sjh_skills/
 │   ├── codex-review/         # Cross-model plan/code review via OpenAI Codex
 │   ├── codex-task/           # Delegate coding tasks directly to Codex CLI (single-shot codex exec)
 │   ├── paper-analyzer/       # Deep critical paper analysis with causal chain methodology
+│   ├── paper-self-review/    # Paper paragraph self-review (logic / repetition / detail leakage)
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
 │   ├── sync-docs/            # Documentation sync checker (report only)

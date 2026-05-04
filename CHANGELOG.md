@@ -4,7 +4,12 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
-## [1.15.1] - 2026-05-02
+## [1.16.0] - 2026-05-04
+
+### paper-self-review
+
+#### Added
+- New skill: paper paragraph self-review with three-axis check (logic jumps / repetition / premature method detail). Anchored on advisor reviewer comments + Simon Peyton Jones' *How to Write a Great Research Paper* + WritingAIPaper CARS three-move. Drives a deterministic v1 → v2 diagnosis loop instead of vibe-driven revision — diagnose only by default, never generate v1 from scratch. Ships with `references/anti-patterns.md`.
 
 ### plugin hooks
 
