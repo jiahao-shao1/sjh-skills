@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.16.1] - 2026-05-06
+
+### paper-self-review
+
+#### Improved
+- Expanded from three-axis to five-axis check: added Axis 4 (Framing — positive voice, hypothesis ≠ fact, no abbreviations at key points, declarative claims, qualitative scale in intro) and Axis 5 (Reader Orientation — section self-containment, guide reader to experiment, big picture visible, no private terminology). Anti-patterns quick-reference table now covers all five axes.
+- Enhanced `references/anti-patterns.md` with worked examples for the new axes.
+
 ## [1.16.0] - 2026-05-04
 
 ### paper-self-review
