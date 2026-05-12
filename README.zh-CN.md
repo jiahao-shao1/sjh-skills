@@ -25,6 +25,7 @@
 | [sync-docs](skills/sync-docs/) | 文档同步检查 —— 扫描近期代码变更，报告哪些文档（知识库、注册表、CLAUDE.md、规则、README）需要更新。只报告，不自动改 |
 | [context-audit](skills/context-audit/) | Context 管理体检 —— 审计三层架构（CLAUDE.md / rules / knowledge）的渐进式披露合规性，检测孤立的 knowledge 文件、失效引用、CLAUDE.md 索引泄漏。只读 |
 | [bibtex-fetch](skills/bibtex-fetch/) | 拉取正确的 BibTeX 引用 —— arXiv（按 ID）或 Semantic Scholar（按标题搜索），支持批量、自定义 bibkey、限流退避。零依赖（仅 Python stdlib） |
+| [todo-worker](skills/todo-worker/) | 从项目根 `TODO.md` 按优先级 + 依赖挑下一个可执行任务，原子地认领（`[ ]` → `[~]`）后再开干。仅显式触发；规范任务行格式 + 四态机（待办 / 进行中 / 完成 / 阻塞），支持跨 session 协作 |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **暂停** — Obsidian 第二大脑，双区 Vault 设计。已转向在 notion-lifeos 中增加反思命令 |
 
 ## 安装
@@ -91,7 +92,8 @@ sjh_skills/
     ├── handoff/               # Session 交接摘要，上下文无缝衔接
     ├── sync-docs/             # 文档同步检查（只报告）
     ├── context-audit/         # 渐进式披露合规审计（CLAUDE.md / rules / knowledge）
-    └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX 拉取器（仅 Python stdlib）
+    ├── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX 拉取器（仅 Python stdlib）
+    └── todo-worker/           # 从项目根 TODO.md 按优先级 + 依赖挑下一个任务，带四态机
 ```
 
 每个 skill 都是独立的，包含 `SKILL.md`、`scripts/` 和 `references/`。可以单独安装，也可以作为合集安装。

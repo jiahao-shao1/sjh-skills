@@ -23,6 +23,8 @@ sjh_skills/
 │   ├── handoff/              # Session handoff summary for context continuity
 │   ├── sync-docs/            # Documentation sync checker (report only)
 │   ├── context-audit/        # Progressive disclosure compliance audit
+│   ├── bibtex-fetch/         # arXiv / Semantic Scholar BibTeX fetcher
+│   ├── todo-worker/          # Project-root TODO.md task picker (priority + dep + state machine)
 │   └── obsidian-brain/       # ⏸️ On hold — Obsidian dual-zone vault
 ├── packages/                 # Pip-installable packages (e.g. exp-registry)
 ├── hooks/                    # Optional hook helpers; no plugin hooks are auto-registered by default

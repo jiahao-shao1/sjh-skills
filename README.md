@@ -25,6 +25,7 @@ English | [中文](README.zh-CN.md)
 | [sync-docs](skills/sync-docs/) | Documentation sync checker — scans recent code changes and reports which docs (knowledge base, registry, CLAUDE.md, rules, README) need updating. Report only, no auto-modify |
 | [context-audit](skills/context-audit/) | Context management hygiene — audits the three-layer architecture (CLAUDE.md / rules / knowledge) for progressive disclosure compliance. Detects orphaned knowledge, stale references, and CLAUDE.md index leakage. Read-only |
 | [bibtex-fetch](skills/bibtex-fetch/) | Fetch correct BibTeX entries from arXiv (by ID) or Semantic Scholar (by title search). Batch fetch, custom bibkeys, exponential backoff. Zero dependencies (Python stdlib only) |
+| [todo-worker](skills/todo-worker/) | Pick the next executable task from project-root `TODO.md` by priority + dependency, atomically claim it (`[ ]` → `[~]`), then execute. Explicit invocation only; canonical task-line format with four-state machine (todo / in-progress / done / blocked) |
 | [obsidian-brain](skills/obsidian-brain/) | ⏸️ **On Hold** — Obsidian Second Brain with dual-zone vault. Paused in favor of enhancing notion-lifeos with reflection commands |
 
 ## Install
@@ -93,7 +94,8 @@ sjh_skills/
     ├── handoff/               # Session handoff summary for context continuity
     ├── sync-docs/             # Documentation sync checker (report only)
     ├── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)
-    └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX fetcher (Python stdlib only)
+    ├── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX fetcher (Python stdlib only)
+    └── todo-worker/           # Project-root TODO.md task picker with priority + dep + state machine
 ```
 
 Each skill is self-contained with its own `SKILL.md`, `scripts/`, and `references/`. Skills can be installed individually or as a collection.

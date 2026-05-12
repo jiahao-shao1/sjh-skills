@@ -4,7 +4,12 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
-## [1.16.1] - 2026-05-06
+## [1.17.0] - 2026-05-12
+
+### todo-worker
+
+#### Added
+- **New skill** that picks the next executable task from project-root `TODO.md` by priority + dependency, atomically claims it (`[ ]` → `[~]`) before user confirmation to shrink the race window across sessions, then starts executing. Enforces a canonical task-line format (`- \`[STATE]\` [PRIORITY] [ID] (dep: …) Title`) with a four-state machine (todo / in-progress / done / blocked) so dependency-aware picking is deterministic. Explicit invocation only — never auto-runs, doesn't interrupt active coding, and reverts the claim on `n`/`skip`. Project-specific TODO → sub-skill mapping lives in `.claude/todo-worker-config.md`, keeping the skill body generic.
 
 ### paper-self-review
 
