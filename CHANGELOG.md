@@ -11,6 +11,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's cha
 #### Added
 - **New skill** that picks the next executable task from project-root `TODO.md` by priority + dependency, atomically claims it (`[ ]` → `[~]`) before user confirmation to shrink the race window across sessions, then starts executing. Enforces a canonical task-line format (`- \`[STATE]\` [PRIORITY] [ID] (dep: …) Title`) with a four-state machine (todo / in-progress / done / blocked) so dependency-aware picking is deterministic. Explicit invocation only — never auto-runs, doesn't interrupt active coding, and reverts the claim on `n`/`skip`. Project-specific TODO → sub-skill mapping lives in `.claude/todo-worker-config.md`, keeping the skill body generic.
 
+### init-project
+
+#### Added
+- **Context Loading routing table** as a new AGENTS.md section. Phase 1 emits an empty `(task domain → .claude/rules/*.md)` table in the skeleton; Phase 2 auto-explores `.claude/rules/` and proposes domain labels via AskUserQuestion. Designed as the entry point for Codex / OpenAI agents and other external runtimes that do not auto-load `.claude/rules/` — they grep this table to find which rule to read for a task.
+- **Paper Results Manifest workflow** in the research profile: new `docs/paper-results/` directory with `README.md` (three-tier sources-of-truth schema: raw outputs → registry → manifest), `results.yaml` template, plus stub `scripts/benchmark/validate_paper_results.py` (required-field check, paper_key uniqueness, source path existence) and `scripts/benchmark/generate_paper_results.py` (emits `paper/generated/results_macros.tex` with `\providecommand{\Result<Key>}{value}` macros for paper tables/prose).
+- **New research-profile directories**: `scripts/analysis/` (figure prep, statistics, ablation studies) and `scripts/monitoring/` (training/job watchers, health checks).
+- Skeleton now ships a commented-out example "new scripts must go into `scripts/<subdir>/`" under Behavior Boundaries → Always Do, for projects with structured `scripts/`.
+
+#### Changed
+- **Research profile appends to AGENTS.md instead of CLAUDE.md** so that CLAUDE.md stays as a thin `@AGENTS.md` stub and AGENTS.md remains the single source of truth for both CC and external runtimes. The appended block keeps `<!-- research-profile -->` marker for idempotency.
+- Dropped the "Agents listing" table from the appended block — each agent's frontmatter `description` already drives CC auto-discovery, so a duplicate human-facing index would just go stale. Experiment Registry pointer now cross-references the new paper manifest.
+
 ### paper-self-review
 
 #### Improved

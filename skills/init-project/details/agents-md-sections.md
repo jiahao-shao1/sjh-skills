@@ -261,6 +261,47 @@ Press Enter to skip / type additional items.
 
 ---
 
+## Section: Context Loading (routing table)
+
+### Auto-exploration
+
+```
+List: all .md files in .claude/rules/
+For each rule, scan first ~30 lines for opening summary / scope sentence
+Map: each rule → 1-3 task-domain keywords (RL training, eval, cluster ops, paper figures, ...)
+```
+
+### AskUserQuestion
+
+```
+AGENTS.md has an empty Context Loading routing table. Here's a draft mapping
+each `.claude/rules/*.md` file to a task-domain keyword:
+
+| Task domain | Read first |
+|---|---|
+{auto-generated rows: domain → rule path}
+
+This table is the entry point for Codex / OpenAI agents (which do not auto-load
+.claude/rules/) — they grep this table to find which rule to read for a task.
+
+Confirm / edit the domain labels, or reply "skip" to keep the table empty.
+```
+
+### Draft Template
+
+```markdown
+| Task domain | Read first |
+|---|---|
+| RL training / reward / config | `.claude/rules/rl-training.md` |
+| Eval / benchmark protocol | `.claude/rules/testing.md` |
+| Cluster ops / remote exec | `.claude/rules/cluster-ops.md` |
+| Paper figures / writing | `.claude/rules/paper-figures.md` |
+```
+
+Optional: a rule may inline a `详见 docs/knowledge/<file>.md` link inside a relevant section. The routing table itself should only list rule files, not knowledge files — knowledge is reached on-demand via inline refs, not preloaded.
+
+---
+
 ## Section: Progressive Disclosure Setup
 
 ### Auto-exploration

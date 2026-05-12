@@ -38,6 +38,7 @@ Automatically configure Claude Code best practices for new projects: directory s
 | Directory structure | ls + read key file docstrings | "Does this directory layout look correct? Anything to adjust?" |
 | Dev workflow | Detect CI, Makefile, scripts/ | "Use the default brainstorming→plans→dev→verify flow?" |
 | Dev guide | Detect venv, .env, Dockerfile | "Any special environment setup steps?" |
+| Context Loading (routing table) | List `.claude/rules/*.md` + scan opening summaries | "Confirm `(task domain → rule)` mapping — entry point for Codex / external agents" |
 | Always Do (project-specific) | Read rules/, lint config | "Any cross-module consistency requirements?" |
 | Ask First | Scan core files (interfaces, config) | "Which files/dirs require confirmation before modifying?" |
 | Never Do | Detect third_party/, .env | "Any absolute don't-touch conventions?" |

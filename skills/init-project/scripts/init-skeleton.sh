@@ -489,6 +489,14 @@ When a long session is ending or context is near its limit, use \`/handoff\` to 
 - Same task, new phase → \`/compact\`
 - Long command output: pipe through \`| head -30\` to avoid context pollution
 
+## Context Loading
+
+Claude Code auto-loads \`.claude/rules/*.md\` at startup. **Codex / OpenAI agents and other external runtimes do not**, so they must judge the task domain first and \`Read\` the matching rule before acting. Only follow \`详见 docs/knowledge/...\` links from a rule when the current task matches that knowledge entry — do not preload \`docs/knowledge/\` wholesale.
+
+| Task domain | Read first |
+|---|---|
+<!-- init-project: 列出 (任务领域 → .claude/rules/xxx.md) 映射 — Phase 2 interactive fill -->
+
 ## Behavior Boundaries
 
 ### Always Do
@@ -499,6 +507,7 @@ When a long session is ending or context is near its limit, use \`/handoff\` to 
 <!-- init-project: examples below, modify per project needs -->
 <!-- - Ensure config consistency across cross-module changes -->
 <!-- - Include timeout protection and retry logic for API calls -->
+<!-- - New scripts must go into the matching \`scripts/<subdir>/\`; do not drop scripts in \`scripts/\` root -->
 
 ### Ask First
 

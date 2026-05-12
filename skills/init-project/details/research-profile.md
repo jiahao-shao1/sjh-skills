@@ -20,6 +20,9 @@ The research profile adds research-project-specific structure on top of the base
 | `scripts/data/` | Data processing scripts |
 | `scripts/model/` | Model management scripts (merge, convert, etc.) |
 | `scripts/infra/` | Infrastructure and DevOps scripts |
+| `scripts/analysis/` | Result analysis scripts (figure prep, statistics, ablation studies) |
+| `scripts/monitoring/` | Training / job monitoring scripts (watchers, health checks) |
+| `docs/paper-results/` | Paper results manifest — single source of truth for benchmark numbers entering the paper |
 
 ### Files
 
@@ -31,13 +34,19 @@ The research profile adds research-project-specific structure on top of the base
 | `docs/strategy/vision.md` | Project vision template |
 | `docs/strategy/roadmap.md` | Milestones and phases template |
 | `docs/strategy/decisions/log.md` | Decision log format and template |
+| `docs/paper-results/README.md` | Paper manifest workflow + entry schema (three-tier sources of truth: raw outputs → registry → manifest) |
+| `docs/paper-results/results.yaml` | Empty manifest with commented-out entry template |
+| `scripts/benchmark/validate_paper_results.py` | Stub validator: required-field check, paper_key uniqueness, source path existence |
+| `scripts/benchmark/generate_paper_results.py` | Stub generator: emit `paper/generated/results_macros.tex` with `\providecommand{\Result<Key>}{value}` macros |
 
-### CLAUDE.md Appended Content
+### AGENTS.md Appended Content
 
-Appends an "Extended Configuration" section to the end of CLAUDE.md:
-- Agent listing table (with permissionMode column)
-- Experiment registry pointer (YAML-based, `exp-registry` CLI)
-- Project Strategy document listing with `docs/strategy/` pointers
+Appends two sections (marker `<!-- research-profile -->`, idempotent) to the end of **AGENTS.md** — not CLAUDE.md, so that CLAUDE.md stays as a thin `@AGENTS.md` stub and AGENTS.md remains the single source of truth for both CC and Codex / external runtimes:
+
+- **Experiment Registry** — pointer to `exp-registry` CLI + per-experiment YAML under `docs/experiment-registry/registry/`, and the relationship to the paper manifest
+- **Project Strategy** — table of `docs/strategy/*` documents (vision / roadmap / decisions / meetings / related-work) with when-to-read guidance
+
+The Agents listing (planner / code-verifier / domain-expert) is **not** appended — each agent's frontmatter `description` already drives CC's auto-discovery, so a duplicate table would just be a stale human-facing index.
 
 ## Experiment Registry
 
@@ -55,6 +64,28 @@ exp update exp01a --status completed --results "metric=value"
 ```
 
 YAML files are stored in `docs/experiment-registry/registry/`, one per experiment.
+
+## Paper Results Manifest
+
+Paper-bound benchmark numbers go through a three-tier sources-of-truth structure to prevent paper-time mistakes (copying numbers from screenshots, stale strategy docs, or outdated tables):
+
+1. **Raw outputs** (`outputs/`) — evidence only, never cited directly in paper
+2. **Experiment registry** (`docs/experiment-registry/registry/*.yaml`) — full history, may keep multiple stale / legacy / diagnostic / canonical entries per experiment
+3. **Paper manifest** (`docs/paper-results/results.yaml`) — only canonical numbers allowed into paper tables and prose; one canonical number per `paper_key`
+
+The profile generates two stub scripts that wire manifest → paper:
+
+```bash
+# Schema + path validation, run before commit
+python3 scripts/benchmark/validate_paper_results.py
+
+# Regenerate paper/generated/results_macros.tex from manifest
+python3 scripts/benchmark/generate_paper_results.py
+```
+
+Paper tables and prose should reference the generated macros (e.g. `\ResultMainMethodABenchX`) rather than hand-written numbers — keeping manifest and `.tex` in sync per commit.
+
+Both stubs are minimal: they handle the schema-validation and macro-emission contract but leave project-specific aggregation (cross-bench means, paired statistics, ablation table grouping) for the user to extend.
 
 ## Domain Expert Agent
 
