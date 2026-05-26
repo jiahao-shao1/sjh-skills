@@ -4,6 +4,21 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.17.1] - 2026-05-26
+
+### init-project
+
+#### Removed
+- Skeleton no longer generates `.claude/hooks/post-knowledge-remind.sh` for new projects, and `settings.json` template drops the corresponding `PostToolUse.Bash` matcher. Mirrors the plugin-level removal of the same hook in this release. Generated-files tables in `README.md`, `README.zh-CN.md`, and `details/skeleton-manifest.md` updated accordingly.
+
+### plugin
+
+#### Removed
+- Deleted `hooks/post-knowledge-remind` and `hooks/post-knowledge-remind.sh` (previously disabled in 1.15.1).
+
+#### Fixed
+- `marketplace.json` resynced to current version and description (was stuck at 1.16.1, missing `todo-worker`).
+
 ## [1.17.0] - 2026-05-12
 
 ### todo-worker

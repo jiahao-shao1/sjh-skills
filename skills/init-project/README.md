@@ -49,10 +49,9 @@ Generated files:
 |------|-------------|
 | `.claude/hooks/auto-format-python.sh` | Auto `ruff format` + `ruff check --fix` after editing `.py` files |
 | `.claude/hooks/guard-critical-edit.sh` | Warn when editing critical directories (customizable list) |
-| `.claude/hooks/post-knowledge-remind.sh` | Remind to capture debugging experience after a non-zero Bash exit (frequency-limited) |
 | `.claude/agents/code-verifier.md` | Pre-commit quality gate — ruff lint/format + pytest (`permissionMode: bypassPermissions`, `maxTurns: 15`) |
 | `.claude/agents/planner.md` | Codebase researcher for brainstorming/planning phases (`permissionMode: plan`) |
-| `.claude/settings.json` | PostToolUse hook registration (`Edit`/`Write` + `Bash` matchers) |
+| `.claude/settings.json` | PostToolUse hook registration (`Edit`/`Write` matcher) |
 | `CLAUDE.md` | Project guide skeleton with placeholder sections |
 
 ### Phase 2: Interactive CLAUDE.md Fill

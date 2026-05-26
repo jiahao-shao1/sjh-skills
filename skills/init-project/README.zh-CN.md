@@ -49,10 +49,9 @@ Claude Code 会自动触发该 skill，引导你完成配置。
 |------|------|
 | `.claude/hooks/auto-format-python.sh` | 编辑 `.py` 后自动 `ruff format` + `ruff check --fix` |
 | `.claude/hooks/guard-critical-edit.sh` | 修改关键目录时告警（目录列表可定制） |
-| `.claude/hooks/post-knowledge-remind.sh` | Bash 命令非 0 退出时提醒沉淀调试经验（频率受限） |
 | `.claude/agents/code-verifier.md` | 提交前质量关卡 — ruff lint/format + pytest（`permissionMode: bypassPermissions`, `maxTurns: 15`） |
 | `.claude/agents/planner.md` | 代码库研究，用于 brainstorming/planning 阶段（`permissionMode: plan`） |
-| `.claude/settings.json` | PostToolUse hook 注册（`Edit`/`Write` + `Bash` matcher） |
+| `.claude/settings.json` | PostToolUse hook 注册（`Edit`/`Write` matcher） |
 | `CLAUDE.md` | 项目说明骨架（含占位符待填充） |
 
 ### Phase 2: 交互式填充 CLAUDE.md

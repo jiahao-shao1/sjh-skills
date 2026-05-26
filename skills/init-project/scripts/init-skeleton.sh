@@ -98,51 +98,6 @@ done'
 
 chmod +x ".claude/hooks/guard-critical-edit.sh" 2>/dev/null || true
 
-create_file ".claude/hooks/post-knowledge-remind.sh" '#!/bin/bash
-# Claude Code PostToolUse hook (Bash matcher): remind to capture debugging experience
-# Triggers when a command exits with an error — nudges writing to docs/knowledge/
-# Frequency-limited: max 3 reminders per session, 5-minute cooldown between reminders
-# Output: JSON systemMessage injected into the conversation
-
-EXIT_CODE=$(echo "$TOOL_RESULT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('"'"'exitCode'"'"', 0))
-except:
-    print(0)
-" 2>/dev/null)
-
-# Only trigger on non-zero exit codes
-if [[ "$EXIT_CODE" == "0" ]]; then
-    exit 0
-fi
-
-# Frequency control: max 3 per session, 5-min cooldown
-STATE_FILE="/tmp/.knowledge-remind-state-$$"
-if [ ! -f "$STATE_FILE" ]; then
-    echo "0 0" > "$STATE_FILE"
-fi
-read COUNT LAST_TIME < "$STATE_FILE"
-NOW=$(date +%s)
-COOLDOWN=300
-
-if [ "$COUNT" -ge 3 ]; then
-    exit 0
-fi
-if [ "$LAST_TIME" -gt 0 ] && [ $((NOW - LAST_TIME)) -lt $COOLDOWN ]; then
-    exit 0
-fi
-
-echo "$((COUNT + 1)) $NOW" > "$STATE_FILE"
-
-# Output as systemMessage JSON (injected into conversation context)
-cat << '"'"'REMIND_EOF'"'"'
-{"systemMessage": "If you just resolved a non-trivial debugging issue, consider capturing the experience in docs/knowledge/ (see .claude/rules/knowledge-writing.md for format)."}
-REMIND_EOF'
-
-chmod +x ".claude/hooks/post-knowledge-remind.sh" 2>/dev/null || true
-
 # ============================================================
 # 3. General-purpose agent definitions
 # ============================================================
@@ -376,15 +331,6 @@ create_file ".claude/settings.json" '{
           {
             "type": "command",
             "command": "bash .claude/hooks/auto-format-python.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/post-knowledge-remind.sh"
           }
         ]
       }
