@@ -1,10 +1,24 @@
 import json
+import subprocess
 import yaml
 import pytest
 from typer.testing import CliRunner
 from exp_registry.cli import app
 
 runner = CliRunner()
+
+
+def _init_git_repo(path):
+    """Initialize a git repo at path with one empty commit. Returns HEAD sha."""
+    subprocess.run(["git", "init", "-q", "-b", "main"], cwd=path, check=True)
+    subprocess.run(["git", "config", "user.email", "t@t"], cwd=path, check=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=path, check=True)
+    subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=path, check=True)
+    subprocess.run(
+        ["git", "commit", "--allow-empty", "-q", "-m", "init"], cwd=path, check=True
+    )
+    sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=path).decode().strip()
+    return sha
 
 
 def _make_registry(tmp_path):
@@ -97,6 +111,52 @@ class TestRegister:
         assert result.exit_code != 0
 
 
+class TestRegisterCommit:
+    def test_register_with_explicit_commit(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            ["register", "exp10", "--type", "rl", "--model", "M", "--commit", "abc123def"],
+        )
+        assert result.exit_code == 0
+        exp = yaml.safe_load((tmp_path / "experiments" / "exp10.yaml").read_text())
+        assert exp["commit"] == "abc123def"
+
+    def test_register_auto_detects_head(self, tmp_path, monkeypatch):
+        sha = _init_git_repo(tmp_path)
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app, ["register", "exp11", "--type", "rl", "--model", "M"]
+        )
+        assert result.exit_code == 0, result.stdout
+        exp = yaml.safe_load((tmp_path / "experiments" / "exp11.yaml").read_text())
+        assert exp["commit"] == sha
+
+    def test_register_no_git_repo_omits_commit(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app, ["register", "exp12", "--type", "rl", "--model", "M"]
+        )
+        assert result.exit_code == 0, result.stdout
+        exp = yaml.safe_load((tmp_path / "experiments" / "exp12.yaml").read_text())
+        assert "commit" not in exp or not exp["commit"]
+
+    def test_register_explicit_commit_overrides_head(self, tmp_path, monkeypatch):
+        _init_git_repo(tmp_path)
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            ["register", "exp13", "--type", "rl", "--model", "M", "--commit", "manualSHA"],
+        )
+        assert result.exit_code == 0
+        exp = yaml.safe_load((tmp_path / "experiments" / "exp13.yaml").read_text())
+        assert exp["commit"] == "manualSHA"
+
+
 class TestShow:
     def test_show_existing(self, tmp_path, monkeypatch):
         _make_registry(tmp_path)
@@ -110,6 +170,18 @@ class TestShow:
         monkeypatch.chdir(tmp_path)
         result = runner.invoke(app, ["show", "nonexistent"])
         assert result.exit_code != 0
+
+    def test_show_displays_commit(self, tmp_path, monkeypatch):
+        _make_registry(tmp_path)
+        monkeypatch.chdir(tmp_path)
+        # inject a commit field
+        path = tmp_path / "experiments" / "exp01.yaml"
+        data = yaml.safe_load(path.read_text())
+        data["commit"] = "deadbeefcafe1234"
+        path.write_text(yaml.dump(data))
+        result = runner.invoke(app, ["show", "exp01"])
+        assert result.exit_code == 0
+        assert "deadbeefcafe1234" in result.stdout
 
 
 class TestUpdate:

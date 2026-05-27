@@ -60,7 +60,7 @@ Experiment IDs like `exp07a`, `exp07b`, `exp07c` automatically group into series
 | Filter by series | `exp list --series exp07` |
 | Show details | `exp show <id>` |
 | JSON output | `exp show <id> --json` |
-| Register new | `exp register <id> --type rl --model Qwen3-VL-8B` |
+| Register new | `exp register <id> --type rl --model Qwen3-VL-8B` (auto-records git HEAD; `--commit <sha>` to override) |
 | Add benchmark | `exp add-benchmark <id> --dataset mmlu --eval-mode cot --samples 100 --step 50 --extra acc=0.72` |
 | Compare | `exp compare <id1> <id2> --dataset mmlu` |
 | Update status | `exp update <id> --status completed` |

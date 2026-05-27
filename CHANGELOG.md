@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.18.0] - 2026-05-27
+
+### experiment-registry
+
+#### Added
+- `exp register` now records the code commit SHA. Defaults to `git rev-parse HEAD` in the current directory; pass `--commit <sha>` to override (or to set one when not in a git repo). Field is written as top-level `commit:` in the experiment YAML and surfaced in `exp show`. Silently omitted when not in a git repo, so existing registries and non-git workflows keep working without a flag change. Bumps `exp-registry` package to 0.3.0.
+
 ## [1.17.1] - 2026-05-26
 
 ### init-project

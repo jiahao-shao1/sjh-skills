@@ -2,6 +2,7 @@
 
 import json
 import os
+import subprocess
 from datetime import date as date_type
 from typing import Optional
 
@@ -9,6 +10,24 @@ import typer
 import yaml
 from rich.console import Console
 from rich.table import Table
+
+
+def _detect_git_head(cwd: Optional[str] = None) -> Optional[str]:
+    """Return current git HEAD sha, or None if not in a git repo / git unavailable."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=cwd or os.getcwd(),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    if out.returncode != 0:
+        return None
+    sha = out.stdout.strip()
+    return sha or None
 
 from exp_registry.config import resolve_config
 from exp_registry.models import (
@@ -111,6 +130,8 @@ def show(
     console.print(f"Series: {exp.get('series', '')}")
     console.print(f"Date:   {exp.get('date', '')}")
     console.print(f"Status: {exp['status']}")
+    if exp.get("commit"):
+        console.print(f"Commit: {exp['commit']}")
 
     if exp.get("stages"):
         console.print("\n[bold]Stages:[/bold]")
@@ -147,6 +168,9 @@ def register(
     script: Optional[str] = typer.Option(None, help="Launch script path"),
     reward: Optional[str] = typer.Option(None, help="Reward function name"),
     name: Optional[str] = typer.Option(None, help="Human-readable name"),
+    commit: Optional[str] = typer.Option(
+        None, help="Code commit SHA for reproducibility (defaults to git HEAD)"
+    ),
 ):
     """Register a new experiment."""
     exp_config = resolve_config()
@@ -170,6 +194,8 @@ def register(
     if reward:
         stage["reward"] = reward
 
+    resolved_commit = commit or _detect_git_head()
+
     data = {
         "id": exp_id,
         "name": name or exp_id,
@@ -182,9 +208,14 @@ def register(
         "benchmarks": [],
         "findings": "",
     }
+    if resolved_commit:
+        data["commit"] = resolved_commit
 
     save_experiment(data, out_path)
-    console.print(f"Registered: [cyan]{out_path}[/cyan]")
+    if resolved_commit:
+        console.print(f"Registered: [cyan]{out_path}[/cyan] @ commit [dim]{resolved_commit[:12]}[/dim]")
+    else:
+        console.print(f"Registered: [cyan]{out_path}[/cyan] [yellow](no git commit — not in a repo)[/yellow]")
 
 
 @app.command("add-benchmark")
