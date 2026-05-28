@@ -4,6 +4,16 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.18.1] - 2026-05-28
+
+### sync-docs
+
+#### Improved
+- Checklist item 4 rewritten as **Rules vs knowledge**: new learnings default to `docs/knowledge/` (dated, with rationale); promote to `.claude/rules/` only when a constraint is stable, imperative, and reused, keeping rules to trigger + hard constraint + exact values + a `> Detail:` pointer. Dated experience, measured numbers, and run tags stay in knowledge.
+
+#### Added
+- New checklist item 7 **Rule hygiene**: scans existing `.claude/rules/` for rules that have grown into dated changelogs, duplicate `CLAUDE.md` / `AGENTS.md`, or carry knowledge-level detail, and flags them for prune. Makes doc sync bidirectional (prune as well as add) instead of monotonic growth.
+
 ## [1.18.0] - 2026-05-27
 
 ### experiment-registry
