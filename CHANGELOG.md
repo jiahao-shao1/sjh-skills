@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.18.3] - 2026-06-05
+
+### plugin
+
+#### Fixed
+- `marketplace.json` version resynced to match `plugin.json` (was stuck at 1.18.1).
+
 ## [1.18.2] - 2026-06-05
 
 ### paper-analyzer
