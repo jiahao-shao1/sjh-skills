@@ -29,14 +29,16 @@ notebooklm source list  # check if the paper is already a source
 ```bash
 # Prefer arXiv HTML — it preserves equations, tables, and structure
 notebooklm source add "https://arxiv.org/html/<ID>"
-# If HTML unavailable, fall back to abstract page
-notebooklm source add "https://arxiv.org/abs/<ID>"
+# If HTML unavailable, fall back to PDF (abs page only has abstract, useless for deep reading)
+notebooklm source add "https://arxiv.org/pdf/<ID>"
 ```
 
 If no notebook exists for this line of research, create one:
 ```bash
 notebooklm create "Research Topic Name"
 notebooklm source add "https://arxiv.org/html/<ID>"
+# fallback
+notebooklm source add "https://arxiv.org/pdf/<ID>"
 ```
 
 **Supplementary sources** (only when NotebookLM is insufficient):

@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.18.2] - 2026-06-05
+
+### paper-analyzer
+
+#### Fixed
+- NotebookLM source fallback changed from `arxiv.org/abs/` (abstract-only, useless for deep reading) to `arxiv.org/pdf/` when HTML is unavailable.
+
 ## [1.18.1] - 2026-05-28
 
 ### sync-docs
