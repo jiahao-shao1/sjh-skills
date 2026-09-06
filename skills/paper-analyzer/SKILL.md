@@ -188,12 +188,14 @@ The paper title's one-line characterization (after the em-dash) must be in plain
 
 ## Output Format
 
-The primary output is the causal chain analysis (Step 4), plus tri-dimensional tagging (Step 4.5) when a taxonomy is configured, plus research framework mapping (Step 5) when a hypothesis is configured. This goes into the user's related work document.
+**Always present findings conversationally first** — tell the user what the paper says, what's interesting, and what's problematic. Do NOT auto-write to files. Only write to `docs/strategy/related-work/papers/` or other docs when the user explicitly asks to persist the analysis.
 
-For a complete analysis, produce:
+The primary output is the causal chain analysis (Step 4), plus tri-dimensional tagging (Step 4.5) when a taxonomy is configured, plus research framework mapping (Step 5) when a hypothesis is configured. Present it inline in the conversation.
 
-1. **Three-part entry** (for `thinking-with-image.md` or equivalent doc)
-2. **Evidence chain entry** (one row for the summary table, if it exists)
+For a complete analysis, the structure includes:
+
+1. **Causal chain entry** (现象 → 实验设置 → 归因 → 解法)
+2. **Evidence chain entry** (one row for a summary table, if context calls for it)
 3. **Attribution entry** (if the paper proposes a new explanation)
 4. **Fix entry** (if the paper proposes a solution)
 
