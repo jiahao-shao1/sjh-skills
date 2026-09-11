@@ -21,7 +21,7 @@ sjh_skills/
 │   ├── paper-self-review/    # Paper paragraph self-review (logic / repetition / detail leakage)
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
-│   ├── sync-docs/            # Documentation sync checker (report only)
+│   ├── sync-docs/            # Documentation sync — updates docs and commits
 │   ├── context-audit/        # Progressive disclosure compliance audit
 │   ├── bibtex-fetch/         # arXiv / Semantic Scholar BibTeX fetcher
 │   ├── todo-worker/          # Project-root TODO.md task picker (priority + dep + state machine)

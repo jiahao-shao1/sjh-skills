@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.19.0] - 2026-09-11
+
+### sync-docs
+
+#### Changed
+- No longer report-only. The skill now writes the documentation updates itself and commits them, instead of printing a list of gaps for the user to act on. Guardrails replace the old prohibition: stage only the files it edited (never `commit -a`, since the working tree may hold unrelated code changes), keep docs in a separate commit, and report both what changed and what it deliberately left alone because the diff didn't answer the question.
+
 ## [1.18.5] - 2026-09-11
 
 ### sync-docs
