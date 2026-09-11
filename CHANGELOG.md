@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [1.18.5] - 2026-09-11
+
+### sync-docs
+
+#### Changed
+- Rewritten from a seven-item fixed checklist to a short statement of intent. The skill now says what to find (docs that no longer match the code), where to start (`git log` / `git diff`), and how to judge a gap (what a reader would get wrong), and leaves the method to the model. The old checklist hard-coded one project's documentation layout — `docs/knowledge/`, experiment registry, `CLAUDE.md` index table, `.claude/rules/` promotion criteria — which constrained the model on projects organized differently. Bidirectional sync (stale text counts as a gap, not just missing text) is kept as a principle rather than as two separate checklist items. Still report-only.
+
 ## [1.18.3] - 2026-06-05
 
 ### plugin
