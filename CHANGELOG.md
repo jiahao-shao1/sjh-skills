@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.0.1] - 2026-09-16
+
+### notion-lifeos
+
+#### Changed
+- `/drift` no longer reads `~/.claude/rules/personal-context.md` for project↔repo mapping hints. That global rule was removed; project names are matched to repos by meaning, which the next step already did.
+
 ## [2.0.0] - 2026-09-15
 
 ### plugin

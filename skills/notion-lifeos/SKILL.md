@@ -100,14 +100,13 @@ Surface recurring themes and hidden patterns in recent thinking.
 Detect gaps between stated goals and actual activity.
 
 1. Run `scripts/collect-drift-data.sh --days N` (default 30)
-2. Read `~/.claude/rules/personal-context.md` for project↔repo mapping hints
-3. Perform **semantic matching** (project names like "Thinking with Image" ≠ repo names like "agentic_umm" — match by meaning, not string)
-4. Analyze:
+2. Perform **semantic matching** (project names like "Thinking with Image" ≠ repo names like "agentic_umm" — match by meaning, not string)
+3. Analyze:
    - Per-project: git commit count + completed task count
    - **幽灵项目**: active in Notion but zero git/task activity
    - **隐性工作**: heavy git activity in repos not mapped to any active project
    - Time allocation distribution
-5. Output in Chinese: "项目活跃度矩阵" + "幽灵项目" + "隐性工作" + "建议"
+4. Output in Chinese: "项目活跃度矩阵" + "幽灵项目" + "隐性工作" + "建议"
 
 ## Gotchas (Common Pitfalls)
 
