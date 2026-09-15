@@ -51,15 +51,6 @@ npx skills add jiahao-shao1/sjh-skills --skill paper-analyzer
 
 在 `references/hypothesis.md` 中定义你的研究假说或理论框架。存在时，分析会将论文证据映射到你的框架，并进行"反向挑战"——询问论文的解法是否无意中证明了你的假说。
 
-## 何时用 vs. Scholar Agent
-
-| 任务 | 使用 |
-|------|------|
-| 发现和筛选今天的论文 | scholar-agent |
-| 深度批判分析一篇特定论文 | paper-analyzer |
-| 将论文添加到 NotebookLM 问答 | scholar-agent |
-| 评估论文与你的假说的关系 | paper-analyzer |
-
 ## 许可证
 
 MIT

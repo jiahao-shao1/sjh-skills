@@ -4,6 +4,22 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.0.0] - 2026-09-15
+
+### plugin
+
+#### Removed
+- `cmux`, `scholar-agent`, `obsidian-brain`, `codex-review`, `codex-task` and `todo-worker` are no longer part of the plugin. Their last version is 1.19.0 (`22271b4`); restore one with `git checkout 22271b4 -- skills/<name>`. Existing installs of these skills stop working, hence the major version.
+- `tests/obsidian-brain/`, which only exercised the removed skill's scripts.
+
+#### Changed
+- Plugin and marketplace descriptions, both READMEs, `AGENTS.md` and the Codex install example no longer list the removed skills.
+
+### paper-analyzer
+
+#### Changed
+- README drops the "When to Use vs. Scholar Agent" comparison, and the `description` no longer sends paper discovery to scholar-agent, since that skill is gone.
+
 ## [1.19.0] - 2026-09-11
 
 ### sync-docs

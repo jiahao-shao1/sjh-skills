@@ -7,25 +7,19 @@ A collection of Claude Code skills for research workflow automation. Each skill 
 ```
 sjh_skills/
 ├── skills/
-│   ├── scholar-agent/        # Scholar Inbox + NotebookLM deep reading
-│   ├── cmux/                 # Ghostty terminal orchestration + multi-agent
 │   ├── daily-summary/        # Git + Claude sessions + Notion aggregation
 │   ├── notion-lifeos/        # PARA method + Make Time via Notion API
 │   ├── web-fetcher/          # 5-layer fallback web content extraction
 │   ├── init-project/         # Claude Code project initialization
 │   ├── project-review/       # 5-dimension strategy review snapshot
 │   ├── remote-cluster-agent/ # Remote GPU cluster ops via Go daemon + rca CLI
-│   ├── codex-review/         # Cross-model plan/code review via OpenAI Codex
-│   ├── codex-task/           # Delegate coding tasks directly to Codex CLI (single-shot codex exec)
 │   ├── paper-analyzer/       # Deep critical paper analysis with causal chain methodology
 │   ├── paper-self-review/    # Paper paragraph self-review (logic / repetition / detail leakage)
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
 │   ├── sync-docs/            # Documentation sync — updates docs and commits
 │   ├── context-audit/        # Progressive disclosure compliance audit
-│   ├── bibtex-fetch/         # arXiv / Semantic Scholar BibTeX fetcher
-│   ├── todo-worker/          # Project-root TODO.md task picker (priority + dep + state machine)
-│   └── obsidian-brain/       # ⏸️ On hold — Obsidian dual-zone vault
+│   └── bibtex-fetch/         # arXiv / Semantic Scholar BibTeX fetcher
 ├── packages/                 # Pip-installable packages (e.g. exp-registry)
 ├── hooks/                    # Optional hook helpers; no plugin hooks are auto-registered by default
 ├── .claude-plugin/           # Plugin manifest and marketplace config

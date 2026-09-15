@@ -1,6 +1,6 @@
 ---
 name: paper-analyzer
-description: "Deep critical analysis of one specific paper — dissect experimental setup, extract numbers, evaluate claims against a hypothesis. Triggers: 'analyze this paper', 'deep dive into', '分析这篇论文', '论文深度分析', 'what does this paper really show', '这篇论文说明了什么', arXiv ID with analysis intent. Not for paper discovery (use scholar-agent), quick summaries, or literature surveys."
+description: "Deep critical analysis of one specific paper — dissect experimental setup, extract numbers, evaluate claims against a hypothesis. Triggers: 'analyze this paper', 'deep dive into', '分析这篇论文', '论文深度分析', 'what does this paper really show', '这篇论文说明了什么', arXiv ID with analysis intent. Not for paper discovery, quick summaries, or literature surveys."
 ---
 
 # Paper Analyzer

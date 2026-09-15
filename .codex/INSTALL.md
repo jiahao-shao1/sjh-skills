@@ -34,7 +34,7 @@ If you only want specific skills:
 ```bash
 git clone https://github.com/jiahao-shao1/sjh-skills.git ~/.codex/sjh-skills
 mkdir -p ~/.agents/skills
-ln -sf ~/.codex/sjh-skills/skills/scholar-agent ~/.agents/skills/scholar-agent
+ln -sf ~/.codex/sjh-skills/skills/paper-analyzer ~/.agents/skills/paper-analyzer
 ln -sf ~/.codex/sjh-skills/skills/web-fetcher ~/.agents/skills/web-fetcher
 ```
 

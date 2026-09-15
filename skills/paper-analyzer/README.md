@@ -51,15 +51,6 @@ npx skills add jiahao-shao1/sjh-skills --skill paper-analyzer
 
 Define your research hypothesis or theoretical lens in `references/hypothesis.md`. When present, Step 5 maps each paper's evidence to your framework and applies a "reverse challenge" — asking whether the paper's fix inadvertently proves your claims.
 
-## When to Use vs. Scholar Agent
-
-| Task | Use |
-|------|-----|
-| Discover and filter today's papers | scholar-agent |
-| Deep-read a specific paper critically | paper-analyzer |
-| Add papers to NotebookLM for Q&A | scholar-agent |
-| Evaluate a paper against your hypothesis | paper-analyzer |
-
 ## License
 
 MIT
