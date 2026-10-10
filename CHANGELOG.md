@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.1.0] - 2026-10-10
+
+### session-team
+
+#### Added
+- New skill: a leader session coordinates worker sessions on the same machine over `SendMessage`. The point is that the session you discuss ideas with is never blocked by training, environment setup or debugging, and you don't lose your own context switching between task sessions. It covers how peers find and message each other, how a leader starts workers on the Remote Control bridge environment (`create_session`), and how it schedules check-ins (`send_later`). It adds a leader protocol, a worker contract, a team doc template and a kickoff prompt template, all distilled from about a week of running a four-worker team. Starting a worker with `create_session` was checked end to end: the worker ran on the same machine, messaged the leader, and showed up in the user's session list, where the user could talk to it. Archiving it was final, since `unarchive_session` did not bring back the local process.
+
 ## [2.0.1] - 2026-09-16
 
 ### notion-lifeos

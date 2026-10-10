@@ -18,6 +18,7 @@ English | [中文](README.zh-CN.md)
 | [paper-self-review](skills/paper-self-review/) | Paper paragraph self-review — three-axis check (logic jumps / repetition / premature method detail), v1 → v2 deterministic iteration |
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
+| [session-team](skills/session-team/) | Leader / worker teams of Claude Code sessions on one machine — the leader splits the work, starts workers, and coordinates them over `SendMessage` with a team doc, self-contained kickoff prompts and scheduled check-ins |
 | [sync-docs](skills/sync-docs/) | Documentation sync — finds where the project's docs have fallen out of sync with recent code changes, rewrites them, and commits the docs on their own |
 | [context-audit](skills/context-audit/) | Context management hygiene — audits the three-layer architecture (CLAUDE.md / rules / knowledge) for progressive disclosure compliance. Detects orphaned knowledge, stale references, and CLAUDE.md index leakage. Read-only |
 | [bibtex-fetch](skills/bibtex-fetch/) | Fetch correct BibTeX entries from arXiv (by ID) or Semantic Scholar (by title search). Batch fetch, custom bibkeys, exponential backoff. Zero dependencies (Python stdlib only) |
@@ -82,6 +83,7 @@ sjh_skills/
     ├── paper-self-review/     # Paper paragraph self-review (logic / repetition / detail leakage)
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
+    ├── session-team/          # Leader / worker teams of sessions on one machine
     ├── sync-docs/             # Documentation sync — updates docs and commits
     ├── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)
     └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX fetcher (Python stdlib only)
