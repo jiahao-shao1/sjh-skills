@@ -2,11 +2,11 @@
 
 [English](README.md) | 中文
 
-在一台常开的机器上，让多个 Claude Code session 分工协作。**leader** 负责和你对话、统筹安排；**worker** 承担耗时长的活（训练、配环境、评测、排查），通过 `SendMessage` 向 leader 回报。
+在一台常开的机器上，让多个 Claude Code 或 Codex session 分工协作。**leader** 负责和你对话、统筹安排；**worker** 承担耗时长的活（训练、配环境、评测、排查）并回报。你也可以打开每个 worker 的独立会话，直接继续对话。
 
 ## 为什么要这样做
 
-用 Claude Code 做研究，同时推进的事情一多，就会碰到两个问题：
+用 coding agent 做研究，同时推进的事情一多，就会碰到两个问题：
 
 - **所有事都在一个 session 里做，会被卡住。** 和你讨论 idea 的 session 同时还在配环境、盯训练，讨论就得等这些跑完，它的 context 也会被日志填满。
 - **一个任务开一个 session，你就成了中转站。** 你得在各个 session 之间来回切，每次都要重读一遍才想起进度，自己的思路也会被打断。
@@ -28,7 +28,7 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 
 只需要在 leader 所在的机器上安装。worker 不用装，它们要遵守的规矩都写在启动说明里。
 
-## 准备（每台机器一次）
+## Claude Code 准备（每台机器一次）
 
 1. 准备一台常开的机器（dev box 或工作站），装好 Claude Code。我们测试的版本是 2.1.283。
 2. 在团队要用的仓库目录下，用 tmux 起 Remote Control：
@@ -46,6 +46,14 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 
 不用 Remote Control、直接在同一台机器的 tmux 里起 `claude`，各 session 之间也能互发消息。但这样就不能用手机操作，leader 也可能没有 `create_session`（开 worker）和 `send_later`（定时检查）这两个工具，它们是 Remote Control session 带的。
 
+## Codex 准备
+
+使用当前 Codex 客户端已经连接的服务，创建独立、持久的会话。优先使用可用的 App 会话工具；缺少这些工具时，现有本机 app-server 也能创建会话、发起对话、读取结果，`codex queue --thread <ID> --message '<消息>'` 可以在会话之间发送后续任务。连接方式、Unix socket 的 WebSocket 握手、验证步骤和生命周期见 [Codex 路径](references/codex.md)。
+
+已在 Codex CLI / app-server 0.162.1 验证创建会话、保留上下文和 worker 互相回复。还需核对目标客户端是否真的展示这些会话，才能说你可以直接使用。团队文档记录主机和稳定的 thread ID；仅凭名称或能访问同一目录，不足以确认连的是同一个服务。
+
+创建 worker 不会自动安排 leader 的下一次检查。要记录实际的定时唤醒机制；没有时，就明确由下一次调用 leader 继续协调。各会话上下文独立，文件可能共享，改代码的 worker 各用自己的 worktree。
+
 ## 用法
 
 告诉 leader 要做什么，并说明要分给团队来做。例如：「你当 leader，把这件事拆成数据和评测两部分，各交给一个 worker。」
@@ -54,10 +62,10 @@ leader 接下来会：
 
 1. 先和你确认怎么拆；
 2. 在仓库里写团队文档，包括分工、规矩、资源分配、进度看板和每部分的判据（[模板](references/team-doc-template.md)）；
-3. 为每部分写一份自包含的启动说明（[模板](references/kickoff-template.md)），自己开 worker，或者交给你粘贴进新会话。leader 开的 worker 会出现在你的会话列表里，你也可以直接和它对话；
-4. 定时回来检查、更新看板，只把结果、卡点和需要你拍板的事带给你。
+3. 为每部分写一份自包含的启动说明（[模板](references/kickoff-template.md)），自己开独立 worker，或者交给你粘贴进新会话；验证你能直接访问，记录主机和稳定的会话地址；
+4. 按记录的唤醒机制检查、更新看板，只把结果、卡点和需要你拍板的事带给你。没有定时机制时，会明确下一次检查需要再次调用。
 
-## 原理
+## Claude Code 原理
 
 ```
 你（手机 / 笔记本）──Remote Control──► 机器上的 claude remote-control

@@ -18,6 +18,17 @@ Criteria are written before the run and are not edited afterwards; a change of p
 | <worker-a> | <part A: code, data, runs> | <shared metric scripts> |
 | <worker-b> | <shared definitions: metrics, eval and analysis scripts> | <part A's data> |
 
+## Session addresses
+
+| session (former names) | runtime | host / connection | stable session or thread ID | worktree |
+|---|---|---|---|---|
+| leader | <Claude Code / Codex> | <host> | <ID> | <path> |
+| <worker-a> | <runtime> | <host> | <ID> | <path> |
+| <worker-b> | <runtime> | <host> | <ID> | <path> |
+
+User access: <how to open each worker; what was verified in the client versus only on the server>.
+Check-ins: <actual scheduler / wake-up ID, next time and timezone; or next leader invocation>.
+
 ## Rules
 
 - Shared definitions (metrics, eval and analysis scripts, data formats) have exactly one owner. Others propose changes to that owner.

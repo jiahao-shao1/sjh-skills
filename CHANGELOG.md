@@ -4,6 +4,17 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.2.0] - 2026-10-13
+
+### session-team
+
+#### Added
+- Codex independent-session route: prefer app thread tools, fall back to the existing local app-server, create persistent conversations, queue follow-up messages and inspect results. The reference documents the Unix-socket WebSocket handshake and the persistence / peer-reply checks performed with CLI and app-server 0.162.1; desktop direct-user access is a separate verification step.
+- Stable session addresses, runtime, host, worktree and actual check-in mechanism in the shared templates. Workers can receive direct user instructions and report plan changes to the leader.
+
+#### Changed
+- Shared leader / worker protocol and both language READMEs now cover Claude Code and Codex. Explicitly distinguish independent user-accessible conversations from bounded subagent work, and message delivery from scheduled unattended coordination. Claude bridge archive behavior remains runtime-specific.
+
 ## [2.1.0] - 2026-10-10
 
 ### session-team
