@@ -56,6 +56,8 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 
 ## 用法
 
+也可以只让 Codex 给已有的 CC 会话发消息，例如：「给 CC 的 leader 打个招呼，看看它怎么回复。」[本机通信方法](references/claude-peer.md) 包含可直接运行的收发示例、接收权限配置和送达状态的判断。已在 CC 2.1.288 验证：用户授权修改 `crossSessionInbound` 后，无需重启即可收发；临时回复 socket 只在这次通信期间有效。
+
 告诉 leader 要做什么，并说明要分给团队来做。例如：「你当 leader，把这件事拆成数据和评测两部分，各交给一个 worker。」
 
 leader 接下来会：

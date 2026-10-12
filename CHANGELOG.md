@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.2.1] - 2026-10-13
+
+### session-team
+
+#### Improved
+- Document the verified Codex-to-Claude Code local peer route with a runnable JSON-line socket exchange, temporary reply listener, receive-policy holds and user-authorized settings hot reload. Link it from the skill entrypoint, Codex reference and both language READMEs; include direct CC messaging in discovery.
+- Distinguish submitted bytes, held/released messages and a model reply, and record the limits of a temporary reply address. Keep user-specific addresses and session identifiers out of the recipe.
+
 ## [2.2.0] - 2026-10-13
 
 ### session-team

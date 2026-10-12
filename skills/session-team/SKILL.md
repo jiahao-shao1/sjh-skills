@@ -1,6 +1,6 @@
 ---
 name: session-team
-description: Run a team of Claude Code or Codex sessions on one machine — a leader splits the work, starts persistent worker sessions the user can also talk to directly, and coordinates them with a shared team doc, self-contained kickoff prompts and scheduled check-ins. Triggers include 'be the leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'worker session', '当 leader', '开个 leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Not for bounded subagent tasks inside one conversation or cloud workers that need this machine's files.
+description: Coordinate Claude Code or Codex sessions on one machine, including messaging an existing CC session from Codex. For a team, a leader starts persistent workers the user can also talk to directly and coordinates them through a shared team doc and scheduled check-ins. Triggers include 'be the leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'worker session', 'message a CC session', '当 leader', '开个 leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作', '给 CC session 发消息', 'Codex 和 CC 通信'. Not for bounded subagent tasks inside one conversation or cloud workers that need this machine's files.
 ---
 
 # Session Team
@@ -13,11 +13,14 @@ What makes it work is the protocol (a team doc, prereg-style criteria, one owner
 
 Choose the runtime already in use. Claude Code uses the peer / bridge flow below. For Codex, read [references/codex.md](references/codex.md): prefer available app thread tools, with the existing local app-server as the fallback. Do not treat missing app tools as proof that independent sessions are unavailable.
 
+For a message to an existing Claude Code session from Codex, read [references/claude-peer.md](references/claude-peer.md). It contains a runnable local-socket exchange and the verified `crossSessionInbound` settings behavior. A one-off exchange uses that route directly; the team setup protocol below applies when organizing workers.
+
 A worker must be a persistent, separately addressable conversation the user can open and continue. A subagent spawn and message exchange alone do not establish that. Verify user access before describing a worker as directly usable; if only the server registry was checked, say so. Cloud workers need an explicitly suitable filesystem and communication path.
 
 ### Claude Code
 
 - **Peers.** Interactive Claude Code sessions run by the same user on the same machine register themselves (`~/.claude/sessions/<pid>.json`: name, status, a local socket). `ListAgents` lists them. `SendMessage(to=<name>, message=...)` delivers to the peer, where it shows up as a turn wrapped in `<cross-session-message from-name="...">`. The receiver treats it as a teammate's request, inside its own permissions; a peer cannot grant permissions.
+- **From Codex.** When CC's peer tools are unavailable, discover `messagingSocketPath` in that registry and use the [local peer route](references/claude-peer.md). A temporary listening socket lets CC reply with its own `SendMessage`. A held receipt means the message has not reached the model; a received reply verifies the exchange.
 - **Starting workers.** Under Remote Control (`claude remote-control` on the machine), sessions live in a *bridge* environment. A leader in that environment can start a worker with `create_session(environment_id=<bridge env>, title=<worker name>, prompt=<kickoff>)`. The worker runs as a local process on the same machine, in the directory `claude remote-control` was started in, with the leader's permission mode or a stricter one. Its title is its peer name. It also shows up in the user's session list (claude.ai/code, the app), so the user can talk to it directly. Find the bridge env with `list_environments` (`kind: bridge`). Without these tools, give the user the kickoff prompt to paste into a new session.
 - **Check-ins.** The leader schedules its own wake-ups: `send_later` (Remote Control sessions; survives restarts), otherwise `/loop` or a cron tool if the session has one. `get_session` shows a worker's status and last-turn summary without interrupting it.
 
@@ -51,7 +54,7 @@ Each kickoff carries these, so a worker needs no skill installed:
 ## Pitfalls
 
 - **Names change.** Renamed sessions keep old names in old records. Keep "(former names)" in the roles table; refresh Claude peers with `ListAgents`, and route Codex messages by host + stable thread ID.
-- **No read receipts.** A message can be buried by a busy turn or a compaction. Anything that must survive goes in the team doc too.
+- **Delivery is not reading.** CC can report a message as held, released or refused; a socket write alone does not establish that the model saw it. A message can also be buried by a busy turn or a compaction. Anything that must survive goes in the team doc too.
 - **Shared machines.** `pkill -f <pattern>` matches other sessions' processes, and so does a server restart that kills by name. Kill by PID or by your own tmux session.
 - **Shared definitions drift.** If two sessions edit the metric script, results stop being comparable. One owner; changes are additive (a flag or a new function).
 - **Archived Claude bridge workers stay dead.** After `unarchive_session`, a worker on the bridge stayed `PENDING` / `disconnected` with no local process, and messages to it went unanswered. To resume that part, start a new worker and point it at the team doc. This observation does not establish Codex archive semantics.

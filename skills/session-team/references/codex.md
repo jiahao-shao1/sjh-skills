@@ -49,6 +49,8 @@ Keep reading events until `turn/completed`; check `turn.status` rather than assu
 
 ## Messages and status
 
+To message an existing **Claude Code** session, use the [CC local peer route](claude-peer.md). It covers registry discovery, JSON-line socket messages, receive-policy holds and a temporary reply listener. The Codex app-server commands below target Codex threads.
+
 On the same daemon, a worker or leader can send a follow-up with:
 
 ```bash

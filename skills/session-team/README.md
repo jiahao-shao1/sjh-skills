@@ -54,6 +54,8 @@ Creating workers does not schedule the leader's next check-in. Record an actual 
 
 ## Usage
 
+For a direct message from Codex to an existing CC session, ask: "Send a greeting to the CC session named leader and check its reply." The [local peer recipe](references/claude-peer.md) contains a runnable exchange, permission-policy handling and the distinction between socket delivery and a model reply. CC 2.1.288 accepted the user-authorized `crossSessionInbound` setting change without a restart. The reply socket lasts only for that exchange.
+
 Tell the leader what you want done and that it should run it as a team, for example: "Be the leader. Split this into a data part and an eval part, give each to a worker session."
 
 The leader then:
