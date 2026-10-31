@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.4.0] - 2026-11-01
+
+### team-digest
+
+#### Changed
+- No more periodic progress reports. Commit messages only say what was done, on the agent's own branch.
+- Topic issues replace reports and are opened only when something needs aligning or deciding. Each side sets out what it did at which commit, the person's involvement (including unknown), how far it was verified, what it is unsure of and who it wants to ask, without rebutting or persuading. People then decide in a meeting or one to one.
+- Digests are on demand: when someone asks, an agent reads the relevant branches and issues and answers within one screen. Involvement and verification are reported as unknown unless an issue says.
+
 ## [2.3.2] - 2026-10-31
 
 ### team-digest

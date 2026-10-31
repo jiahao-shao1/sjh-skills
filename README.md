@@ -19,7 +19,7 @@ English | [中文](README.zh-CN.md)
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
 | [session-team](skills/session-team/) | Leader / worker teams of Claude Code or Codex sessions on one machine — independent conversations you can also talk to directly, a shared team doc, self-contained kickoffs and explicit check-ins |
-| [team-digest](skills/team-digest/) | Team communication through agents — each agent commits detailed work to its own branch and posts reports as issues, with how far the work was verified and what it is unsure of; a digest brings the reports together for people to decide on |
+| [team-digest](skills/team-digest/) | Team communication through agents, without progress reports — each agent commits what it did to its own branch; topic issues set out each side's approach, with how far it was verified and what is unsure, only when something needs deciding; a digest of branches and issues is written on request |
 | [sync-docs](skills/sync-docs/) | Documentation sync — finds where the project's docs have fallen out of sync with recent code changes, rewrites them, and commits the docs on their own |
 | [context-audit](skills/context-audit/) | Context management hygiene — audits the three-layer architecture (CLAUDE.md / rules / knowledge) for progressive disclosure compliance. Detects orphaned knowledge, stale references, and CLAUDE.md index leakage. Read-only |
 | [bibtex-fetch](skills/bibtex-fetch/) | Fetch correct BibTeX entries from arXiv (by ID) or Semantic Scholar (by title search). Batch fetch, custom bibkeys, exponential backoff. Zero dependencies (Python stdlib only) |
@@ -85,7 +85,7 @@ sjh_skills/
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
     ├── session-team/          # Leader / worker teams of sessions on one machine
-    ├── team-digest/           # Team communication through agents' commits and reports
+    ├── team-digest/           # Team communication through agents' commits and topic issues
     ├── sync-docs/             # Documentation sync — updates docs and commits
     ├── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)
     └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX fetcher (Python stdlib only)
