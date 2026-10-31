@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.3.0] - 2026-10-31
+
+### team-digest
+
+#### Added
+- New skill for aligning a small team through its agents. Each agent reports what it did, pinned to the repo and commit ID, with the person's involvement, how far the work was verified and at which commit, what it is unsure of and who it wants to ask. A digest tells the team who did what, what nobody verified, who is waiting on whom, where accounts differ, which questions are open and what could not be checked. The agent states what happened; people decide.
+- One short instruction file, with no scripts or fixed format. Not yet used by a real team.
+
 ## [2.2.1] - 2026-10-13
 
 ### session-team

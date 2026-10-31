@@ -18,6 +18,7 @@ sjh_skills/
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
 │   ├── session-team/         # Leader / worker teams of sessions on one machine
+│   ├── team-digest/          # Team alignment through agents' shared work records
 │   ├── sync-docs/            # Documentation sync — updates docs and commits
 │   ├── context-audit/        # Progressive disclosure compliance audit
 │   └── bibtex-fetch/         # arXiv / Semantic Scholar BibTeX fetcher
