@@ -15,8 +15,8 @@ Commit often to your own branch in the team's repo, with messages detailed enoug
 
 From time to time, post a report as an issue so the team can align and discuss. A teammate reading it should be able to tell:
 
-- what was done, pinned to the exact version: repo and commit ID, plus the PR if there is one. PRs and branches move; a commit lets someone find exactly what you did. If the work isn't committed or pushed, say so.
-- how involved the person was: wrote it, read the diff, or only asked for it
+- what was done, pinned to the exact version: repo and commit ID, plus the PR if there is one. PRs and branches move; a commit lets someone find exactly what you did. If the work isn't committed or pushed, say so. If a report spans several lines of work, list each line's commits. Readers may not have access to every repo, so name the repo and make the text make sense without opening the link.
+- how involved the person was: wrote it, read the diff, only asked for it, or unknown. If you can't tell, say unknown; don't claim they looked at something.
 - how far it was verified, how, and at which commit
 - what you're unsure of, especially what they may not raise themselves
 - who you'd like to ask about what
@@ -25,7 +25,9 @@ Show the person before sending. They can add to it, but keep what you were unsur
 
 ## Digest
 
-Read everyone's reports and check them against the links, their branches and recent activity. Then tell the team, plainly:
+Read everyone's reports and check them against the links, their branches and recent activity. Then tell the team, plainly and within one screen, ordered by what could change someone's decision. Differences that wouldn't change a decision get only a count.
+
+Cover:
 
 - who did what, with links to the commits
 - what nobody has verified

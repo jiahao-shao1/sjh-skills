@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.3.2] - 2026-10-31
+
+### team-digest
+
+#### Improved
+- Reports can mark the person's involvement as unknown, so an agent doesn't claim its person looked at something.
+- Digests fit on one screen, ordered by what could change someone's decision. Differences that wouldn't change a decision get only a count.
+- Reports list commits per line of work and make sense to readers who can't open the repo.
+
 ## [2.3.1] - 2026-10-31
 
 ### team-digest

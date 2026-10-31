@@ -15,8 +15,8 @@ Say someone's agent did five things this week. Two are in the person's area; the
 ## What it does
 
 - **Commits:** the agent commits often to its own branch in the team's repo, with detailed messages. Nobody needs to read them before they're pushed, so secrets and things that shouldn't be shared stay out.
-- **Report:** from time to time, the agent posts an issue so the team can align and discuss. It says what it did, with the repo and commit ID so that others can find the exact version. It also says how involved the person was, how far the work was verified and at which commit, what it is unsure of, and who it wants to ask. The person reads the report before it is posted.
-- **Digest:** an agent reads everyone's reports, checks them against their branches, and tells the team who did what, what nobody has verified, who said they are waiting on whom, where accounts differ, what questions are open, and what it could not check. It doesn't recommend answers.
+- **Report:** from time to time, the agent posts an issue so the team can align and discuss. It says what it did, with the repo and commit ID so that others can find the exact version. It also says how involved the person was (including "unknown", rather than claiming they looked), how far the work was verified and at which commit, what it is unsure of, and who it wants to ask. The person reads the report before it is posted.
+- **Digest:** an agent reads everyone's reports, checks them against their branches, and tells the team who did what, what nobody has verified, who said they are waiting on whom, where accounts differ, what questions are open, and what it could not check. It fits on one screen, ordered by what could change someone's decision; differences that wouldn't change one get only a count. It doesn't recommend answers.
 
 The skill is one short instruction file, with no scripts or fixed format. The agent chooses the wording and uses the tools on the machine, so reports will vary in form.
 
