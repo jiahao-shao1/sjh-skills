@@ -19,7 +19,7 @@
 | [experiment-registry](skills/experiment-registry/) | ML 实验生命周期管理 —— 结构化 YAML 注册表 + CLI，支持实验注册、Benchmark 记录、跨实验对比、状态追踪 |
 | [handoff](skills/handoff/) | Session 交接摘要 —— 在对话中直接打印结构化上下文摘要（状态、决策、坑、下一步），无缝衔接下个 session |
 | [session-team](skills/session-team/) | 同一台机器上的 Claude Code / Codex session 团队 —— 你也能直接对话的独立会话，配合团队文档、自包含的启动说明和明确的检查机制 |
-| [team-digest](skills/team-digest/) | 通过 agent 让团队对齐 —— 每个 agent 说明做了什么（附 commit ID）、验证到什么程度、哪里没把握；摘要把记录汇总起来，由人来决定 |
+| [team-digest](skills/team-digest/) | 通过 agent 让团队沟通 —— 每个 agent 在自己的分支提交详细 commit，并用 issue 汇报验证程度和没把握的地方；摘要把汇报汇总起来，由人来决定 |
 | [sync-docs](skills/sync-docs/) | 文档同步 —— 找出项目文档与近期代码变更脱节的地方，直接改好并单独提交文档 |
 | [context-audit](skills/context-audit/) | Context 管理体检 —— 审计三层架构（CLAUDE.md / rules / knowledge）的渐进式披露合规性，检测孤立的 knowledge 文件、失效引用、CLAUDE.md 索引泄漏。只读 |
 | [bibtex-fetch](skills/bibtex-fetch/) | 拉取正确的 BibTeX 引用 —— arXiv（按 ID）或 Semantic Scholar（按标题搜索），支持批量、自定义 bibkey、限流退避。零依赖（仅 Python stdlib） |
@@ -83,7 +83,7 @@ sjh_skills/
     ├── experiment-registry/   # ML 实验注册表，YAML + CLI
     ├── handoff/               # Session 交接摘要，上下文无缝衔接
     ├── session-team/          # 同一台机器上的 leader / worker session 团队
-    ├── team-digest/           # 通过 agent 的共享工作记录让团队对齐
+    ├── team-digest/           # 通过 agent 的 commit 和汇报让团队沟通
     ├── sync-docs/             # 文档同步（直接更新并提交）
     ├── context-audit/         # 渐进式披露合规审计（CLAUDE.md / rules / knowledge）
     └── bibtex-fetch/          # arXiv / Semantic Scholar BibTeX 拉取器（仅 Python stdlib）

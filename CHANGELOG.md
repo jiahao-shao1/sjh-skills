@@ -4,6 +4,14 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.3.1] - 2026-10-31
+
+### team-digest
+
+#### Changed
+- Agents commit often to their own branch with detailed messages, and post reports as issues for the team to align on. The digest also checks reports against those branches.
+- The motivation now starts from communication.
+
 ## [2.3.0] - 2026-10-31
 
 ### team-digest
