@@ -51,10 +51,10 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 leader 保持默认窗口，worker 由 leader 在 Bash 里用较小的窗口启动：
 
 ```bash
-claude --bg --autocompact 300000 --name worker-a "<启动说明>"
+claude --bg --autocompact 300000 --remote-control worker-a --name worker-a "<启动说明>"
 ```
 
-worker 经常闲置。闲置超过 prompt cache TTL 后再给它发消息，整个 context 要重新写入缓存，成本约为命中缓存时的 40 倍。窗口越小，每次唤醒的成本上限越低。不要在启动说明里写 `/autocompact <tokens>`，它会改共享的用户设置。哪些已在 2.1.316 上验证、哪些没有，见 [skill](SKILL.md#worker-context-and-cost-claude-code)；其中后台 worker 能否出现在 claude.ai 或 app 里还没核实。接入时用 `claude attach <id>`，并保持相同的 `CLAUDE_CONFIG_DIR`。
+worker 经常闲置。闲置超过 prompt cache TTL 后再给它发消息，整个 context 要重新写入缓存，成本约为命中缓存时的 40 倍。窗口越小，每次唤醒的成本上限越低。不要在启动说明里写 `/autocompact <tokens>`，它会改共享的用户设置。要保留 `--remote-control`，否则 worker 不会出现在你的 session 列表里。哪些已在 2.1.316 上验证、哪些没有，见 [skill](SKILL.md#worker-context-and-cost-claude-code)。也可以用 `claude attach <id>` 接入，要保持相同的 `CLAUDE_CONFIG_DIR`。
 
 ## Codex 准备
 
