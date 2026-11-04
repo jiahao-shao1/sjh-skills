@@ -4,6 +4,20 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.5.1] - 2026-11-04
+
+### session-team
+
+#### Fixed
+- The capped worker command now includes `--remote-control`. Without it, workers never appeared in the user's session list.
+
+#### Added
+- How to add Remote Control to a running worker with `--resume` without losing its conversation, and how to check it registered.
+- A note on `claude` failing with `permission denied` in the leader's Bash when a snapshotted shell function wraps it.
+
+#### Changed
+- Verified list: a leader's `SendMessage` reaching a worker and `--bg --remote-control` workers appearing in the app are now verified. The window under `--remote-control` or `--resume` is listed as not verified.
+
 ## [2.5.0] - 2026-11-04
 
 ### session-team

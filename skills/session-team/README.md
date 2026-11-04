@@ -49,10 +49,10 @@ Plain `claude` sessions in tmux on the same machine can also message each other.
 Keep the leader on the default window and start workers with a smaller one from the leader's Bash:
 
 ```bash
-claude --bg --autocompact 300000 --name worker-a "<kickoff>"
+claude --bg --autocompact 300000 --remote-control worker-a --name worker-a "<kickoff>"
 ```
 
-Workers sit idle, and a message to a worker idle past the prompt cache TTL rewrites its whole context to the cache, about 40x the cost of a cached read. A smaller window lowers the most each wake can cost. Don't put `/autocompact <tokens>` in a kickoff: it writes the shared user settings. The [skill](SKILL.md#worker-context-and-cost-claude-code) lists what was verified on 2.1.316 and what wasn't, including that background workers haven't been checked in claude.ai or the app. Open them with `claude attach <id>` under the same `CLAUDE_CONFIG_DIR`.
+Workers sit idle, and a message to a worker idle past the prompt cache TTL rewrites its whole context to the cache, about 40x the cost of a cached read. A smaller window lowers the most each wake can cost. Don't put `/autocompact <tokens>` in a kickoff: it writes the shared user settings. Keep `--remote-control`, or the worker won't appear in your session list. The [skill](SKILL.md#worker-context-and-cost-claude-code) lists what was verified on 2.1.316 and what wasn't. Workers also open with `claude attach <id>` under the same `CLAUDE_CONFIG_DIR`.
 
 ## Codex setup
 

@@ -22,7 +22,7 @@ A worker must be a persistent, separately addressable conversation the user can 
 - **Peers.** Interactive Claude Code sessions run by the same user on the same machine register themselves (`~/.claude/sessions/<pid>.json`: name, status, a local socket). `ListAgents` lists them. `SendMessage(to=<name>, message=...)` delivers to the peer, where it shows up as a turn wrapped in `<cross-session-message from-name="...">`. The receiver treats it as a teammate's request, inside its own permissions; a peer cannot grant permissions.
 - **From Codex.** When CC's peer tools are unavailable, discover `messagingSocketPath` in that registry and use the [local peer route](references/claude-peer.md). A temporary listening socket lets CC reply with its own `SendMessage`. A held receipt means the message has not reached the model; a received reply verifies the exchange.
 - **Starting workers.** Under Remote Control (`claude remote-control` on the machine), sessions live in a *bridge* environment. A leader in that environment can start a worker with `create_session(environment_id=<bridge env>, title=<worker name>, prompt=<kickoff>)`. The worker runs as a local process on the same machine, in the directory `claude remote-control` was started in, with the leader's permission mode or a stricter one. Its title is its peer name. It also shows up in the user's session list (claude.ai/code, the app), so the user can talk to it directly. Find the bridge env with `list_environments` (`kind: bridge`). Without these tools, give the user the kickoff prompt to paste into a new session.
-- **Starting workers with their own context window.** `claude remote-control` has no window flag and the `create_session` arguments above don't set one, so a bridge worker gets whatever window the shared settings give. To cap workers only, start them from the leader's Bash; see [Worker context and cost](#worker-context-and-cost-claude-code).
+- **Starting workers with their own context window.** `claude remote-control` has no window flag and the `create_session` arguments above don't set one, so a bridge worker gets whatever window the shared settings give. To cap workers only and still let the user see them, start them from the leader's Bash with `--remote-control`; see [Worker context and cost](#worker-context-and-cost-claude-code).
 - **Check-ins.** The leader schedules its own wake-ups: `send_later` (Remote Control sessions; survives restarts), otherwise `/loop` or a cron tool if the session has one. `get_session` shows a worker's status and last-turn summary without interrupting it.
 
 ### Shared lifecycle
@@ -34,10 +34,12 @@ Creating workers and sending messages does not schedule future check-ins. Record
 Keep the leader on the model's default window, because it holds the long discussion. Cap the workers, because they sit idle and each cold wake resends their whole context.
 
 ```bash
-claude --bg --autocompact 300000 --effort <level> --name <worker> "<kickoff>"
+claude --bg --autocompact 300000 --effort <level> --remote-control <worker> --name <worker> "<kickoff>"
 ```
 
 Only that session is affected. The leader and new sessions stay on the default.
+
+Keep `--remote-control`. Without it the worker still runs and messages work, but it never appears in the user's session list (claude.ai/code, the app) and can only be reached with `claude attach`.
 
 **Why idle workers cost so much.** Prompt cache entries expire (5-minute or 1-hour TTL; each read refreshes the timer). A message to a worker idle past the TTL rewrites its whole context to the cache instead of reading it. At Opus 5.5 API prices (1-hour write $8/MTok, read $0.20/MTok), that is 40x:
 
@@ -67,9 +69,12 @@ These are per-request input costs at API prices. Subscription plans draw on usag
 **Operating background workers**
 
 - The first line of `--bg` output can be `Starting background service…`, so get the ID from `claude agents --json` by name instead of parsing stdout.
+- If a worker was started without `--remote-control`, add it without losing the conversation: `claude stop <id>`, then from the worker's directory `claude --bg --resume <session-id> --autocompact <tokens> --effort <level> --remote-control <worker> --name <worker> "<what to do next>"`. The worker gets a new job ID and session ID, so read them again from `claude agents --json` and update the roles table.
+- A worker with Remote Control has `bridgeSessionId` in its `$CLAUDE_CONFIG_DIR/sessions/<pid>.json`. That shows it registered, not that the user can see it, so ask.
+- If `claude` fails in the leader's Bash with `permission denied`, a snapshotted shell function may be wrapping it. Call the binary by its full path.
 - `claude attach <id>` opens the worker for the user to talk to directly. It only finds workers under the same `CLAUDE_CONFIG_DIR`; a shell or tmux server without it reports `No job matching`.
 
-**Verified on 2.1.316:** the window `/autocompact` reports in each setup above, a capped worker listed by `ListAgents`, a worker's `SendMessage` reaching the leader, and a conversation continued through `claude attach`. **Not verified:** a worker actually compacting at its cap, a leader-to-worker `SendMessage`, background workers appearing in claude.ai or the app, and surviving a machine restart. Check whichever of these your team relies on before telling the user it works.
+**Verified on 2.1.316:** the window `/autocompact` reports in each setup above, a capped worker listed by `ListAgents`, a worker's `SendMessage` reaching the leader, a leader's `SendMessage` reaching a worker, a conversation continued through `claude attach`, workers started with `--bg --remote-control` appearing in the app, and a worker carrying on with its task after the `--resume` restart above. **Not verified:** the window `/autocompact` reports when `--autocompact` is combined with `--remote-control` or `--resume`, a worker actually compacting at its cap, workers appearing in claude.ai, and surviving a machine restart. Check whichever of these your team relies on before telling the user it works.
 
 ## Leader protocol
 
