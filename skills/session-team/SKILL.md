@@ -22,11 +22,54 @@ A worker must be a persistent, separately addressable conversation the user can 
 - **Peers.** Interactive Claude Code sessions run by the same user on the same machine register themselves (`~/.claude/sessions/<pid>.json`: name, status, a local socket). `ListAgents` lists them. `SendMessage(to=<name>, message=...)` delivers to the peer, where it shows up as a turn wrapped in `<cross-session-message from-name="...">`. The receiver treats it as a teammate's request, inside its own permissions; a peer cannot grant permissions.
 - **From Codex.** When CC's peer tools are unavailable, discover `messagingSocketPath` in that registry and use the [local peer route](references/claude-peer.md). A temporary listening socket lets CC reply with its own `SendMessage`. A held receipt means the message has not reached the model; a received reply verifies the exchange.
 - **Starting workers.** Under Remote Control (`claude remote-control` on the machine), sessions live in a *bridge* environment. A leader in that environment can start a worker with `create_session(environment_id=<bridge env>, title=<worker name>, prompt=<kickoff>)`. The worker runs as a local process on the same machine, in the directory `claude remote-control` was started in, with the leader's permission mode or a stricter one. Its title is its peer name. It also shows up in the user's session list (claude.ai/code, the app), so the user can talk to it directly. Find the bridge env with `list_environments` (`kind: bridge`). Without these tools, give the user the kickoff prompt to paste into a new session.
+- **Starting workers with their own context window.** `claude remote-control` has no window flag and the `create_session` arguments above don't set one, so a bridge worker gets whatever window the shared settings give. To cap workers only, start them from the leader's Bash; see [Worker context and cost](#worker-context-and-cost-claude-code).
 - **Check-ins.** The leader schedules its own wake-ups: `send_later` (Remote Control sessions; survives restarts), otherwise `/loop` or a cron tool if the session has one. `get_session` shows a worker's status and last-turn summary without interrupting it.
 
 ### Shared lifecycle
 
 Creating workers and sending messages does not schedule future check-ins. Record an actual wake-up mechanism and its next time, or state that coordination resumes when the leader is next invoked. Claude bridge processes and Codex persistent threads have different lifecycles; do not transfer archive / restart assumptions between them.
+
+## Worker context and cost (Claude Code)
+
+Keep the leader on the model's default window, because it holds the long discussion. Cap the workers, because they sit idle and each cold wake resends their whole context.
+
+```bash
+claude --bg --autocompact 300000 --effort <level> --name <worker> "<kickoff>"
+```
+
+Only that session is affected. The leader and new sessions stay on the default.
+
+**Why idle workers cost so much.** Prompt cache entries expire (5-minute or 1-hour TTL; each read refreshes the timer). A message to a worker idle past the TTL rewrites its whole context to the cache instead of reading it. At Opus 5.5 API prices (1-hour write $8/MTok, read $0.20/MTok), that is 40x:
+
+| context at wake | cache still warm | cache expired |
+|---|---|---|
+| 1M | $0.20 | $8.00 |
+| 300k | $0.06 | $2.40 |
+
+These are per-request input costs at API prices. Subscription plans draw on usage limits instead of dollars.
+
+**Setting the window**
+
+- Use `--autocompact <tokens>` (100k to 1M), or `--settings '{"autoCompactWindow":<tokens>}'`. `CLAUDE_CODE_AUTO_COMPACT_WINDOW` also works and beats both.
+- Don't put `/autocompact <tokens>` in a kickoff. It writes `modelSettings` in the shared user settings, so new sessions on that model get the cap too, including a restarted leader.
+- Don't send a bare `/autocompact` as a background prompt. It opens a dialog and the worker blocks on it.
+- `autoCompactWindow` in an agent definition has no effect when the session is started with `--agent`.
+- Compaction fires a little before the cap, which is the window minus a summary buffer.
+
+**Spending less on idle workers**
+
+- Check status with `claude agents --json` and `claude logs <id>`. Neither wakes the model; a "how's it going?" message does.
+- Put everything for a worker in one message rather than several small ones spread over hours.
+- If a worker has been idle past the TTL and the follow-up doesn't need its history, start a fresh worker from the team doc instead of waking the old one.
+- Stop workers when their part ends (`claude stop <id>`). `claude rm <id>` also deletes the session, so do that only once the user is done with it.
+- Idle compaction (`idleCompaction`, on by default) compacts a session before its 1-hour cache expires, once it holds at least `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS` tokens (default 200k, floor 100k). This comes from reading the 2.1.316 code; we haven't seen it fire.
+
+**Operating background workers**
+
+- The first line of `--bg` output can be `Starting background service…`, so get the ID from `claude agents --json` by name instead of parsing stdout.
+- `claude attach <id>` opens the worker for the user to talk to directly. It only finds workers under the same `CLAUDE_CONFIG_DIR`; a shell or tmux server without it reports `No job matching`.
+
+**Verified on 2.1.316:** the window `/autocompact` reports in each setup above, a capped worker listed by `ListAgents`, a worker's `SendMessage` reaching the leader, and a conversation continued through `claude attach`. **Not verified:** a worker actually compacting at its cap, a leader-to-worker `SendMessage`, background workers appearing in claude.ai or the app, and surviving a machine restart. Check whichever of these your team relies on before telling the user it works.
 
 ## Leader protocol
 

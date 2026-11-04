@@ -46,6 +46,16 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 
 不用 Remote Control、直接在同一台机器的 tmux 里起 `claude`，各 session 之间也能互发消息。但这样就不能用手机操作，leader 也可能没有 `create_session`（开 worker）和 `send_later`（定时检查）这两个工具，它们是 Remote Control session 带的。
 
+### 限制 worker 的 context
+
+leader 保持默认窗口，worker 由 leader 在 Bash 里用较小的窗口启动：
+
+```bash
+claude --bg --autocompact 300000 --name worker-a "<启动说明>"
+```
+
+worker 经常闲置。闲置超过 prompt cache TTL 后再给它发消息，整个 context 要重新写入缓存，成本约为命中缓存时的 40 倍。窗口越小，每次唤醒的成本上限越低。不要在启动说明里写 `/autocompact <tokens>`，它会改共享的用户设置。哪些已在 2.1.316 上验证、哪些没有，见 [skill](SKILL.md#worker-context-and-cost-claude-code)；其中后台 worker 能否出现在 claude.ai 或 app 里还没核实。接入时用 `claude attach <id>`，并保持相同的 `CLAUDE_CONFIG_DIR`。
+
 ## Codex 准备
 
 使用当前 Codex 客户端已经连接的服务，创建独立、持久的会话。优先使用可用的 App 会话工具；缺少这些工具时，现有本机 app-server 也能创建会话、发起对话、读取结果，`codex queue --thread <ID> --message '<消息>'` 可以在会话之间发送后续任务。连接方式、Unix socket 的 WebSocket 握手、验证步骤和生命周期见 [Codex 路径](references/codex.md)。

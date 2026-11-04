@@ -26,6 +26,7 @@ Criteria are written before the run and are not edited afterwards; a change of p
 | <worker-a> | <runtime> | <host> | <ID> | <path> |
 | <worker-b> | <runtime> | <host> | <ID> | <path> |
 
+Context windows: leader <default>, workers <tokens>, set at launch with <flag>.
 User access: <how to open each worker; what was verified in the client versus only on the server>.
 Check-ins: <actual scheduler / wake-up ID, next time and timezone; or next leader invocation>.
 

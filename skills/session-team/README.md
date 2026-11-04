@@ -44,6 +44,16 @@ Install it where the leader runs. Workers don't need it, because the kickoff pro
 
 Plain `claude` sessions in tmux on the same machine can also message each other. Without Remote Control you can't drive them from your phone, though, and the leader may not have `create_session` (start workers) or `send_later` (schedule its own check-ins), which come with Remote Control sessions.
 
+### Capping worker context
+
+Keep the leader on the default window and start workers with a smaller one from the leader's Bash:
+
+```bash
+claude --bg --autocompact 300000 --name worker-a "<kickoff>"
+```
+
+Workers sit idle, and a message to a worker idle past the prompt cache TTL rewrites its whole context to the cache, about 40x the cost of a cached read. A smaller window lowers the most each wake can cost. Don't put `/autocompact <tokens>` in a kickoff: it writes the shared user settings. The [skill](SKILL.md#worker-context-and-cost-claude-code) lists what was verified on 2.1.316 and what wasn't, including that background workers haven't been checked in claude.ai or the app. Open them with `claude attach <id>` under the same `CLAUDE_CONFIG_DIR`.
+
 ## Codex setup
 
 Use independent persistent conversations in the same service your Codex client already connects to. Prefer available app thread tools. If they are missing, the existing local app-server can create threads, start turns and read results; `codex queue --thread <ID> --message '<text>'` sends follow-ups between them. Read the [Codex route](references/codex.md) for discovery, the Unix-socket WebSocket transport, verification and lifecycle details.

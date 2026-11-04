@@ -35,6 +35,8 @@ N. Clean up: stop everything you started, free your resources, commit your resul
 - Work in your own git worktree from <origin/main>; don't touch the shared checkout.
 - Don't edit criteria once written; don't delete earlier results.
 - Don't stop processes you didn't start.
+- Your context is compacted at <window> tokens. Keep your plan, decisions and current state in your team doc section so they survive it.
+- Don't run `/autocompact <tokens>`: it changes shared settings for other sessions. Your window was set at launch.
 - <project-specific limits: repos you must not push to, secrets you must not read, ...>
 
 ## Reporting

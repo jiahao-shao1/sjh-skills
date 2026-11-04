@@ -4,6 +4,16 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.5.0] - 2026-11-04
+
+### session-team
+
+#### Added
+- Claude Code leaders can cap worker context per session with `claude --bg --autocompact <tokens>`, while the leader stays on the default window.
+- Guidance on what cold wakes of idle workers cost, and how to avoid them: status checks that don't wake the model, batched messages, fresh workers from the team doc, idle compaction.
+- Warnings about `/autocompact <tokens>` in a kickoff (it writes shared user settings) and about `autoCompactWindow` under `--agent` (no effect).
+- Kickoff and team doc templates record the context window.
+
 ## [2.4.0] - 2026-11-01
 
 ### team-digest
