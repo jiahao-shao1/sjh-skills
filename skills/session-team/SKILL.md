@@ -105,7 +105,7 @@ Each kickoff carries these, so a worker needs no skill installed:
 
 ## Pitfalls
 
-- **Names change.** Renamed sessions keep old names in old records. Keep "(former names)" in the roles table; refresh Claude peers with `ListAgents`, and route Codex messages by host + stable thread ID.
+- **Names change.** Renamed sessions keep old names in old records. Keep "(former names)" in the roles table; refresh Claude peers with `ListAgents`, and route Codex messages by host + stable thread ID. A reply address in a kickoff is the fragile case: when it stops resolving, a worker does not error or stall — it sends its report to the nearest-looking peer instead, so an unrelated session receives someone else's ack while the leader waits for one that already arrived. Write it as `<name> [<ref>]`; the ref survives renames.
 - **Delivery is not reading.** CC can report a message as held, released or refused; a socket write alone does not establish that the model saw it. A message can also be buried by a busy turn or a compaction. Anything that must survive goes in the team doc too.
 - **Shared machines.** `pkill -f <pattern>` matches other sessions' processes, and so does a server restart that kills by name. Kill by PID or by your own tmux session.
 - **Shared definitions drift.** If two sessions edit the metric script, results stop being comparable. One owner; changes are additive (a flag or a new function).
