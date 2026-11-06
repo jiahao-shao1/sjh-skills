@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "sjh-skills",
-      "description": "Personal skills: web-fetcher, daily-summary, init-project, notion-lifeos, paper-analyzer, paper-self-review, project-review, experiment-registry, handoff, session-team, team-digest, sync-docs, remote-cluster-agent, context-audit, bibtex-fetch",
-      "version": "2.5.0",
+      "description": "Personal skills: web-fetcher, daily-summary, init-project, notion-lifeos, paper-analyzer, paper-self-review, project-review, experiment-registry, handoff, session-team, research-lead, team-digest, sync-docs, remote-cluster-agent, context-audit, bibtex-fetch",
+      "version": "2.6.0",
       "source": "./"
     }
   ]

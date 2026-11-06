@@ -4,6 +4,15 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [2.6.0] - 2026-11-06
+
+### research-lead
+
+#### Added
+- Research leadership workflow with an Opus 5.5 leader and a Codex executor in a user-accessible persistent remote chat; session management and communication reuse session-team.
+- Evidence-linked handoffs, executor readiness checks, review before acceptance, and explicit handling of uncertainty, user changes, and interruptions.
+- A task handoff template and English/Chinese documentation. Research-quality improvements remain to be evaluated on a real task.
+
 ## [2.5.0] - 2026-11-04
 
 ### session-team
