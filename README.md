@@ -18,8 +18,7 @@ English | [中文](README.zh-CN.md)
 | [paper-self-review](skills/paper-self-review/) | Paper paragraph self-review — three-axis check (logic jumps / repetition / premature method detail), v1 → v2 deterministic iteration |
 | [experiment-registry](skills/experiment-registry/) | ML experiment lifecycle management — structured YAML registry with CLI for registering experiments, recording benchmarks, comparing results, and tracking status |
 | [handoff](skills/handoff/) | Session handoff summary — prints a structured context summary (status, decisions, pitfalls, next steps) directly in the conversation for seamless session continuity |
-| [session-team](skills/session-team/) | Leader / worker teams of Claude Code or Codex sessions on one machine — independent conversations you can also talk to directly, a shared team doc, self-contained kickoffs and explicit check-ins |
-| [research-lead](skills/research-lead/) | Evidence-based research leadership — Opus 5.5 plans and reviews, Codex executes in a visible remote chat; reuses session-team for communication |
+| [session-team](skills/session-team/) | Teams in T3 Code — a sync thread you talk to, an ops leader thread that dispatches and checks in, and workers as delegated subagents, with a shared team doc, typed reports and scheduled check-ins |
 | [team-digest](skills/team-digest/) | Team communication through agents, without progress reports — each agent commits what it did to its own branch; topic issues set out each side's approach, with how far it was verified and what is unsure, only when something needs deciding; a digest of branches and issues is written on request |
 | [sync-docs](skills/sync-docs/) | Documentation sync — finds where the project's docs have fallen out of sync with recent code changes, rewrites them, and commits the docs on their own |
 | [context-audit](skills/context-audit/) | Context management hygiene — audits the three-layer architecture (CLAUDE.md / rules / knowledge) for progressive disclosure compliance. Detects orphaned knowledge, stale references, and CLAUDE.md index leakage. Read-only |
@@ -85,8 +84,7 @@ sjh_skills/
     ├── paper-self-review/     # Paper paragraph self-review (logic / repetition / detail leakage)
     ├── experiment-registry/   # ML experiment registry with YAML + CLI
     ├── handoff/               # Session handoff summary for context continuity
-    ├── session-team/          # Leader / worker teams of sessions on one machine
-    ├── research-lead/         # Research planning, delegated execution and evidence review
+    ├── session-team/          # Sync / ops leader / worker teams in T3 Code
     ├── team-digest/           # Team communication through agents' commits and topic issues
     ├── sync-docs/             # Documentation sync — updates docs and commits
     ├── context-audit/         # Progressive disclosure compliance audit (CLAUDE.md / rules / knowledge)

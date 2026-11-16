@@ -1,114 +1,130 @@
 ---
 name: session-team
-description: Coordinate Claude Code or Codex sessions on one machine, including messaging an existing CC session from Codex. For a team, a leader starts persistent workers the user can also talk to directly and coordinates them through a shared team doc and scheduled check-ins. Triggers include 'be the leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'worker session', 'message a CC session', '当 leader', '开个 leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作', '给 CC session 发消息', 'Codex 和 CC 通信'. Not for bounded subagent tasks inside one conversation or cloud workers that need this machine's files.
+description: Run a team in T3 Code - a sync thread the user talks to, an ops leader thread that dispatches and checks in, and workers the leader runs as delegated subagents - coordinated through a shared team doc, typed reports and scheduled check-ins. Triggers include 'be the leader', 'ops leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
 ---
 
 # Session Team
 
-One **leader** session talks with the user and coordinates; **worker** sessions do the long work (training, environment setup, evaluations, debugging) and report back. The user can open and continue each worker conversation directly, while normally discussing ideas with the leader.
+Three roles in T3 Code. The user talks to one thread; long work runs elsewhere and comes back as results and decisions.
 
-What makes it work is the protocol (a team doc, prereg-style criteria, one owner per shared thing, explicit resources), not the messaging. Messages say "look"; the team doc says what is true.
-
-## How it works
-
-Choose the runtime already in use. Claude Code uses the peer / bridge flow below. For Codex, read [references/codex.md](references/codex.md): prefer available app thread tools, with the existing local app-server as the fallback. Do not treat missing app tools as proof that independent sessions are unavailable.
-
-For a message to an existing Claude Code session from Codex, read [references/claude-peer.md](references/claude-peer.md). It contains a runnable local-socket exchange and the verified `crossSessionInbound` settings behavior. A one-off exchange uses that route directly; the team setup protocol below applies when organizing workers.
-
-A worker must be a persistent, separately addressable conversation the user can open and continue. A subagent spawn and message exchange alone do not establish that. Verify user access before describing a worker as directly usable; if only the server registry was checked, say so. Cloud workers need an explicitly suitable filesystem and communication path.
-
-### Claude Code
-
-- **Peers.** Interactive Claude Code sessions run by the same user on the same machine register themselves (`~/.claude/sessions/<pid>.json`: name, status, a local socket). `ListAgents` lists them. `SendMessage(to=<name>, message=...)` delivers to the peer, where it shows up as a turn wrapped in `<cross-session-message from-name="...">`. The receiver treats it as a teammate's request, inside its own permissions; a peer cannot grant permissions.
-- **From Codex.** When CC's peer tools are unavailable, discover `messagingSocketPath` in that registry and use the [local peer route](references/claude-peer.md). A temporary listening socket lets CC reply with its own `SendMessage`. A held receipt means the message has not reached the model; a received reply verifies the exchange.
-- **Starting workers.** Under Remote Control (`claude remote-control` on the machine), sessions live in a *bridge* environment. A leader in that environment can start a worker with `create_session(environment_id=<bridge env>, title=<worker name>, prompt=<kickoff>)`. The worker runs as a local process on the same machine, in the directory `claude remote-control` was started in, with the leader's permission mode or a stricter one. Its title is its peer name. It also shows up in the user's session list (claude.ai/code, the app), so the user can talk to it directly. Find the bridge env with `list_environments` (`kind: bridge`). Without these tools, give the user the kickoff prompt to paste into a new session.
-- **Starting workers with their own context window.** `claude remote-control` has no window flag and the `create_session` arguments above don't set one, so a bridge worker gets whatever window the shared settings give (observed: a `create_session` worker came up at 1M). To cap workers only, start them from the leader's Bash with `--autocompact`, and keep `--remote-control` on so the worker still registers with the bridge and stays in the user's session list; see [Worker context and cost](#worker-context-and-cost-claude-code).
-- **Check-ins.** The leader schedules its own wake-ups: `send_later` (Remote Control sessions; survives restarts), otherwise `/loop` or a cron tool if the session has one. `get_session` shows a worker's status and last-turn summary without interrupting it.
-
-### Shared lifecycle
-
-Creating workers and sending messages does not schedule future check-ins. Record an actual wake-up mechanism and its next time, or state that coordination resumes when the leader is next invoked. Claude bridge processes and Codex persistent threads have different lifecycles; do not transfer archive / restart assumptions between them.
-
-## Worker context and cost (Claude Code)
-
-Keep the leader on the model's default window, because it holds the long discussion. Cap the workers, because they sit idle and each cold wake resends their whole context.
-
-```bash
-claude --bg --remote-control --autocompact 300000 --effort <level> --name <worker> "<kickoff>"
+```
+user ⇄ sync (thread) ⇄ ops leader (thread) ⇄ workers (delegated subagents)
+                              └── team doc in the repo: what is true
 ```
 
-Only that session is affected. The leader and new sessions stay on the default.
+What makes it work is the protocol (a team doc, criteria written before the run, one owner per shared thing, explicit resources, typed reports), not the messaging. Messages say "look"; the team doc says what is true.
 
-`--remote-control` is what keeps the worker reachable for the user. Without it the worker runs fine and answers `SendMessage`, but its entry in `~/.claude/sessions/<pid>.json` has no `bridgeSessionId`, it never reaches the account's session list, and the only way in is `claude attach <id>`. With it, the worker registers as `origin: claude_code_sdk` tagged `remote-control-repl` and appears alongside the others. Capping the window and leaving the worker openable are not a trade-off; dropping the flag is what creates one.
+This skill uses T3 Code only. If its tools are missing (try loading them once with ToolSearch before concluding so), say so and stop; do not fall back to another harness's session tools.
 
-**Why idle workers cost so much.** Prompt cache entries expire (5-minute or 1-hour TTL; each read refreshes the timer). A message to a worker idle past the TTL rewrites its whole context to the cache instead of reading it. At Opus 5.5 API prices (1-hour write $8/MTok, read $0.20/MTok), that is 40x:
+## Roles
 
-| context at wake | cache still warm | cache expired |
+| role | is | does | does not |
+|---|---|---|---|
+| **sync** | the thread the user talks to | Ideas, trade-offs, decisions. Launches the ops leader. Reads the board. | Dispatch, check-ins, hands-on work |
+| **ops leader** | a top-level thread | Splits work, starts workers, owns the board and resources, runs check-ins, relays between workers | Investigate, debug, run experiments, write code |
+| **worker** | a `delegate_task` child of the ops leader | One part of the work, in its own worktree | Touch other parts, message other workers or the user |
+
+- The ops leader's "does not" column is a hard rule, written into its kickoff. An agent told to delegate "when appropriate" mostly doesn't; the separation has to be structural. A leader that runs commands fills its context with logs and loses the plan.
+- Workers are subagents, not top-level threads. The user does not manage them; the ops leader does.
+- Small team (one or two workers, a day or less): sync can act as the ops leader. The rules below still apply to it, including not doing the work itself.
+
+## T3 Code tools
+
+Load them with ToolSearch (`select:mcp__t3-code__<name>,...`).
+
+| action | tool | notes |
 |---|---|---|
-| 1M | $0.20 | $8.00 |
-| 300k | $0.06 | $2.40 |
+| sync starts the ops leader | `t3_thread_launch` | `title`, `message` = kickoff. Leave the runtime mode inherited (see below). Returns `threadId` and `link`. |
+| sync ⇄ ops leader | `t3_thread_send` | Route by `threadId`. Steer by default (see below). |
+| ops leader starts a worker | `delegate_task` | `task` = kickoff, `mode: async`, `isolation: "worktree"`, `target` for provider instance / model. Call `orchestrator_capabilities` once first. Keep the `taskId` and `childThreadId`. |
+| worker reports | its final answer | Completion wakes the ops leader. Read it with `task_status`. Don't poll a running worker. |
+| ops leader continues a worker | `t3_thread_send` to its `childThreadId` | Starts a new task in the same conversation; the worker keeps its context. Returns a new `taskId`. |
+| stop a worker | `task_cancel` | Not `t3_thread_interrupt`. |
+| check-ins | `schedule_task` | Bound to the ops leader's thread. Record the `scheduledTaskId`. |
+| hand the leader role on | `t3_thread_transfer` (`fork`) | Then update the addresses in the team doc. |
 
-These are per-request input costs at API prices. Subscription plans draw on usage limits instead of dollars.
+**Messages steer by default.** A queued message waits behind the receiver's running turn, and a long turn stalls the team. Send with `mode: auto`, which steers a running turn and starts an idle thread. Plain `steer` fails on an idle thread (`thread_not_sendable`); don't use `queue`.
 
-**Setting the window**
+**Sync and the ops leader must run in the same runtime mode.** `t3_thread_send` refuses a target whose mode is broader than the sender's (`runtime_mode_escalation_denied`), so an ops leader launched in a narrower mode than sync cannot report back.
 
-- Use `--autocompact <tokens>` (100k to 1M), or `--settings '{"autoCompactWindow":<tokens>}'`. `CLAUDE_CODE_AUTO_COMPACT_WINDOW` also works and beats both.
-- Don't put `/autocompact <tokens>` in a kickoff. It writes `modelSettings` in the shared user settings, so new sessions on that model get the cap too, including a restarted leader.
-- Don't send a bare `/autocompact` as a background prompt. It opens a dialog and the worker blocks on it.
-- `autoCompactWindow` in an agent definition has no effect when the session is started with `--agent`.
-- Compaction fires a little before the cap, which is the window minus a summary buffer.
-- A worker is not empty when it starts: two fresh ones reported about 50k tokens already used, before doing any work. The flag's 100k floor therefore leaves a worker almost no room, and the useful range starts well above it.
+**Without `isolation: "worktree"` a worker runs in the ops leader's checkout.** Always set it for a worker that edits files.
 
-**Spending less on idle workers**
+## Message flow
 
-- Check status with `claude agents --json` and `claude logs <id>`. Neither wakes the model; a "how's it going?" message does.
-- Put everything for a worker in one message rather than several small ones spread over hours.
-- If a worker has been idle past the TTL and the follow-up doesn't need its history, start a fresh worker from the team doc instead of waking the old one.
-- Stop workers when their part ends (`claude stop <id>`). `claude rm <id>` also deletes the session, so do that only once the user is done with it.
-- Idle compaction (`idleCompaction`, on by default) compacts a session before its 1-hour cache expires, once it holds at least `CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS` tokens (default 200k, floor 100k). This comes from reading the 2.1.316 code; we haven't seen it fire.
+Full paths, types and format: [references/message-flow.md](references/message-flow.md). Read it before writing a kickoff. The core:
 
-**Operating background workers**
+| path | rule |
+|---|---|
+| user ⇄ sync | Ideas and decisions. Sync is the only role that initiates contact with the user. |
+| sync → ops leader | `decision` and `task` only. |
+| ops leader → sync | `decision-needed` and `result` only, under 100 words, with a default. Everything else goes on the board. |
+| ops leader → worker | Kickoff; later a `note` (a fact with its source), a `decision`, or the next step. |
+| worker → ops leader | Its final answer, starting with one type header: `done`, `ready`, `running`, `question`, `blocked`, `failed`, `handback`. |
+| worker progress | Team doc section only. Never a message. |
+| worker ⇄ worker, user ⇄ worker | None. Through the team doc, the ops leader, or sync. |
 
-- The first line of `--bg` output can be `Starting background service…`, so get the ID from `claude agents --json` by name instead of parsing stdout.
-- `claude attach <id>` opens the worker for the user to talk to directly. It only finds workers under the same `CLAUDE_CONFIG_DIR`; a shell or tmux server without it reports `No job matching`.
-- After `claude plugin update`, its `Restart to apply changes` applies only to sessions already running: a leader mid-task keeps the skill text it started with, while a worker started afterwards loads the new version at once. `--bg` hands out pre-warmed processes, but the plugin is resolved when one is claimed rather than when it was warmed, so there is no pool to drain after an update.
+- **Nobody waits.** A worker that needs a decision finishes with `question`; one that launched a long job finishes with `running` and says how to check it. The ops leader sends and ends its turn. No `sleep`, no polling loops.
+- **Context, not authority.** No message grants permissions, widens scope or counts as the user's approval.
+- **Headers are required.** A message from another thread arrives looking like an ordinary user turn; the type header and sender ID are how the receiver tells a teammate from the user.
 
-**Verified on 2.1.316:** the window `/autocompact` reports in each setup above, a capped worker listed by `ListAgents`, a worker's `SendMessage` reaching the leader, and a conversation continued through `claude attach`.
+## Context and cost
 
-**Verified on 2.1.319:** a leader-to-worker `SendMessage`, delivered to the worker's inbox and answered. Two workers started with `--bg --remote-control --autocompact <n>`, at 300000 and at 150000, each reporting `context_usage.max_tokens` of exactly the value passed, carrying a `bridgeSessionId`, and listed in the account's sessions — so the window follows the flag's argument rather than any shared setting. The same launch without `--remote-control` getting no `bridgeSessionId` and never appearing in that list (single trial). A `create_session` bridge worker pinned at 1M with no way to narrow it (single trial). A worker loading a skill version published after its own process had been warmed, so `--bg`'s pre-warmed processes do not pin an older plugin (single trial).
+- **Workers on a smaller window.** If `orchestrator_capabilities` lists a provider instance configured with a smaller context window, run workers on it and keep sync and the ops leader on the default. A worker continued after a long idle rewrites its whole context to the prompt cache (about 40x a cached read at API prices); a smaller window caps that.
+- **One message, not five.** Batch what a worker needs into a single send.
+- **Stale worker, new topic.** If a follow-up doesn't need a worker's history, start a new worker from the team doc instead of continuing the old one.
+- **Human attention is the budget.** One person follows about three to five strands of work. Prefer fewer, longer parts to many small ones.
 
-A `--remote-control` background worker was also opened and messaged from the app UI by the user, so such a worker is usable directly and not merely listed.
+## Sync protocol
 
-**Not verified:** a worker actually compacting at its cap, surviving a machine restart, and whether any of the above holds across versions or on more than one machine. Check whichever of these your team relies on before telling the user it works.
+1. Agree with the user what the team is for, what stays the user's decision, and the rough split.
+2. Launch the ops leader with the kickoff from [references/kickoff-template.md](references/kickoff-template.md). Record its `threadId` and give the user its `link`.
+3. After that, keep the discussion here. Pass the ops leader only decisions and new work. When the user asks for status, read the team doc's board; don't wake the ops leader to ask.
+4. When a `decision-needed` arrives, put it to the user as it is, with its default. Send the answer back as a `decision` saying the user decided.
 
-## Leader protocol
+## Ops leader protocol
 
-1. **Agree the split with the user.** Parts, one owner per part, what each part decides, and what stays the user's decision. A part is worth a worker when it runs long or needs its own context (a training run, an environment, an investigation). Small lookups don't.
-2. **Write the team doc** from `references/team-doc-template.md`: roles, rules, resources, board, a plan-and-criteria section per part. Commit it before dispatching anyone.
-3. **Allocate shared resources explicitly**: GPUs, hosts, port ranges, job queues, output directories. Put them in the doc and in each kickoff. Unassigned resources get used twice. Sanity-check what you hand out (a port base of 66001 is out of range).
-4. **Write one kickoff per worker** from `references/kickoff-template.md`. It must be self-contained, because the worker has none of your context. Use the chosen runtime's independent-session flow, or give the user the prompt to paste into a new session. Include the leader's reply address and the shared team doc.
-5. **Wait for the ack** (the worker's first message). Record its runtime, name, host, stable session / thread ID and worktree in the roles table. Verify discovery in the user's client and a reply across sessions. If no ack arrives within a few minutes, inspect the runtime's status / recent-turn tools.
-6. **Run the loop.** Schedule a check-in matched to how fast things change: hourly for training, ~10 minutes for a queue, not every 2 minutes. On each check-in: read worker messages, update the board, unblock, decide what you can, then schedule the next one.
-7. **Keep the user's channel clean.** Report decisions, results and blockers, not logs. Everything that needs the user goes into the board's "Needs user decision" row with a default. Never forward a worker's request as if the user had approved it.
-8. **Stay out of hands-on work** (recommended). Delegate debugging and investigations to the owning worker. The leader's context should hold the plan, criteria and status. A leader that runs hundreds of commands a day fills its context with logs and gets compacted daily, and each compaction erodes the idea discussion it exists for.
-9. **Relay with evidence.** When you pass a fact between workers, include its source (file, command, commit). If you relayed something wrong, send the correction at once and fix the doc.
-10. **Close out.** When a part ends, the worker stops its processes and frees its resources. Update the board, write the part's verdict against its pre-written criteria, and tell the user. Use the chosen runtime's archive flow once the user is done with the worker; archive status is not evidence that external jobs stopped. On the Claude bridge, archiving ends the local process and `unarchive_session` does not bring it back.
+1. **Fix the split.** Parts, one owner per part, what each part decides. A part is worth a worker when it runs long or needs its own context. Small lookups don't.
+2. **Write the team doc** from [references/team-doc-template.md](references/team-doc-template.md) and commit it before starting anyone.
+3. **Allocate shared resources explicitly**: GPUs, hosts, port ranges, job queues, output directories. In the doc and in each kickoff. Unassigned resources get used twice. Sanity-check what you hand out (a port base of 66001 is out of range).
+4. **Start one worker per part** with a self-contained kickoff. The worker has none of your context. Record its `taskId`, `childThreadId`, provider instance and worktree in the team doc.
+5. **Schedule check-ins** with `schedule_task`, matched to how fast things change: hourly for training, about 10 minutes for a queue, never every 2 minutes. A check-in reads the team doc and the board's running jobs, re-engages a worker whose job finished, updates the board, and ends the turn.
+6. **Handle each report by its type** (table in the message-flow reference). Check the evidence before recording a verdict.
+7. **Keep sync's channel clean.** Only `decision-needed` and `result`. Each open question also goes in the board's "Needs user decision" row with a default. Pass a worker's `question` on unchanged; never as if the user had approved it.
+8. **Do no hands-on work.** Something needs investigating: send the owning worker a `note`, or start a worker.
+9. **Relay with evidence.** A fact passed between workers carries its source (file, command, commit). Relayed something wrong: correct it at once and fix the doc.
+10. **Close out.** The worker stops what it started and frees its resources. Write the part's verdict against its pre-written criteria, update the board, send sync a `result`, and disable the check-in task when the last part ends. A finished worker is not evidence that its external jobs stopped; check them.
 
 ## Worker contract
 
-Each kickoff carries these, so a worker needs no skill installed:
+Each kickoff carries these, so a worker needs nothing installed:
 
-- Ack the leader first using the kickoff's runtime and reply address (Claude: `ListAgents` / `SendMessage`; Codex: stable thread ID and `codex queue` or available thread messaging tools).
-- Write the plan and pass/fail criteria in the team doc before looking at any result. Don't edit criteria afterwards; a change is a new dated section.
-- Own git worktree; own resources only; don't stop processes you didn't start.
-- Report results, blockers, needed decisions, and completion to the leader, with evidence.
-- Changes to shared definitions go through their owner.
+- Write the plan and pass / fail criteria in the team doc before looking at any result. Don't edit criteria afterwards; a change is a new dated section.
+- Own worktree; own resources only; don't stop processes you didn't start.
+- Progress, decisions and current state go in the team doc as you go.
+- Report by finishing: a final answer with one type header and evidence. Don't wait on long jobs or on a decision.
+- No messages to other workers or the user. Changes to shared definitions go through their owner.
+- Out-of-scope requests go back as a `handback`.
 
 ## Pitfalls
 
-- **Names change.** Renamed sessions keep old names in old records. Keep "(former names)" in the roles table; refresh Claude peers with `ListAgents`, and route Codex messages by host + stable thread ID. A reply address in a kickoff is the fragile case: when it stops resolving, a worker does not error or stall — it sends its report to the nearest-looking peer instead, so an unrelated session receives someone else's ack while the leader waits for one that already arrived. Write it as `<name> [<ref>]`; the ref survives renames.
-- **Delivery is not reading.** CC can report a message as held, released or refused; a socket write alone does not establish that the model saw it. A message can also be buried by a busy turn or a compaction. Anything that must survive goes in the team doc too.
-- **Shared machines.** `pkill -f <pattern>` matches other sessions' processes, and so does a server restart that kills by name. Kill by PID or by your own tmux session.
-- **Shared definitions drift.** If two sessions edit the metric script, results stop being comparable. One owner; changes are additive (a flag or a new function).
-- **Archived Claude bridge workers stay dead.** After `unarchive_session`, a worker on the bridge stayed `PENDING` / `disconnected` with no local process, and messages to it went unanswered. To resume that part, start a new worker and point it at the team doc. This observation does not establish Codex archive semantics.
-- **Over-polling.** Each check-in costs context. A worker told to poll a queue every 2 minutes burns its window on nothing.
+- **A report is not the record.** A worker's final answer lives in one context and can be compacted away. Anything that must survive goes in the team doc.
+- **T3 Code can go down.** Threads, workers and scheduled tasks stop with it; cluster jobs and tmux sessions don't. The team doc must be enough to restart from. Daemons that must outlive T3 are started outside it.
+- **Shared machines.** `pkill -f <pattern>` matches other people's processes, and so does a restart that kills by name. Kill by PID or by your own tmux session.
+- **Shared definitions drift.** If two workers edit the metric script, results stop being comparable. One owner; changes are additive (a flag or a new function).
+- **Over-polling.** Each check-in costs context. Don't schedule faster than the thing being watched changes.
+- **A check-in that outlives the team.** A forgotten interval task keeps waking the leader. Record its ID and disable it at close-out.
+- **Worker tools are not restricted.** A worker can see `t3_thread_send` and `t3_thread_launch`. That it reports only by finishing is a kickoff rule, not a tool limit.
+
+## What was checked
+
+**Verified on 2026-11-17, one T3 Code installation, Claude provider:**
+
+- `t3_thread_launch` created a thread on a chosen provider instance and runtime mode and returned `threadId` and `link`.
+- A launched thread in the launcher's runtime mode sent a typed message back with `t3_thread_send` (`mode: auto`); it arrived inside the launcher's running turn as plain text with no sender wrapper.
+- The same from a thread in `auto-accept-edits` to a `full-access` launcher was refused with `runtime_mode_escalation_denied`.
+- `delegate_task` (`mode: async`, a chosen provider instance) ran a worker; `task_status` returned its final answer as `summary`. With default isolation it ran in the parent's checkout.
+- `t3_thread_send` to the finished worker's `childThreadId` started a new task there, and the worker recalled a fact from its first answer.
+- `t3_thread_send` with `mode: steer` to an idle thread was refused with `thread_not_sendable`.
+- `schedule_task` of type `once`, bound to a thread, fired; it was due while the thread was mid-turn and was delivered about two minutes later, after that turn ended.
+
+**Not verified:** a scheduled task surviving a T3 restart or running on an `interval` for hours; a worker's completion waking an idle ops leader (the test read the result from a running turn); `isolation: "worktree"`; `task_cancel`; `t3_thread_transfer`; workers on another provider; the real context window of a smaller-window instance; several workers running at once. Check whichever of these the team relies on before telling the user it works.

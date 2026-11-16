@@ -17,7 +17,7 @@ sjh_skills/
 │   ├── paper-self-review/    # Paper paragraph self-review (logic / repetition / detail leakage)
 │   ├── experiment-registry/  # ML experiment registry with YAML + CLI
 │   ├── handoff/              # Session handoff summary for context continuity
-│   ├── session-team/         # Leader / worker teams of sessions on one machine
+│   ├── session-team/         # Sync / ops leader / worker teams in T3 Code
 │   ├── team-digest/          # Team communication through agents' commits and topic issues
 │   ├── sync-docs/            # Documentation sync — updates docs and commits
 │   ├── context-audit/        # Progressive disclosure compliance audit

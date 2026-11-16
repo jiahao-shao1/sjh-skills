@@ -4,6 +4,29 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [3.0.0] - 2026-11-17
+
+### session-team
+
+#### Changed
+- Rewritten for T3 Code only. Three roles: a sync thread the user talks to, an ops leader thread that dispatches and checks in, and workers the ops leader runs as delegated subagents.
+- The ops leader doing no hands-on work is now a hard rule carried in its kickoff, not a recommendation.
+- Kickoff templates split into one for the ops leader and one for workers; the team doc template records thread and task IDs, the check-in task and running jobs.
+
+#### Added
+- A message-flow reference: who may message whom, typed reports (`done`, `ready`, `running`, `question`, `blocked`, `failed`, `handback`), a message format, and the rules that nobody waits and that messages carry context, not authority.
+- The runtime-mode rule for messages between threads, verified with a refused send (`runtime_mode_escalation_denied`).
+- Messages between threads steer by default (`mode: auto`), so a send is not stuck behind the receiver's running turn.
+- A list of what was verified on T3 Code and what was not.
+
+#### Removed
+- The Claude Code peer / Remote Control route, the Codex app-server route and the Codex-to-Claude socket recipe, with their references.
+
+### research-lead
+
+#### Removed
+- The skill. It depended on the removed Codex route; team coordination is covered by session-team.
+
 ## [2.6.0] - 2026-11-06
 
 ### research-lead
