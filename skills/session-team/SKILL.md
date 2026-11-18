@@ -1,6 +1,6 @@
 ---
 name: session-team
-description: Run a team in T3 Code - a sync thread the user talks to, an ops leader thread that dispatches and checks in, and workers the leader runs as delegated subagents - coordinated through a shared team doc, typed reports and scheduled check-ins. Triggers include 'be the leader', 'ops leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
+description: Run a team in T3 Code - a sync thread the user talks to, an ops leader thread that dispatches, checks in and reports only by writing the team doc, and workers the leader runs as delegated subagents - coordinated through that doc, typed reports and scheduled check-ins. Triggers include 'be the leader', 'ops leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
 ---
 
 # Session Team
@@ -8,8 +8,9 @@ description: Run a team in T3 Code - a sync thread the user talks to, an ops lea
 Three roles in T3 Code. The user talks to one thread; long work runs elsewhere and comes back as results and decisions.
 
 ```
-user ⇄ sync (thread) ⇄ ops leader (thread) ⇄ workers (delegated subagents)
-                              └── team doc in the repo: what is true
+user ⇄ sync (thread) ──→ ops leader (thread) ⇄ workers (delegated subagents)
+            ↑ reads              │ writes
+            └──── team doc in the repo: what is true
 ```
 
 What makes it work is the protocol (a team doc, criteria written before the run, one owner per shared thing, explicit resources, typed reports), not the messaging. Messages say "look"; the team doc says what is true.
@@ -20,8 +21,8 @@ This skill uses T3 Code only. If its tools are missing (try loading them once wi
 
 | role | is | does | does not |
 |---|---|---|---|
-| **sync** | the thread the user talks to | Ideas, trade-offs, decisions. Launches the ops leader. Reads the board. | Dispatch, check-ins, hands-on work |
-| **ops leader** | a top-level thread | Splits work, starts workers, owns the board and resources, runs check-ins, relays between workers | Investigate, debug, run experiments, write code |
+| **sync** | the thread the user talks to | Ideas, trade-offs, decisions. Launches the ops leader. Reads the team doc when the user asks for progress. | Dispatch, check-ins, hands-on work |
+| **ops leader** | a top-level thread | Splits work, starts workers, owns the board and resources, runs check-ins, relays between workers | Message sync or the user; investigate, debug, run experiments, write code |
 | **worker** | a `delegate_task` child of the ops leader | One part of the work, in its own worktree | Touch other parts, message other workers or the user |
 
 - The ops leader's "does not" column is a hard rule, written into its kickoff. An agent told to delegate "when appropriate" mostly doesn't; the separation has to be structural. A leader that runs commands fills its context with logs and loses the plan.
@@ -35,7 +36,8 @@ Load them with ToolSearch (`select:mcp__t3-code__<name>,...`).
 | action | tool | notes |
 |---|---|---|
 | sync starts the ops leader | `t3_thread_launch` | `title`, `message` = kickoff. Leave the runtime mode inherited (see below). Returns `threadId` and `link`. |
-| sync ⇄ ops leader | `t3_thread_send` | Route by `threadId`. Steer by default (see below). |
+| sync → ops leader | `t3_thread_send` | Route by `threadId`. Steer by default (see below). One way: the ops leader never sends to sync. |
+| ops leader → sync | the team doc | The leader writes; sync reads it when the user asks. |
 | ops leader starts a worker | `delegate_task` | `task` = kickoff, `mode: async`, `isolation: "worktree"`, `target` for provider instance / model. Call `orchestrator_capabilities` once first. Keep the `taskId` and `childThreadId`. |
 | worker reports | its final answer | Completion wakes the ops leader. Read it with `task_status`. Don't poll a running worker. |
 | ops leader continues a worker | `t3_thread_send` to its `childThreadId` | Starts a new task in the same conversation; the worker keeps its context. Returns a new `taskId`. |
@@ -45,7 +47,7 @@ Load them with ToolSearch (`select:mcp__t3-code__<name>,...`).
 
 **Messages steer by default.** A queued message waits behind the receiver's running turn, and a long turn stalls the team. Send with `mode: auto`, which steers a running turn and starts an idle thread. Plain `steer` fails on an idle thread (`thread_not_sendable`); don't use `queue`.
 
-**Sync and the ops leader must run in the same runtime mode.** `t3_thread_send` refuses a target whose mode is broader than the sender's (`runtime_mode_escalation_denied`), so an ops leader launched in a narrower mode than sync cannot report back.
+**Launch the ops leader in sync's runtime mode or a narrower one.** `t3_thread_send` refuses a target whose mode is broader than the sender's (`runtime_mode_escalation_denied`). Sync only ever sends downward, so the inherited mode works.
 
 **Without `isolation: "worktree"` a worker runs in the ops leader's checkout.** Always set it for a worker that edits files.
 
@@ -55,9 +57,9 @@ Full paths, types and format: [references/message-flow.md](references/message-fl
 
 | path | rule |
 |---|---|
-| user ⇄ sync | Ideas and decisions. Sync is the only role that initiates contact with the user. |
+| user ⇄ sync | Ideas and decisions. Sync is the only role that talks to the user. |
 | sync → ops leader | `decision` and `task` only. |
-| ops leader → sync | `decision-needed` and `result` only, under 100 words, with a default. Everything else goes on the board. |
+| ops leader → sync | No messages. Results, progress and open decisions go in the team doc; sync reads it when the user asks. |
 | ops leader → worker | Kickoff; later a `note` (a fact with its source), a `decision`, or the next step. |
 | worker → ops leader | Its final answer, starting with one type header: `done`, `ready`, `running`, `question`, `blocked`, `failed`, `handback`. |
 | worker progress | Team doc section only. Never a message. |
@@ -78,8 +80,9 @@ Full paths, types and format: [references/message-flow.md](references/message-fl
 
 1. Agree with the user what the team is for, what stays the user's decision, and the rough split.
 2. Launch the ops leader with the kickoff from [references/kickoff-template.md](references/kickoff-template.md). Record its `threadId` and give the user its `link`.
-3. After that, keep the discussion here. Pass the ops leader only decisions and new work. When the user asks for status, read the team doc's board; don't wake the ops leader to ask.
-4. When a `decision-needed` arrives, put it to the user as it is, with its default. Send the answer back as a `decision` saying the user decided.
+3. After that, keep the discussion here. Pass the ops leader only decisions and new work. Expect no messages back.
+4. When the user asks how things are going, read the team doc then: the board, its "Needs user decision" row, and the result sections that changed. Summarize from that. Don't wake the ops leader to ask, and don't carry status in your own context between asks.
+5. Put each open decision to the user as written, with its default. Send the answer to the ops leader as a `decision` saying the user decided.
 
 ## Ops leader protocol
 
@@ -89,10 +92,10 @@ Full paths, types and format: [references/message-flow.md](references/message-fl
 4. **Start one worker per part** with a self-contained kickoff. The worker has none of your context. Record its `taskId`, `childThreadId`, provider instance and worktree in the team doc.
 5. **Schedule check-ins** with `schedule_task`, matched to how fast things change: hourly for training, about 10 minutes for a queue, never every 2 minutes. A check-in reads the team doc and the board's running jobs, re-engages a worker whose job finished, updates the board, and ends the turn.
 6. **Handle each report by its type** (table in the message-flow reference). Check the evidence before recording a verdict.
-7. **Keep sync's channel clean.** Only `decision-needed` and `result`. Each open question also goes in the board's "Needs user decision" row with a default. Pass a worker's `question` on unchanged; never as if the user had approved it.
+7. **Never message sync.** The team doc is your only channel upward; the user asks sync when they want to know. A decision that is the user's goes in the board's "Needs user decision" row, as the worker asked it, with a default and when you will act on it. Then carry on with that default or with other work; don't wait for an answer and don't treat silence as approval of anything beyond the stated default.
 8. **Do no hands-on work.** Something needs investigating: send the owning worker a `note`, or start a worker.
 9. **Relay with evidence.** A fact passed between workers carries its source (file, command, commit). Relayed something wrong: correct it at once and fix the doc.
-10. **Close out.** The worker stops what it started and frees its resources. Write the part's verdict against its pre-written criteria, update the board, send sync a `result`, and disable the check-in task when the last part ends. A finished worker is not evidence that its external jobs stopped; check them.
+10. **Close out.** The worker stops what it started and frees its resources. Write the part's verdict against its pre-written criteria, update the board, and disable the check-in task when the last part ends. A finished worker is not evidence that its external jobs stopped; check them.
 
 ## Worker contract
 
@@ -107,6 +110,7 @@ Each kickoff carries these, so a worker needs nothing installed:
 
 ## Pitfalls
 
+- **A stale board misleads.** Sync answers the user from the team doc alone, so a board that lags the work gives the user a wrong picture. Update it at every check-in and stamp the time.
 - **A report is not the record.** A worker's final answer lives in one context and can be compacted away. Anything that must survive goes in the team doc.
 - **T3 Code can go down.** Threads, workers and scheduled tasks stop with it; cluster jobs and tmux sessions don't. The team doc must be enough to restart from. Daemons that must outlive T3 are started outside it.
 - **Shared machines.** `pkill -f <pattern>` matches other people's processes, and so does a restart that kills by name. Kill by PID or by your own tmux session.

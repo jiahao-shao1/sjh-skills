@@ -5,8 +5,9 @@
 在 T3 Code 里组一个团队。你只和 **sync** thread 对话；**ops leader** thread 负责分派和巡检；**worker** 作为 ops leader 的 subagent 承担耗时长的活（训练、配环境、评测、排查），做完回报。
 
 ```
-你 ⇄ sync（thread）⇄ ops leader（thread）⇄ workers（委派的 subagent）
-                          └── 仓库里的团队文档：以它为准
+你 ⇄ sync（thread）──→ ops leader（thread）⇄ workers（委派的 subagent）
+          ↑ 读                 │ 写
+          └──── 仓库里的团队文档：以它为准
 ```
 
 ## 为什么要这样做
@@ -39,14 +40,14 @@ npx skills add jiahao-shao1/sjh-skills --skill session-team
 1. sync 和你确认目标与拆分，然后启动 ops leader thread，并把链接给你。
 2. ops leader 在仓库里写团队文档（角色、地址、资源、看板、每部分的判据）：[模板](references/team-doc-template.md)。
 3. 它为每部分启动一个 worker，各自带一份自包含的启动说明（[模板](references/kickoff-template.md)）和独立的 worktree，并排好巡检。
-4. 你继续和 sync 讨论。它只把需要你裁决的问题和已完成的结果带给你。
+4. 你继续和 sync 讨论。想知道进展时随时问它，它当场去读团队文档再告诉你，包括等你裁决的问题。
 
 ## 消息怎么流通
 
 规则在 [references/message-flow.md](references/message-flow.md)，要点如下：
 
-- 主动找你的只有 sync。
-- ops leader 只在需要裁决或有结果时给 sync 发消息，100 词以内，带默认选项；其余都写在看板上。
+- 和你对话的只有 sync。
+- ops leader 从不给 sync 发消息。结果、进度和待裁决的问题都写进团队文档；你问进展时 sync 才去读。
 - worker 通过结束自己这一轮来回报，开头带类型：`done`、`ready`、`running`、`question`、`blocked`、`failed` 或 `handback`。进度写团队文档，不发消息。
 - worker 之间不互发消息，也不直接找你。
 - 谁都不等待：worker 有问题或起了长任务就结束这一轮，之后在同一个对话里被继续。

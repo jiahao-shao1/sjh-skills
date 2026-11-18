@@ -5,8 +5,9 @@ English | [中文](README.zh-CN.md)
 Run a team in T3 Code. You talk to a **sync** thread. An **ops leader** thread dispatches and checks in. **Workers** do the long work (training, environment setup, evaluations, debugging) as subagents of the ops leader and report back.
 
 ```
-you ⇄ sync (thread) ⇄ ops leader (thread) ⇄ workers (delegated subagents)
-                            └── team doc in the repo: what is true
+you ⇄ sync (thread) ──→ ops leader (thread) ⇄ workers (delegated subagents)
+           ↑ reads              │ writes
+           └──── team doc in the repo: what is true
 ```
 
 ## Why
@@ -39,14 +40,14 @@ Tell the thread you are talking to what you want done and that it should run it 
 1. Sync agrees the goal and the split with you, then launches the ops leader thread and gives you its link.
 2. The ops leader writes a team doc in the repo (roles, addresses, resources, a board, per-part criteria): [template](references/team-doc-template.md).
 3. It starts one worker per part with a self-contained kickoff ([template](references/kickoff-template.md)), each in its own worktree, and schedules its check-ins.
-4. You keep discussing with sync. It brings you only decisions that are yours and finished results.
+4. You keep discussing with sync. Ask it how things are going whenever you want; it reads the team doc and tells you, including any decisions waiting for you.
 
 ## How messages flow
 
 The rules are in [references/message-flow.md](references/message-flow.md). In short:
 
-- Only sync initiates contact with you.
-- The ops leader messages sync only when a decision is needed or a result is in, in under 100 words with a default. Everything else goes on the board.
+- Only sync talks to you.
+- The ops leader never messages sync. It writes results, progress and open decisions to the team doc; sync reads the doc when you ask for progress.
 - A worker reports by finishing, with a type header: `done`, `ready`, `running`, `question`, `blocked`, `failed` or `handback`. Progress goes in the team doc, not in messages.
 - Workers do not message each other or you.
 - Nobody waits: a worker with a question or a long job finishes its turn and is continued later in the same conversation.

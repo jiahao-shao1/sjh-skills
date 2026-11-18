@@ -52,7 +52,7 @@ Check-ins: scheduled task `<scheduledTaskId>`, every <interval>, next at <time a
 | A | <worker-a> | <type of last report, one line: state, key number, link> |
 | B | <worker-b> | |
 | Running jobs | | <job, how to check, expected end> |
-| Needs user decision | sync | <each open question, with the default if nobody answers> |
+| Needs user decision | user, via sync | <each open question as asked, options, the default, and when the leader acts on it> |
 
 ## Next steps (ops leader, <MM-DD HH:MM>; confirmed by the user: yes / no)
 

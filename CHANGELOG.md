@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [3.1.0] - 2026-11-18
+
+### session-team
+
+#### Changed
+- The ops leader no longer messages sync. It reports only by writing the team doc (results, progress, open decisions with a default); sync reads the doc when the user asks for progress and sends decisions down.
+
 ## [3.0.0] - 2026-11-17
 
 ### session-team
