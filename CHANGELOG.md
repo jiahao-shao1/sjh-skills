@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [3.1.1] - 2026-11-21
+
+### session-team
+
+#### Added
+- Documented the `acp-mcp-call` terminal fallback (`T3_ACP_MCP_NODE`) for Antigravity sessions where T3 Code MCP tools using `anyOf` schemas (`delegate_task`, `t3_thread_launch`, `create_threads`, `schedule_task`) are omitted from native tool lists.
+
 ## [3.1.0] - 2026-11-18
 
 ### session-team

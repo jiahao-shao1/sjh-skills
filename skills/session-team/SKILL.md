@@ -15,7 +15,7 @@ user ⇄ sync (thread) ──→ ops leader (thread) ⇄ workers (delegated suba
 
 What makes it work is the protocol (a team doc, criteria written before the run, one owner per shared thing, explicit resources, typed reports), not the messaging. Messages say "look"; the team doc says what is true.
 
-This skill uses T3 Code only. If its tools are missing (try loading them once with ToolSearch before concluding so), say so and stop; do not fall back to another harness's session tools.
+This skill uses T3 Code only. If its tools are missing (try loading them once with ToolSearch, or use the `acp-mcp-call` terminal fallback below when `T3_ACP_MCP_NODE` is set, before concluding so), say so and stop; do not fall back to another harness's session tools.
 
 ## Roles
 
@@ -50,6 +50,14 @@ Load them with ToolSearch (`select:mcp__t3-code__<name>,...`).
 **Launch the ops leader in sync's runtime mode or a narrower one.** `t3_thread_send` refuses a target whose mode is broader than the sender's (`runtime_mode_escalation_denied`). Sync only ever sends downward, so the inherited mode works.
 
 **Without `isolation: "worktree"` a worker runs in the ops leader's checkout.** Always set it for a worker that edits files.
+
+**Antigravity / ACP fallback for hidden T3 tools.** In Antigravity sessions, MCP tools whose schema uses `anyOf` (`delegate_task`, `t3_thread_launch`, `create_threads`, `schedule_task`) are omitted from native `mcp_t3-code_*` tool lists even though T3 Code serves them. Do **not** assume they are unavailable or fall back to native `invoke_subagent` for T3 workers/threads. When `T3_ACP_MCP_NODE` is set, invoke them via the terminal:
+
+```bash
+ELECTRON_RUN_AS_NODE=1 "$T3_ACP_MCP_NODE" ${T3_ACP_MCP_ENTRYPOINT:+"$T3_ACP_MCP_ENTRYPOINT"} acp-mcp-call delegate_task '{"task":"...","title":"...","isolation":"worktree","target":{"providerInstanceId":"...","model":"..."},"mode":"async","clientRequestId":"..."}'
+```
+
+Use the same command with `t3_thread_launch` or `schedule_task` and their JSON payloads when those tools are absent natively.
 
 ## Message flow
 
