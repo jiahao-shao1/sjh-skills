@@ -4,6 +4,19 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [3.2.0] - 2026-11-25
+
+### session-team
+
+#### Added
+- Multi-Lead (Model B) topology: autonomous Domain Leads (0-GPU / local / domain-repo end-to-end execution with their own worktree workers) paired with an Ops Leader focused on shared compute pools, long-running pipelines, scheduled check-ins, and net-zero teardown.
+- Federated status cards (`<main-repo>/<team-dir>/status/<lead>.md`, ≤ 20 lines, single writer per file) to eliminate multi-worktree blind spots and allow single-turn parallel overview reads by Sync.
+- Domain Lead (Model B) kickoff template, cross-lead messaging protocol (`note|request|handoff` with `mode: auto`), and Ops Leader periodic `t3_thread_transfer` (`fork`) context-rotation guidance.
+- Hardened Antigravity ACP (`acp-mcp-call`) delegation section with copy-paste `python3` snippet (`json.dumps` + `ELECTRON_RUN_AS_NODE=1`), explicit ban on falling back to native `invoke_subagent`, `task_cancel` rule, and concise English brief guidance for Claude delegates.
+
+#### Changed
+- Extended the Quiet-Sync rule universally to all leads (both Ops Leader and every Domain Lead never message `sync`).
+
 ## [3.1.1] - 2026-11-21
 
 ### session-team
