@@ -1,142 +1,152 @@
 ---
 name: session-team
-description: Run a team in T3 Code - a sync thread the user talks to, an ops leader thread that dispatches, checks in and reports only by writing the team doc, and workers the leader runs as delegated subagents - coordinated through that doc, typed reports and scheduled check-ins. Triggers include 'be the leader', 'ops leader', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
+description: Run a team in T3 Code - either Single-Ops-Leader (sync thread, one ops leader thread, delegated workers) or Multi-Lead Model B (sync control plane, autonomous domain leads with own 0-GPU workers, one ops leader for shared compute/long runs, federated status cards). Triggers include 'be the leader', 'ops leader', 'domain lead', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
 ---
 
 # Session Team
 
-Three roles in T3 Code. The user talks to one thread; long work runs elsewhere and comes back as results and decisions.
+Coordinate multi-strand work in T3 Code using two topologies: **Single-Ops-Leader** for small/medium teams (1–4 parts), and **Multi-Lead (Model B)** for large multi-domain projects.
 
 ```
-user ⇄ sync (thread) ──→ ops leader (thread) ⇄ workers (delegated subagents)
-            ↑ reads              │ writes
-            └──── team doc in the repo: what is true
+Single-Ops-Leader:
+  user ⇄ sync ──→ ops leader ⇄ workers (delegated subagents)
+            ↑ reads    │ writes
+            └── team doc in repo
+
+Multi-Lead (Model B):
+  user ⇄ sync (global control plane; reads status/<lead>.md in parallel)
+  user ⇄ domain leads (infra / task-gen / kg ...) ⇄ own 0-GPU worktree workers
+              │ verified commits / specs (handoff)        │ write own card
+              ▼                                           ▼
+         ops leader (shared GPUs, pools, long runs) ──→ <main-repo>/<team-dir>/status/<lead>.md
+              ⇄ cluster / heavy workers
 ```
 
-What makes it work is the protocol (a team doc, criteria written before the run, one owner per shared thing, explicit resources, typed reports), not the messaging. Messages say "look"; the team doc says what is true.
+What makes it work is the protocol (shared state on disk, criteria written before the run, one owner per shared thing, explicit resources, typed reports), not chatty messaging. Messages say "look"; the team doc and status cards say what is true.
 
-This skill uses T3 Code only. If its tools are missing (try loading them once with ToolSearch, or use the `acp-mcp-call` terminal fallback below when `T3_ACP_MCP_NODE` is set, before concluding so), say so and stop; do not fall back to another harness's session tools.
+This skill uses T3 Code only. If its tools are missing (try loading them once with ToolSearch, or use the `acp-mcp-call` terminal fallback below when `T3_ACP_MCP_NODE` is set), say so and stop; never fall back to another harness's session tools or native `invoke_subagent`.
 
 ## Roles
 
 | role | is | does | does not |
 |---|---|---|---|
-| **sync** | the thread the user talks to | Ideas, trade-offs, decisions. Launches the ops leader. Reads the team doc when the user asks for progress. | Dispatch, check-ins, hands-on work |
-| **ops leader** | a top-level thread | Splits work, starts workers, owns the board and resources, runs check-ins, relays between workers | Message sync or the user; investigate, debug, run experiments, write code |
-| **worker** | a `delegate_task` child of the ops leader | One part of the work, in its own worktree | Touch other parts, message other workers or the user |
+| **sync** | user's global control plane | Global overview, cross-track trade-offs, global rules, spawning/retiring leads. Reads the team doc or federated `status/<lead>.md` cards on demand. | Dispatch workers, run check-ins, hands-on work, scrape long thread histories |
+| **domain lead** *(Model B)* | top-level thread (vertical PI) | Discusses architecture/research directly with the user; owns end-to-end 0-GPU / local / domain-repo work (research, code edits, unit tests, PR review, small local checks) via its own `delegate_task` worktree workers; writes `status/<lead>.md`; hands verified commits/specs to ops leader for heavy runs. | Message sync; unilaterally grab shared cluster GPUs, shared worker pools, or unattended long-running loops |
+| **ops leader** | top-level thread (horizontal SRE) | Owns shared cluster compute quotas, shared worker pools, long-running unattended pipelines (large rollouts, multi-node training, full evals), scheduled check-ins, stop timers, net-zero teardown, and `status/ops.md` / team board. In Single-Ops-Leader mode, also splits all work. | Message sync or the user; investigate, debug, run experiments, write code; act as middleman for domain 0-GPU code edits (in Model B) |
+| **worker** | `delegate_task` child of ops leader or a domain lead | One bounded part of the work, in its own worktree when editing files. | Touch other parts, message other workers or the user |
 
-- The ops leader's "does not" column is a hard rule, written into its kickoff. An agent told to delegate "when appropriate" mostly doesn't; the separation has to be structural. A leader that runs commands fills its context with logs and loses the plan.
-- Workers are subagents, not top-level threads. The user does not manage them; the ops leader does.
-- Small team (one or two workers, a day or less): sync can act as the ops leader. The rules below still apply to it, including not doing the work itself.
+- **Structural boundaries are hard rules**, written into kickoffs. An ops leader that runs commands fills its context with logs and loses the plan. A domain lead that grabs shared GPUs collides with cluster runs.
+- Workers are subagents (`delegate_task`), not top-level threads. Small team (1–2 workers, ≤ 1 day): sync may act as ops leader while keeping the no-hands-on rule.
 
-## T3 Code tools
+## Federated status cards (`status/<lead>.md`)
 
-Load them with ToolSearch (`select:mcp__t3-code__<name>,...`).
+When leads run in separate git worktrees, a worktree-local `STATUS.md` is invisible to other leads and sync. Solve this with **one shared absolute directory** (e.g. `<main-repo>/<team-dir>/status/`):
+
+- **One owner per file** (`ops.md`, `infra.md`, `taskgen.md`, `kg.md`, etc.) → zero write contention.
+- **≤ 20 lines per card**: updated timestamp, current focus, key verified numbers, active compute/resources, open user decisions (with default), next step. Template in [references/team-doc-template.md](references/team-doc-template.md).
+- **1-turn global read**: sync reads all cards in parallel when the user asks for status instead of scraping long thread histories. Leads can read each other's cards without interrupting each other.
+
+## T3 Code tools & Antigravity ACP delegation
+
+Load native tools with ToolSearch (`select:mcp__t3-code__<name>,...`).
 
 | action | tool | notes |
 |---|---|---|
-| sync starts the ops leader | `t3_thread_launch` | `title`, `message` = kickoff. Leave the runtime mode inherited (see below). Returns `threadId` and `link`. |
-| sync → ops leader | `t3_thread_send` | Route by `threadId`. Steer by default (see below). One way: the ops leader never sends to sync. |
-| ops leader → sync | the team doc | The leader writes; sync reads it when the user asks. |
-| ops leader starts a worker | `delegate_task` | `task` = kickoff, `mode: async`, `isolation: "worktree"`, `target` for provider instance / model. Call `orchestrator_capabilities` once first. Keep the `taskId` and `childThreadId`. |
-| worker reports | its final answer | Completion wakes the ops leader. Read it with `task_status`. Don't poll a running worker. |
-| ops leader continues a worker | `t3_thread_send` to its `childThreadId` | Starts a new task in the same conversation; the worker keeps its context. Returns a new `taskId`. |
-| stop a worker | `task_cancel` | Not `t3_thread_interrupt`. |
-| check-ins | `schedule_task` | Bound to the ops leader's thread. Record the `scheduledTaskId`. |
-| hand the leader role on | `t3_thread_transfer` (`fork`) | Then update the addresses in the team doc. |
+| sync launches a lead | `t3_thread_launch` | `title`, `message` = kickoff. Inherit runtime mode. Returns `threadId` and `link`. |
+| sync → lead / lead ↔ lead | `t3_thread_send` | Route by `threadId`, `mode: auto` (steers running turn, starts idle thread; plain `steer` fails on idle). |
+| lead → sync | team doc / `status/<lead>.md` | **Never** `t3_thread_send` to sync. |
+| lead starts a worker | `delegate_task` | Call `orchestrator_capabilities` once first. `mode: "async"`, `isolation: "worktree"` (when editing files), unique `clientRequestId`. Keep `taskId` & `childThreadId`. |
+| worker reports | its final answer | Completion wakes parent lead. Read via `task_status`. Never poll a running worker. |
+| lead continues a worker | `t3_thread_send` to `childThreadId` | Starts a fresh task with prior context; returns a new `taskId`. |
+| stop a worker | `task_cancel` | Never `t3_thread_interrupt` on a `childThreadId`. |
+| check-ins / stop timers | `schedule_task` | Bound to ops leader thread. Record `scheduledTaskId`; disable at close-out. |
+| rotate / hand off a lead | `t3_thread_transfer` (`fork`) | Update thread addresses in the team doc afterwards. |
 
-**Messages steer by default.** A queued message waits behind the receiver's running turn, and a long turn stalls the team. Send with `mode: auto`, which steers a running turn and starts an idle thread. Plain `steer` fails on an idle thread (`thread_not_sendable`); don't use `queue`.
+**Runtime modes:** `t3_thread_send` refuses targets broader than the sender (`runtime_mode_escalation_denied`). Launch leads in sync's runtime mode or narrower.
 
-**Launch the ops leader in sync's runtime mode or a narrower one.** `t3_thread_send` refuses a target whose mode is broader than the sender's (`runtime_mode_escalation_denied`). Sync only ever sends downward, so the inherited mode works.
+**Hardened Antigravity / ACP fallback (`acp-mcp-call`):** In Antigravity, MCP tools whose schema uses `anyOf` (`delegate_task`, `t3_thread_launch`, `create_threads`, `schedule_task`) are omitted from native `mcp_t3-code_*` tool lists even though T3 Code serves them. Rules:
+1. **Never fall back to native `invoke_subagent`** for T3 workers or cross-provider delegates.
+2. **Call `orchestrator_capabilities` once first** to get exact `providerInstanceId`, `model`, and `options`.
+3. **Invoke `acp-mcp-call` via `python3`** (`json.dumps` + `subprocess.run` with `ELECTRON_RUN_AS_NODE=1`) instead of bash string escaping so markdown, quotes, and newlines never break JSON:
 
-**Without `isolation: "worktree"` a worker runs in the ops leader's checkout.** Always set it for a worker that edits files.
+```python
+import json, os, subprocess
 
-**Antigravity / ACP fallback for hidden T3 tools.** In Antigravity sessions, MCP tools whose schema uses `anyOf` (`delegate_task`, `t3_thread_launch`, `create_threads`, `schedule_task`) are omitted from native `mcp_t3-code_*` tool lists even though T3 Code serves them. Do **not** assume they are unavailable or fall back to native `invoke_subagent` for T3 workers/threads. When `T3_ACP_MCP_NODE` is set, invoke them via the terminal:
-
-```bash
-ELECTRON_RUN_AS_NODE=1 "$T3_ACP_MCP_NODE" ${T3_ACP_MCP_ENTRYPOINT:+"$T3_ACP_MCP_ENTRYPOINT"} acp-mcp-call delegate_task '{"task":"...","title":"...","isolation":"worktree","target":{"providerInstanceId":"...","model":"..."},"mode":"async","clientRequestId":"..."}'
+cmd = [os.environ["T3_ACP_MCP_NODE"]]
+if os.environ.get("T3_ACP_MCP_ENTRYPOINT"):
+    cmd.append(os.environ["T3_ACP_MCP_ENTRYPOINT"])
+payload = {
+    "task": "<concise brief>",
+    "title": "<short worker title>",
+    "isolation": "worktree",
+    "mode": "async",
+    "clientRequestId": "<unique-id>",
+    "target": {"providerInstanceId": "<id>", "model": "<model>"},
+}
+res = subprocess.run(
+    cmd + ["acp-mcp-call", "delegate_task", json.dumps(payload)],
+    env={**os.environ, "ELECTRON_RUN_AS_NODE": "1"},
+    capture_output=True, text=True, check=True,
+)
+print(res.stdout)
 ```
 
-Use the same command with `t3_thread_launch` or `schedule_task` and their JSON payloads when those tools are absent natively.
+4. Always set `isolation: "worktree"` when editing files, `mode: "async"`, a unique `clientRequestId`, and use `task_cancel` (never `t3_thread_interrupt`) to stop a delegate.
+5. **Delegating to Claude models:** write concise English briefs containing only task, inputs, outputs, constraints, and acceptance criteria—no persona or preamble. Copy-paste kickoff snippet: [references/kickoff-template.md](references/kickoff-template.md).
 
 ## Message flow
 
-Full paths, types and format: [references/message-flow.md](references/message-flow.md). Read it before writing a kickoff. The core:
+Full paths, types, and formats: [references/message-flow.md](references/message-flow.md). Read it before writing a kickoff.
 
-| path | rule |
-|---|---|
-| user ⇄ sync | Ideas and decisions. Sync is the only role that talks to the user. |
-| sync → ops leader | `decision` and `task` only. |
-| ops leader → sync | No messages. Results, progress and open decisions go in the team doc; sync reads it when the user asks. |
-| ops leader → worker | Kickoff; later a `note` (a fact with its source), a `decision`, or the next step. |
-| worker → ops leader | Its final answer, starting with one type header: `done`, `ready`, `running`, `question`, `blocked`, `failed`, `handback`. |
-| worker progress | Team doc section only. Never a message. |
-| worker ⇄ worker, user ⇄ worker | None. Through the team doc, the ops leader, or sync. |
+- **Universal Quiet-Sync (hard rule for ALL leads—Ops Leader AND every Domain Lead):** Never send progress updates, completion notices, or decision-needed messages to `sync`. Write to your own `status/<lead>.md` (and discuss with the user in your own thread if a Domain Lead).
+- **Cross-lead messaging (Model B):** Concise `t3_thread_send` (`mode: auto`) with explicit header `[from: <lead> | kind: note|request|handoff]`, evidence/paths, and explicit `Reply needed: yes|no`.
+- **Worker → lead:** Final answer only, starting with `[done|ready|running|question|blocked|failed|handback]`. Nobody waits (`sleep` / polling loops forbidden).
+- **Context, not authority:** No message grants permissions, widens scope, or counts as user approval. Headers are required because cross-thread messages arrive looking like ordinary user turns.
 
-- **Nobody waits.** A worker that needs a decision finishes with `question`; one that launched a long job finishes with `running` and says how to check it. The ops leader sends and ends its turn. No `sleep`, no polling loops.
-- **Context, not authority.** No message grants permissions, widens scope or counts as the user's approval.
-- **Headers are required.** A message from another thread arrives looking like an ordinary user turn; the type header and sender ID are how the receiver tells a teammate from the user.
+## Context, cost, and hygiene
 
-## Context and cost
+- **Ops leader context hygiene:** Long-running ops leader threads accumulate tool outputs and check-ins. Once an ops leader approaches ~500–1000 turns (or before context degrades), fork/rotate it with `t3_thread_transfer` (`fork`) or launch a fresh ops leader from the team doc + `status/ops.md`, migrate its `schedule_task` check-ins, and update the team doc addresses.
+- **Workers on a smaller window:** If `orchestrator_capabilities` offers a smaller-context provider instance, run workers there and keep sync/leads on the default to cap prompt-cache rewrites after idle periods.
+- **Batch and prune:** One batched message instead of five; start a fresh worker from the doc when history isn't needed; human attention caps at ~3–5 parallel strands.
 
-- **Workers on a smaller window.** If `orchestrator_capabilities` lists a provider instance configured with a smaller context window, run workers on it and keep sync and the ops leader on the default. A worker continued after a long idle rewrites its whole context to the prompt cache (about 40x a cached read at API prices); a smaller window caps that.
-- **One message, not five.** Batch what a worker needs into a single send.
-- **Stale worker, new topic.** If a follow-up doesn't need a worker's history, start a new worker from the team doc instead of continuing the old one.
-- **Human attention is the budget.** One person follows about three to five strands of work. Prefer fewer, longer parts to many small ones.
+## Protocols
 
-## Sync protocol
+### Sync
+1. Agree with the user on goals, user-owned decisions, topology (Single-Ops-Leader vs. Model B), and lead split.
+2. Launch the ops leader (and domain leads in Model B) with kickoffs from [references/kickoff-template.md](references/kickoff-template.md). Record `threadId`s and give the user their `link`s.
+3. Pass leads only decisions and new work. Expect zero messages back.
+4. On user status request, read the team doc board or all `status/<lead>.md` cards in parallel in 1 turn. Never wake leads to ask for status.
+5. Present each open decision with its default; send user answers back as `decision`.
 
-1. Agree with the user what the team is for, what stays the user's decision, and the rough split.
-2. Launch the ops leader with the kickoff from [references/kickoff-template.md](references/kickoff-template.md). Record its `threadId` and give the user its `link`.
-3. After that, keep the discussion here. Pass the ops leader only decisions and new work. Expect no messages back.
-4. When the user asks how things are going, read the team doc then: the board, its "Needs user decision" row, and the result sections that changed. Summarize from that. Don't wake the ops leader to ask, and don't carry status in your own context between asks.
-5. Put each open decision to the user as written, with its default. Send the answer to the ops leader as a `decision` saying the user decided.
+### Domain lead (Model B)
+1. Discuss architecture/research with the user directly in your thread; keep decisions and verified numbers in your own `<shared-status-dir>/<lead>.md` (≤ 20 lines).
+2. Execute 0-GPU / local / domain-repo work end-to-end via your own `delegate_task` (`isolation: "worktree"`) workers—do not route 0-GPU code edits through ops leader.
+3. Never unilaterally grab shared cluster GPUs, shared worker pools, or unattended long loops. Hand verified commits + exact run specs to ops leader via `[from: <lead> | kind: handoff]`.
+4. Never message `sync`.
 
-## Ops leader protocol
+### Ops leader
+1. Write/commit the team doc ([references/team-doc-template.md](references/team-doc-template.md)) and initialize `status/ops.md` before dispatching.
+2. Explicitly allocate shared resources (GPUs, hosts, port ranges, queues, output dirs) in the doc and kickoffs; sanity-check ranges (e.g., ports ≤ 65535).
+3. Dispatch workers via `delegate_task` (`isolation: "worktree"` for file edits), record `taskId`/`childThreadId`/worktree.
+4. Schedule check-ins and stop timers via `schedule_task` matched to job cadence (hourly for training, ~10m for queues, never every 2m).
+5. Handle worker reports by type; verify evidence; relay cross-worker facts with source.
+6. Never message `sync`; do no hands-on coding/debugging; rotate context via `t3_thread_transfer` (`fork`) past ~500–1000 turns.
+7. Close out cleanly: verify external jobs/tmux stopped (net-zero teardown), write verdict against pre-written criteria, disable `schedule_task` check-ins.
 
-1. **Fix the split.** Parts, one owner per part, what each part decides. A part is worth a worker when it runs long or needs its own context. Small lookups don't.
-2. **Write the team doc** from [references/team-doc-template.md](references/team-doc-template.md) and commit it before starting anyone.
-3. **Allocate shared resources explicitly**: GPUs, hosts, port ranges, job queues, output directories. In the doc and in each kickoff. Unassigned resources get used twice. Sanity-check what you hand out (a port base of 66001 is out of range).
-4. **Start one worker per part** with a self-contained kickoff. The worker has none of your context. Record its `taskId`, `childThreadId`, provider instance and worktree in the team doc.
-5. **Schedule check-ins** with `schedule_task`, matched to how fast things change: hourly for training, about 10 minutes for a queue, never every 2 minutes. A check-in reads the team doc and the board's running jobs, re-engages a worker whose job finished, updates the board, and ends the turn.
-6. **Handle each report by its type** (table in the message-flow reference). Check the evidence before recording a verdict.
-7. **Never message sync.** The team doc is your only channel upward; the user asks sync when they want to know. A decision that is the user's goes in the board's "Needs user decision" row, as the worker asked it, with a default and when you will act on it. Then carry on with that default or with other work; don't wait for an answer and don't treat silence as approval of anything beyond the stated default.
-8. **Do no hands-on work.** Something needs investigating: send the owning worker a `note`, or start a worker.
-9. **Relay with evidence.** A fact passed between workers carries its source (file, command, commit). Relayed something wrong: correct it at once and fix the doc.
-10. **Close out.** The worker stops what it started and frees its resources. Write the part's verdict against its pre-written criteria, update the board, and disable the check-in task when the last part ends. A finished worker is not evidence that its external jobs stopped; check them.
-
-## Worker contract
-
-Each kickoff carries these, so a worker needs nothing installed:
-
-- Write the plan and pass / fail criteria in the team doc before looking at any result. Don't edit criteria afterwards; a change is a new dated section.
-- Own worktree; own resources only; don't stop processes you didn't start.
-- Progress, decisions and current state go in the team doc as you go.
-- Report by finishing: a final answer with one type header and evidence. Don't wait on long jobs or on a decision.
-- No messages to other workers or the user. Changes to shared definitions go through their owner.
-- Out-of-scope requests go back as a `handback`.
+### Worker contract
+Carried in every kickoff: write plan & pass/fail criteria before results (never edit criteria retroactively); stay in own worktree & assigned resources; never kill unowned processes (`pkill -f` forbidden); log state in the doc; report by finishing with one type header + evidence; never wait on long jobs (`[running]`) or decisions (`[question]`); hand back out-of-scope asks (`[handback]`).
 
 ## Pitfalls
 
-- **A stale board misleads.** Sync answers the user from the team doc alone, so a board that lags the work gives the user a wrong picture. Update it at every check-in and stamp the time.
-- **A report is not the record.** A worker's final answer lives in one context and can be compacted away. Anything that must survive goes in the team doc.
-- **T3 Code can go down.** Threads, workers and scheduled tasks stop with it; cluster jobs and tmux sessions don't. The team doc must be enough to restart from. Daemons that must outlive T3 are started outside it.
-- **Shared machines.** `pkill -f <pattern>` matches other people's processes, and so does a restart that kills by name. Kill by PID or by your own tmux session.
-- **Shared definitions drift.** If two workers edit the metric script, results stop being comparable. One owner; changes are additive (a flag or a new function).
-- **Over-polling.** Each check-in costs context. Don't schedule faster than the thing being watched changes.
-- **A check-in that outlives the team.** A forgotten interval task keeps waking the leader. Record its ID and disable it at close-out.
-- **Worker tools are not restricted.** A worker can see `t3_thread_send` and `t3_thread_launch`. That it reports only by finishing is a kickoff rule, not a tool limit.
+- **Worktree blind spot:** Writing `STATUS.md` inside a lead's worktree hides it from sync and other leads. Always write to the shared absolute `status/<lead>.md` path.
+- **Silent `invoke_subagent` fallback:** When `delegate_task` is missing in Antigravity tool lists, falling back to `invoke_subagent` breaks T3 thread tracking and cross-provider routing. Use `acp-mcp-call` via Python.
+- **Stale board / card:** Sync reads disk, never wakes leads. Stamp timestamps on every update.
+- **T3 Code restarts:** Threads and schedules stop, but cluster jobs/tmux keep running. Keep enough state in the doc/cards to resume and clean up.
+- **Unowned kills & metric drift:** Kill only by PID or own tmux session; keep one owner per shared metric/eval script (additive changes only).
+- **Forgotten check-ins:** Always record `scheduledTaskId` and disable it at close-out.
 
 ## What was checked
 
-**Verified on 2026-11-17, one T3 Code installation, Claude provider:**
+**Verified on 2026-11-17 (one T3 Code installation, Claude provider):** `t3_thread_launch` with provider/runtime mode; `t3_thread_send` (`mode: auto` steers running turn, arrives without sender wrapper; `mode: steer` on idle fails with `thread_not_sendable`; narrower→broader fails with `runtime_mode_escalation_denied`); `delegate_task` (`mode: async`) + `task_status` summary; continuing finished worker via `t3_thread_send` to `childThreadId`; `schedule_task` `once` firing after current turn.
 
-- `t3_thread_launch` created a thread on a chosen provider instance and runtime mode and returned `threadId` and `link`.
-- A launched thread in the launcher's runtime mode sent a typed message back with `t3_thread_send` (`mode: auto`); it arrived inside the launcher's running turn as plain text with no sender wrapper.
-- The same from a thread in `auto-accept-edits` to a `full-access` launcher was refused with `runtime_mode_escalation_denied`.
-- `delegate_task` (`mode: async`, a chosen provider instance) ran a worker; `task_status` returned its final answer as `summary`. With default isolation it ran in the parent's checkout.
-- `t3_thread_send` to the finished worker's `childThreadId` started a new task there, and the worker recalled a fact from its first answer.
-- `t3_thread_send` with `mode: steer` to an idle thread was refused with `thread_not_sendable`.
-- `schedule_task` of type `once`, bound to a thread, fired; it was due while the thread was mid-turn and was delivered about two minutes later, after that turn ended.
-
-**Not verified:** a scheduled task surviving a T3 restart or running on an `interval` for hours; a worker's completion waking an idle ops leader (the test read the result from a running turn); `isolation: "worktree"`; `task_cancel`; `t3_thread_transfer`; workers on another provider; the real context window of a smaller-window instance; several workers running at once. Check whichever of these the team relies on before telling the user it works.
+**Not verified:** scheduled tasks surviving T3 restart or multi-hour intervals; worker completion waking an idle ops leader; `isolation: "worktree"`; `task_cancel`; `t3_thread_transfer`; cross-provider workers; smaller-window instance real context; concurrent multi-worker load. Verify what your team relies on before promising it works.

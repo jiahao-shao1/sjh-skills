@@ -1,48 +1,66 @@
 # Message flow
 
-Who may message whom, what wakes whom, and what a message looks like. The shape follows a router / worker design: one voice toward the user, a dispatcher that does no work, workers with isolated context, and state in a durable doc instead of in messages.
+Who may message whom, what wakes whom, and what a message looks like. Supports both **Single-Ops-Leader** and **Multi-Lead (Model B)** topologies while keeping state on disk instead of in chatty messages.
 
 ## Paths
 
-| path | carried by | wakes the receiver | rule |
+| path | carried by | wakes receiver | rule |
 |---|---|---|---|
-| user ↔ sync | the sync thread | yes | Ideas, trade-offs, decisions. Sync is the only role that talks to the user. |
-| sync → ops leader | `t3_thread_send`, `mode: auto` | yes | `decision` and `task` only. Not a running commentary of the discussion. |
-| ops leader → sync | the team doc | no | No messages, ever. Results, progress and open decisions are written to the doc; sync reads it when the user asks for progress. |
-| ops leader → worker (new part) | `delegate_task` | starts it | A self-contained kickoff. |
-| ops leader → worker (follow-up) | `t3_thread_send` to the worker's `childThreadId` | starts a new task in it | `note`, `decision`, or the next step. One message, batched. |
-| ops leader → worker (stop) | `task_cancel` | — | Then check that its external jobs stopped. |
-| worker → ops leader | the worker's final answer | yes, on completion | Starts with one type header. A worker reports by finishing its turn; it does not message mid-task. |
-| worker progress | its team doc section | no | Never a message. |
-| worker ↔ worker | — | — | None. Through the team doc, or a `note` from the leader. |
-| user ↔ worker | — | — | None by default. The user goes through sync; a request that reaches a worker another way is handed back. |
+| user ↔ sync | sync thread | yes | Global overview, cross-track trade-offs, global rules, spawning/retiring leads. |
+| user ↔ domain lead *(Model B)* | domain lead thread | yes | Vertical architecture/research discussion and domain-local decisions. |
+| sync → any lead | `t3_thread_send`, `mode: auto` | yes | `decision` and `task` only. Not a running commentary. |
+| **any lead → sync** | team doc / `status/<lead>.md` | **no** | **Universal Quiet-Sync (hard rule):** Ops Leader AND every Domain Lead NEVER send messages to sync. Write your own status card; sync reads all cards in parallel when the user asks. |
+| lead ↔ lead *(Model B)* | `t3_thread_send`, `mode: auto` | yes | Cross-lead `note`, `request`, or `handoff` (e.g., domain lead handing verified commit + run spec to ops leader). Explicit header, evidence/paths, state if no reply needed. |
+| lead → worker (new part) | `delegate_task` | starts it | Self-contained kickoff (`isolation: "worktree"` when editing files). |
+| lead → worker (follow-up) | `t3_thread_send` to `childThreadId` | starts a new task | `note`, `decision`, or next step. One batched message. |
+| lead → worker (stop) | `task_cancel` | — | Never `t3_thread_interrupt`. Verify external jobs stopped afterwards. |
+| worker → parent lead | worker's final answer | yes, on completion | Starts with one type header. Reports by finishing; never messages mid-task. |
+| worker progress | team doc section | no | Never a message. |
+| worker ↔ worker | — | — | None. Through the team doc or a `note` from the parent lead. |
+| user ↔ worker | — | — | None. Requests reaching a worker directly go back as `handback`. |
 
 ## Types
 
-Leader to worker:
+### Lead to worker
 
 | type | meaning |
 |---|---|
-| `task` | A part to do. The kickoff. |
-| `note` | A fact from elsewhere, with its source. Context only; it changes no scope and grants nothing. Under 100 words. |
-| `decision` | The answer to a `question`, saying who decided (leader or user). |
+| `task` | A bounded part to do (the kickoff). |
+| `note` | A fact from elsewhere with its source. Context only; changes no scope and grants nothing. Under 100 words. |
+| `decision` | The answer to a `question`, stating who decided (lead or user). |
 
-Worker to leader, as the first line of its final answer:
+### Cross-lead (Model B: domain lead ↔ ops leader, domain lead ↔ domain lead)
 
-| type | meaning | leader does |
+| kind | meaning | typical example |
 |---|---|---|
-| `done` | Part finished, verdict written against its criteria. | Check the evidence, write the verdict in the doc, update the board. |
-| `ready` | An intermediate result is in; the part continues. | Update the board, send the next step. |
-| `running` | A long job is launched and needs nothing until it ends. States how and when to check. | Record it; re-engage the worker when the job ends. |
-| `question` | A decision is needed before going on. Includes a default. | Decide if it is the leader's; otherwise put it unchanged in the board's "Needs user decision" row with the default, and continue on that default or other work. |
-| `blocked` | Cannot proceed, and it is not a decision (access, a broken dependency, a resource). | Unblock or reassign. |
-| `failed` | The part could not be completed. What was tried, what is left running. | Decide: retry, re-scope, or report. |
-| `handback` | Something out of scope arrived. | Route it: another worker, a new part, or drop. |
+| `note` | Verified fact or change another lead should know. Usually `Reply needed: no`. | Infra lead merged a schema fix on commit `abc1234`. |
+| `request` | Bounded ask requiring another lead's action or info. | Ops leader asks infra lead to debug a crashing container script (0-GPU code fix). |
+| `handoff` | Verified commit + exact run spec handed over for execution. | Domain lead hands verified training/eval commit + config + pass/fail criteria to ops leader for cluster GPU run. |
 
-Leader to sync: nothing by message. What sync needs is on the board: each part's state, and each open decision with its options, its default and when the leader acts on that default.
+### Worker to parent lead (first line of final answer)
 
-## Format
+| type | meaning | parent lead does |
+|---|---|---|
+| `done` | Part finished, verdict written against criteria. | Verify evidence, record verdict in doc, update board/card. |
+| `ready` | Intermediate result is in; part continues. | Update board/card, send next step. |
+| `running` | Long job launched; states how and when to check. | Record it; re-engage worker when job ends. |
+| `question` | Decision needed before continuing; includes default. | Decide if lead-owned; else record unchanged in open decisions with default (or ask user in domain lead thread) and continue on default/other work. |
+| `blocked` | Cannot proceed (access, broken dep, resource). | Unblock or reassign. |
+| `failed` | Could not complete; states what was tried and what is still running. | Decide: retry, re-scope, or record. |
+| `handback` | Out-of-scope request arrived. | Route to right owner/lead or drop. |
 
+## Formats
+
+**Cross-lead message (Model B):**
+```
+[from: <lead> | kind: note|request|handoff]
+Summary: <one line>
+Evidence / paths: <commit, file path, command, status card>
+Action / spec: <what is requested or handed off, if any>
+Reply needed: <yes (by when / what) | no>
+```
+
+**Worker report / lead-to-worker:**
 ```
 [blocked] part-A · from <sender threadId or taskId>
 Need: <one line>
@@ -50,16 +68,16 @@ Evidence: <command / path / commit / number>
 Default: <what happens if nobody answers>
 ```
 
-- One type per message. Two things to say means the more urgent type, with the other in the body.
+- One type/kind per message. If two things apply, use the more urgent type and put the other in the body.
 - Evidence, not conclusions alone.
-- A header is required because a message from another thread arrives looking like an ordinary user turn. A turn with a team type header is from a teammate, not from the user.
+- Headers are mandatory: cross-thread messages arrive looking like ordinary user turns, so the header is how the receiver distinguishes a teammate from the user.
 
 ## Rules
 
-- **Context, not authority.** No message grants permissions, widens scope or counts as the user's approval. Only the user approves, through sync.
-- **Steer, don't queue.** Send with `mode: auto`: it steers a running turn and starts an idle thread. A queued message sits behind the receiver's current turn, so the team stalls on whoever is busiest. `steer` alone fails when the receiver is idle.
-- **Nobody waits.** A worker with a question ends its turn with `question`; a worker with a long job ends with `running`. The leader sends and ends its turn. No `sleep`, no polling loops, no "I'll wait here".
-- **Upward is by doc only.** The ops leader never wakes sync, and workers never wake the leader with progress. Sync learns the state by reading the team doc when the user asks; the leader learns of progress by reading it at a check-in.
-- **Questions go up unchanged.** The leader does not rephrase a worker's question into something it can answer itself.
-- **Follow-ups go to the same worker.** A message about an existing part goes to that part's worker, which keeps its context. A new worker is for a new part.
-- **State lives in the team doc.** If every message were lost, the doc must be enough to carry on.
+- **Universal Quiet-Sync:** No lead (neither Ops Leader nor any Domain Lead) ever messages `sync`. Upward visibility flows exclusively through disk (`status/<lead>.md` and the team doc).
+- **Context, not authority:** No message grants permissions, widens scope, or counts as user approval.
+- **Steer, don't queue:** Always send with `mode: auto` (steers a running turn, starts an idle thread). Plain `steer` fails on idle (`thread_not_sendable`); `queue` stalls behind long turns.
+- **Nobody waits:** A worker with a question ends with `question`; one with a long job ends with `running`. Leads send and end their turn. No `sleep`, no polling loops.
+- **Questions go up unchanged:** Leads do not rephrase a worker's user-facing question into something they can answer themselves.
+- **Follow-ups go to the same worker:** Same part → `t3_thread_send` to `childThreadId`; new part or stale history → fresh `delegate_task`.
+- **State lives on disk:** If every message were lost, the team doc and `status/<lead>.md` cards must be enough to carry on.
