@@ -1,6 +1,6 @@
 ---
 name: session-team
-description: Run a team in T3 Code - either Single-Ops-Leader (sync thread, one ops leader thread, delegated workers) or Multi-Lead Model B (sync control plane, autonomous domain leads with own 0-GPU workers, one ops leader for shared compute/long runs, federated status cards). Triggers include 'be the leader', 'ops leader', 'domain lead', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
+description: Run a team in T3 Code - either Single-Ops-Leader (sync thread, one ops leader thread, delegated workers) or Multi-Lead Model B (sync control plane, autonomous domain leads with own workers for 0-GPU and bounded 1-GPU smoke verification, one ops leader for shared compute/long runs, federated status cards). Triggers include 'be the leader', 'ops leader', 'domain lead', 'leader session', 'start a team of sessions', 'split this across sessions', 'coordinate sessions', 'sync-with-me', '当 leader', '开个 leader', '开个 ops leader', '开几个 session', '拆给几个 session', '多 session 协作', '让 session 之间协作'. Needs the T3 Code thread and delegation tools. Not for a single bounded subtask inside one conversation; delegate that directly.
 ---
 
 # Session Team
@@ -15,7 +15,7 @@ Single-Ops-Leader:
 
 Multi-Lead (Model B):
   user ⇄ sync (global control plane; reads status/<lead>.md in parallel)
-  user ⇄ domain leads (infra / task-gen / kg ...) ⇄ own 0-GPU worktree workers
+  user ⇄ domain leads (infra / task-gen / kg ...) ⇄ own workers (0-GPU + bounded smoke GPU)
               │ verified commits / specs (handoff)        │ write own card
               ▼                                           ▼
          ops leader (shared GPUs, pools, long runs) ──→ <main-repo>/<team-dir>/status/<lead>.md
@@ -31,7 +31,7 @@ This skill uses T3 Code only. If its tools are missing (try loading them once wi
 | role | is | does | does not |
 |---|---|---|---|
 | **sync** | user's global control plane | Global overview, cross-track trade-offs, global rules, spawning/retiring leads. Reads the team doc or federated `status/<lead>.md` cards on demand. | Dispatch workers, run check-ins, hands-on work, scrape long thread histories |
-| **domain lead** *(Model B)* | top-level thread (vertical PI) | Discusses architecture/research directly with the user; owns end-to-end 0-GPU / local / domain-repo work (research, code edits, unit tests, PR review, small local checks) via its own `delegate_task` worktree workers; writes `status/<lead>.md`; hands verified commits/specs to ops leader for heavy runs. | Message sync; unilaterally grab shared cluster GPUs, shared worker pools, or unattended long-running loops |
+| **domain lead** *(Model B)* | top-level thread (vertical PI) | Discusses architecture/research directly with the user; owns end-to-end 0-GPU / local / domain-repo work (research, code edits, unit tests, PR review) **plus short, bounded GPU smoke checks (1–2 idle local/dev GPUs or a single short-lived smoke pod ≤30m, with collision check + immediate net-zero teardown)** to verify envs/renders/sanity checks via its own `delegate_task` workers; writes `status/<lead>.md`; hands verified commits/specs to ops leader for heavy runs. | Message sync; unilaterally grab shared cluster compute pools, multi-GPU allocations, or unattended long-running loops |
 | **ops leader** | top-level thread (horizontal SRE) | Owns shared cluster compute quotas, shared worker pools, long-running unattended pipelines (large rollouts, multi-node training, full evals), scheduled check-ins, stop timers, net-zero teardown, and `status/ops.md` / team board. In Single-Ops-Leader mode, also splits all work. | Message sync or the user; investigate, debug, run experiments, write code; act as middleman for domain 0-GPU code edits (in Model B) |
 | **worker** | `delegate_task` child of ops leader or a domain lead | One bounded part of the work, in its own worktree when editing files. | Touch other parts, message other workers or the user |
 
@@ -120,8 +120,8 @@ Full paths, types, and formats: [references/message-flow.md](references/message-
 
 ### Domain lead (Model B)
 1. Discuss architecture/research with the user directly in your thread; keep decisions and verified numbers in your own `<shared-status-dir>/<lead>.md` (≤ 20 lines).
-2. Execute 0-GPU / local / domain-repo work end-to-end via your own `delegate_task` (`isolation: "worktree"`) workers—do not route 0-GPU code edits through ops leader.
-3. Never unilaterally grab shared cluster GPUs, shared worker pools, or unattended long loops. Hand verified commits + exact run specs to ops leader via `[from: <lead> | kind: handoff]`.
+2. Execute 0-GPU / local / domain-repo work end-to-end via your own `delegate_task` (`isolation: "worktree"`) workers—do not route code edits or env setup through ops leader. You may also run **short, bounded GPU smoke checks** (1–2 idle local/dev GPUs or a single short-lived smoke pod ≤30m) to verify env/render/1-episode sanity, provided you check `nvidia-smi` / `status/ops.md` for collisions first, tear down to net-zero immediately after, and log usage in `status/<lead>.md`.
+3. Never unilaterally grab shared cluster compute pools, multi-GPU allocations, or unattended long loops. Hand verified commits + exact run specs to ops leader via `[from: <lead> | kind: handoff]`.
 4. Never message `sync`.
 
 ### Ops leader

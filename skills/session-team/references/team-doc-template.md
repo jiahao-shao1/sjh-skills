@@ -38,7 +38,7 @@ Criteria are written before the run and are not edited afterwards; a change of p
 |---|---|---|
 | sync | global overview, cross-track trade-offs, spawning/retiring leads | dispatch, hands-on work |
 | ops leader | shared GPUs/pools, long runs, check-ins, teardown, `status/ops.md` | investigation, debugging, experiments, domain 0-GPU code edits |
-| <domain-lead> *(Model B)* | <vertical track: 0-GPU code/tests/PRs, own workers, `status/<lead>.md`> | shared cluster GPUs / unattended long loops |
+| <domain-lead> *(Model B)* | <vertical track: code/tests/PRs + bounded 1–2 GPU smoke checks (≤30m, net-zero), own workers, `status/<lead>.md`> | shared cluster compute pools / multi-GPU allocations / unattended long loops |
 | <worker-a> | <part A: code, data, runs> | <shared metric scripts> |
 | <worker-b> | <shared definitions: metrics, eval and analysis scripts> | <part A's data> |
 
