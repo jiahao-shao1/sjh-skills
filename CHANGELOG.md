@@ -4,6 +4,13 @@ All notable changes to SJH Skills are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/). Each skill's changes are grouped under its name.
 
+## [3.2.1] - 2026-11-26
+
+### session-team
+
+#### Changed
+- Relaxed the Multi-Lead (Model B) Domain Lead compute boundary from strictly 0-GPU to allow short, bounded GPU smoke checks (1–2 idle local/dev GPUs or a single short-lived smoke pod ≤ 30 min) for environment, rendering, and 1-episode sanity verification, with mandatory collision checks (`nvidia-smi` / `status/ops.md`), immediate net-zero teardown, and status-card logging. Shared cluster compute pools, multi-GPU allocations, and unattended long loops remain exclusively owned by the Ops Leader.
+
 ## [3.2.0] - 2026-11-25
 
 ### session-team
